@@ -1,52 +1,66 @@
-<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-lg">
+<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm sticky-top">
   <div class="container">
-    <a class="navbar-brand fw-bold text-primary" routerLink="/">
-      <i class="fa fa-home me-2"></i>MaidFinder
+    <a class="navbar-brand fw-bold text-primary d-flex align-items-center" routerLink="/">
+      <i class="fa fa-home me-2"></i>
+      <span class="brand-text">MaidFinder</span>
     </a>
     
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+    <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
     
     <div class="collapse navbar-collapse" id="navbarNav">
       <ul class="navbar-nav me-auto">
         <li class="nav-item">
-          <a class="nav-link" routerLink="/" routerLinkActive="active">Home</a>
+          <a class="nav-link" routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
+            <i class="fa fa-home me-1 d-lg-none"></i>Home
+          </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" routerLink="/search" routerLinkActive="active">Find Maids</a>
+          <a class="nav-link" routerLink="/search" routerLinkActive="active">
+            <i class="fa fa-search me-1 d-lg-none"></i>Find Maids
+          </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" routerLink="/subscriptions" routerLinkActive="active">Subscriptions</a>
+          <a class="nav-link" routerLink="/subscriptions" routerLinkActive="active">
+            <i class="fa fa-star me-1 d-lg-none"></i>Subscriptions
+          </a>
         </li>
         <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">Services</a>
-          <ul class="dropdown-menu">
-            <li><a class="dropdown-item" routerLink="/services">Our Services</a></li>
-            <li><a class="dropdown-item" routerLink="/how-it-works">How It Works</a></li>
-            <li><a class="dropdown-item" routerLink="/pricing">Pricing</a></li>
+          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="fa fa-cog me-1 d-lg-none"></i>Services
+          </a>
+          <ul class="dropdown-menu shadow-lg">
+            <li><a class="dropdown-item" routerLink="/services"><i class="fa fa-briefcase me-2"></i>Our Services</a></li>
+            <li><a class="dropdown-item" routerLink="/how-it-works"><i class="fa fa-info-circle me-2"></i>How It Works</a></li>
+            <li><a class="dropdown-item" routerLink="/pricing"><i class="fa fa-tag me-2"></i>Pricing</a></li>
           </ul>
         </li>
         <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">About</a>
-          <ul class="dropdown-menu">
-            <li><a class="dropdown-item" routerLink="/about">About MaidFinder</a></li>
-            <li><a class="dropdown-item" routerLink="/testimonials">Customer Reviews</a></li>
-            <li><a class="dropdown-item" routerLink="/blog">Blog</a></li>
-            <li><a class="dropdown-item" routerLink="/faqs">FAQ's</a></li>
+          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="fa fa-info-circle me-1 d-lg-none"></i>About
+          </a>
+          <ul class="dropdown-menu shadow-lg">
+            <li><a class="dropdown-item" routerLink="/about"><i class="fa fa-building me-2"></i>About MaidFinder</a></li>
+            <li><a class="dropdown-item" routerLink="/testimonials"><i class="fa fa-comments me-2"></i>Customer Reviews</a></li>
+            <li><a class="dropdown-item" routerLink="/blog"><i class="fa fa-blog me-2"></i>Blog</a></li>
+            <li><a class="dropdown-item" routerLink="/faqs"><i class="fa fa-question-circle me-2"></i>FAQ's</a></li>
           </ul>
         </li>
         <li class="nav-item">
-          <a class="nav-link" routerLink="/contact" routerLinkActive="active">Contact</a>
+          <a class="nav-link" routerLink="/contact" routerLinkActive="active">
+            <i class="fa fa-envelope me-1 d-lg-none"></i>Contact
+          </a>
         </li>
       </ul>
       
-      <ul class="navbar-nav">
+      <ul class="navbar-nav align-items-center">
         <li class="nav-item">
           <a class="nav-link position-relative" routerLink="/favorites">
-            <i class="fa fa-heart me-1"></i>Favorites
+            <i class="fa fa-heart me-1"></i>
+            <span class="d-lg-inline d-none">Favorites</span>
             <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" 
-                  style="font-size: 0.6rem;" 
+                  style="font-size: 0.6rem; padding: 0.25em 0.5em;" 
                   *ngIf="favoriteCount > 0">
               {{ favoriteCount }}
             </span>
@@ -54,25 +68,30 @@
         </li>
         <ng-container *ngIf="!currentUser; else userMenu">
           <li class="nav-item">
-            <a class="nav-link" routerLink="/login">Login</a>
+            <a class="nav-link" routerLink="/login">
+              <i class="fa fa-sign-in me-1 d-lg-none"></i>Login
+            </a>
           </li>
-          <li class="nav-item">
-            <a class="btn btn-primary ms-2" routerLink="/register">Sign Up</a>
+          <li class="nav-item ms-lg-2">
+            <a class="btn btn-primary btn-sm px-3" routerLink="/register">
+              <i class="fa fa-user-plus me-1"></i>Sign Up
+            </a>
           </li>
         </ng-container>
         
         <ng-template #userMenu>
           <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-              <i class="fa fa-user me-1"></i>{{ currentUser?.name }}
+            <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown">
+              <i class="fa fa-user-circle me-2"></i>
+              <span class="d-lg-inline d-none">{{ currentUser?.name }}</span>
             </a>
-            <ul class="dropdown-menu">
-              <li><a class="dropdown-item" routerLink="/profile/dashboard">Dashboard</a></li>
-              <li><a class="dropdown-item" routerLink="/profile">Profile</a></li>
-              <li><a class="dropdown-item" routerLink="/bookings">My Bookings</a></li>
-              <li><a class="dropdown-item" routerLink="/subscriptions">Subscriptions</a></li>
+            <ul class="dropdown-menu dropdown-menu-end shadow-lg">
+              <li><a class="dropdown-item" routerLink="/profile/dashboard"><i class="fa fa-tachometer me-2"></i>Dashboard</a></li>
+              <li><a class="dropdown-item" routerLink="/profile"><i class="fa fa-user me-2"></i>Profile</a></li>
+              <li><a class="dropdown-item" routerLink="/bookings"><i class="fa fa-calendar me-2"></i>My Bookings</a></li>
+              <li><a class="dropdown-item" routerLink="/subscriptions"><i class="fa fa-star me-2"></i>Subscriptions</a></li>
               <li><hr class="dropdown-divider"></li>
-              <li><a class="dropdown-item" (click)="logout()">Logout</a></li>
+              <li><a class="dropdown-item text-danger" (click)="logout()"><i class="fa fa-sign-out me-2"></i>Logout</a></li>
             </ul>
           </li>
         </ng-template>
@@ -88,76 +107,103 @@
 
 <app-back-to-top></app-back-to-top>
 
-<footer class="bg-dark text-light py-5 mt-5">
+<footer class="footer-enhanced bg-dark text-light py-5 mt-5">
   <div class="container">
     <div class="row g-4">
-      <div class="col-md-3">
-        <h5 class="mb-3">Contact Us</h5>
+      <div class="col-lg-3 col-md-6 mb-4">
+        <h5 class="mb-4 fw-bold text-white">
+          <i class="fa fa-home me-2 text-primary"></i>Contact Us
+        </h5>
         <ul class="list-unstyled mb-4">
-          <li class="mb-2">052 189 3330</li>
-          <li class="mb-2">04 4427 686</li>
+          <li class="mb-3 d-flex align-items-center">
+            <i class="fa fa-phone me-3 text-primary"></i>
+            <a href="tel:+971521893330" class="text-light text-decoration-none footer-link">052 189 3330</a>
+          </li>
+          <li class="mb-3 d-flex align-items-center">
+            <i class="fa fa-phone me-3 text-primary"></i>
+            <a href="tel:+97144427686" class="text-light text-decoration-none footer-link">04 4427 686</a>
+          </li>
         </ul>
-        <h6 class="mb-3">Stay Connected</h6>
+        <h6 class="mb-3 fw-bold">Stay Connected</h6>
         <div class="d-flex gap-3">
-          <a href="#" class="text-light"><i class="fa fa-facebook fa-lg"></i></a>
-          <a href="#" class="text-light"><i class="fa fa-twitter fa-lg"></i></a>
-          <a href="#" class="text-light"><i class="fa fa-instagram fa-lg"></i></a>
-          <a href="#" class="text-light"><i class="fa fa-linkedin fa-lg"></i></a>
+          <a href="#" class="social-icon text-light" aria-label="Facebook">
+            <i class="fa fa-facebook fa-lg"></i>
+          </a>
+          <a href="#" class="social-icon text-light" aria-label="Twitter">
+            <i class="fa fa-twitter fa-lg"></i>
+          </a>
+          <a href="#" class="social-icon text-light" aria-label="Instagram">
+            <i class="fa fa-instagram fa-lg"></i>
+          </a>
+          <a href="#" class="social-icon text-light" aria-label="LinkedIn">
+            <i class="fa fa-linkedin fa-lg"></i>
+          </a>
         </div>
       </div>
-      <div class="col-md-3">
-        <h5 class="mb-3">About Us</h5>
+      <div class="col-lg-2 col-md-6 mb-4">
+        <h5 class="mb-4 fw-bold text-white">About Us</h5>
         <ul class="list-unstyled">
-          <li class="mb-2"><a routerLink="/about" class="text-light text-decoration-none">About MaidFinder</a></li>
-          <li class="mb-2"><a routerLink="/testimonials" class="text-light text-decoration-none">Customer Reviews</a></li>
-          <li class="mb-2"><a routerLink="/blog" class="text-light text-decoration-none">Blog</a></li>
-          <li class="mb-2"><a routerLink="/faqs" class="text-light text-decoration-none">FAQs</a></li>
-          <li class="mb-2"><a routerLink="/contact" class="text-light text-decoration-none">Contact Us</a></li>
+          <li class="mb-2"><a routerLink="/about" class="text-light text-decoration-none footer-link">About MaidFinder</a></li>
+          <li class="mb-2"><a routerLink="/testimonials" class="text-light text-decoration-none footer-link">Customer Reviews</a></li>
+          <li class="mb-2"><a routerLink="/blog" class="text-light text-decoration-none footer-link">Blog</a></li>
+          <li class="mb-2"><a routerLink="/faqs" class="text-light text-decoration-none footer-link">FAQs</a></li>
+          <li class="mb-2"><a routerLink="/contact" class="text-light text-decoration-none footer-link">Contact Us</a></li>
         </ul>
       </div>
-      <div class="col-md-3">
-        <h5 class="mb-3">Services</h5>
+      <div class="col-lg-2 col-md-6 mb-4">
+        <h5 class="mb-4 fw-bold text-white">Services</h5>
         <ul class="list-unstyled">
-          <li class="mb-2"><a routerLink="/services" class="text-light text-decoration-none">Our Services</a></li>
-          <li class="mb-2"><a routerLink="/how-it-works" class="text-light text-decoration-none">How It Works</a></li>
-          <li class="mb-2"><a routerLink="/pricing" class="text-light text-decoration-none">Pricing</a></li>
-          <li class="mb-2"><a routerLink="/subscriptions" class="text-light text-decoration-none">Subscriptions</a></li>
+          <li class="mb-2"><a routerLink="/services" class="text-light text-decoration-none footer-link">Our Services</a></li>
+          <li class="mb-2"><a routerLink="/how-it-works" class="text-light text-decoration-none footer-link">How It Works</a></li>
+          <li class="mb-2"><a routerLink="/pricing" class="text-light text-decoration-none footer-link">Pricing</a></li>
+          <li class="mb-2"><a routerLink="/subscriptions" class="text-light text-decoration-none footer-link">Subscriptions</a></li>
         </ul>
       </div>
-      <div class="col-md-3">
-        <h5 class="mb-3">Customers</h5>
+      <div class="col-lg-2 col-md-6 mb-4">
+        <h5 class="mb-4 fw-bold text-white">Customers</h5>
         <ul class="list-unstyled">
-          <li class="mb-2"><a routerLink="/login" class="text-light text-decoration-none">Customers Login</a></li>
-          <li class="mb-2"><a routerLink="/register" class="text-light text-decoration-none">Register Now</a></li>
-          <li class="mb-2"><a routerLink="/contact" class="text-light text-decoration-none">Customer Enquiries</a></li>
-          <li class="mb-2"><a routerLink="/subscriptions" class="text-light text-decoration-none">About Access Packages</a></li>
-          <li class="mb-2"><a href="#" class="text-light text-decoration-none">Term & Conditions</a></li>
+          <li class="mb-2"><a routerLink="/login" class="text-light text-decoration-none footer-link">Customers Login</a></li>
+          <li class="mb-2"><a routerLink="/register" class="text-light text-decoration-none footer-link">Register Now</a></li>
+          <li class="mb-2"><a routerLink="/contact" class="text-light text-decoration-none footer-link">Customer Enquiries</a></li>
+          <li class="mb-2"><a routerLink="/subscriptions" class="text-light text-decoration-none footer-link">Access Packages</a></li>
         </ul>
       </div>
-      <div class="col-md-3">
-        <h5 class="mb-3">Search Maids</h5>
+      <div class="col-lg-3 col-md-6 mb-4">
+        <h5 class="mb-4 fw-bold text-white">Search Maids</h5>
         <ul class="list-unstyled">
-          <li class="mb-2"><a routerLink="/search" class="text-light text-decoration-none">Search all maids/ nannies</a></li>
-          <li class="mb-2"><a routerLink="/search" class="text-light text-decoration-none">Live in maids/ nannies</a></li>
-          <li class="mb-2"><a routerLink="/search" class="text-light text-decoration-none">Own visa Maids</a></li>
-          <li class="mb-2"><a routerLink="/search" class="text-light text-decoration-none">full time live out maids/ nannies</a></li>
-          <li class="mb-2"><a routerLink="/search" class="text-light text-decoration-none">Part time maids</a></li>
-          <li class="mb-2"><a routerLink="/search" class="text-light text-decoration-none">Monthly maids - Temporary maids</a></li>
-          <li class="mb-2"><a routerLink="/search" class="text-light text-decoration-none">Nannies for new Born</a></li>
-          <li class="mb-2"><a routerLink="/search" class="text-light text-decoration-none">Maids accepting salary from 1,300 aed</a></li>
-          <li class="mb-2"><a routerLink="/search" class="text-light text-decoration-none">Full time house maids</a></li>
+          <li class="mb-2"><a routerLink="/search" class="text-light text-decoration-none footer-link">Search all maids/ nannies</a></li>
+          <li class="mb-2"><a routerLink="/search" class="text-light text-decoration-none footer-link">Live in maids/ nannies</a></li>
+          <li class="mb-2"><a routerLink="/search" class="text-light text-decoration-none footer-link">Own visa Maids</a></li>
+          <li class="mb-2"><a routerLink="/search" class="text-light text-decoration-none footer-link">Full time live out maids</a></li>
+          <li class="mb-2"><a routerLink="/search" class="text-light text-decoration-none footer-link">Part time maids</a></li>
         </ul>
-        <h5 class="mb-3 mt-4">Maids</h5>
+        <h5 class="mb-3 mt-4 fw-bold text-white">
+          <i class="fa fa-user-circle me-2 text-primary"></i>Maids
+        </h5>
         <ul class="list-unstyled">
-          <li class="mb-2"><a href="#" class="text-light text-decoration-none">Maids Login</a></li>
-          <li class="mb-2"><a href="#" class="text-light text-decoration-none">Maid Login</a></li>
-          <li class="mb-2"><a href="#" class="text-light text-decoration-none">Register as a Maid</a></li>
+          <li class="mb-2">
+            <a routerLink="/login" class="text-light text-decoration-none footer-link d-flex align-items-center">
+              <i class="fa fa-sign-in me-2 text-primary"></i>Maids Login
+            </a>
+          </li>
+          <li class="mb-2">
+            <a routerLink="/register" class="text-light text-decoration-none footer-link d-flex align-items-center">
+              <i class="fa fa-user-plus me-2 text-primary"></i>Register as a Maid
+            </a>
+          </li>
         </ul>
       </div>
     </div>
-    <hr class="my-4">
+    <hr class="my-4 border-light opacity-25">
     <div class="text-center">
-      <p>&copy; 2024 MaidFinder. All rights reserved.</p>
+      <p class="mb-0">
+        <i class="fa fa-copyright me-2"></i>2024 MaidFinder. All rights reserved.
+      </p>
+      <p class="mt-2 mb-0 small text-muted">
+        <a href="#" class="text-muted text-decoration-none me-3">Terms & Conditions</a>
+        <span class="mx-2">|</span>
+        <a href="#" class="text-muted text-decoration-none">Privacy Policy</a>
+      </p>
     </div>
   </div>
 </footer>
