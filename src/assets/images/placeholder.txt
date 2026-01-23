@@ -1,0 +1,23 @@
+# Images Directory
+
+This directory should contain the following images:
+
+## Hero Images
+- hero-maid.jpg (Happy family with maid - 800x600px)
+
+## Default Images
+- default-maid.jpg (Default maid profile image - 300x300px)
+
+## Team Images
+- team/sarah.jpg (CEO photo - 300x300px)
+- team/ahmed.jpg (CTO photo - 300x300px)
+- team/maria.jpg (Operations head photo - 300x300px)
+
+## Icons
+- logo.png (Company logo - 200x60px)
+- favicon.ico (Website favicon - 32x32px)
+
+## Placeholder Images
+You can use placeholder services like:
+- https://via.placeholder.com/800x600/0d6efd/ffffff?text=Hero+Image
+- https://via.placeholder.com/300x300/6c757d/ffffff?text=Profile+Image

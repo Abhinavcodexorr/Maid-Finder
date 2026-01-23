@@ -1,0 +1,50 @@
+.breadcrumb-nav {
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #e9ecef;
+  padding: 0.75rem 0;
+  
+  .breadcrumb {
+    margin-bottom: 0;
+    font-size: 0.9rem;
+    
+    .breadcrumb-item {
+      + .breadcrumb-item::before {
+        content: "›";
+        color: #6c757d;
+        font-weight: bold;
+      }
+      
+      a {
+        color: #007bff;
+        transition: color 0.2s ease;
+        
+        &:hover {
+          color: #0056b3;
+        }
+      }
+      
+      &.active {
+        color: #6c757d;
+        font-weight: 500;
+      }
+    }
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+  .breadcrumb-nav {
+    padding: 0.5rem 0;
+    
+    .breadcrumb {
+      font-size: 0.8rem;
+      
+      .breadcrumb-item {
+        + .breadcrumb-item::before {
+          content: "›";
+        }
+      }
+    }
+  }
+}
+

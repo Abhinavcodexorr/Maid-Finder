@@ -1,0 +1,226 @@
+<!-- Testimonials Header -->
+<section class="testimonials-header bg-primary text-white py-5">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-8 mx-auto text-center">
+        <h1 class="display-4 fw-bold mb-3">What Our Customers Say</h1>
+        <p class="lead mb-4">Real reviews from satisfied families who trust MaidFinder for their domestic needs</p>
+        <div class="row text-center">
+          <div class="col-md-3 mb-3">
+            <div class="stat-item">
+              <h3 class="text-warning fw-bold mb-0">4.8★</h3>
+              <small class="text-white-50">Average Rating</small>
+            </div>
+          </div>
+          <div class="col-md-3 mb-3">
+            <div class="stat-item">
+              <h3 class="text-warning fw-bold mb-0">1,250+</h3>
+              <small class="text-white-50">Happy Families</small>
+            </div>
+          </div>
+          <div class="col-md-3 mb-3">
+            <div class="stat-item">
+              <h3 class="text-warning fw-bold mb-0">98%</h3>
+              <small class="text-white-50">Satisfaction Rate</small>
+            </div>
+          </div>
+          <div class="col-md-3 mb-3">
+            <div class="stat-item">
+              <h3 class="text-warning fw-bold mb-0">24/7</h3>
+              <small class="text-white-50">Support Available</small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Filter Section -->
+<section class="py-4 bg-light">
+  <div class="container">
+    <div class="row">
+      <div class="col-12">
+        <div class="d-flex flex-wrap justify-content-center gap-2">
+          <button 
+            class="btn"
+            [class.btn-primary]="selectedFilter === 'all'"
+            [class.btn-outline-primary]="selectedFilter !== 'all'"
+            (click)="selectedFilter = 'all'; applyFilter()">
+            All Reviews
+          </button>
+          <button 
+            *ngFor="let service of ['cleaning', 'cooking', 'childcare', 'elderly care']" 
+            class="btn"
+            [class.btn-primary]="selectedFilter === service"
+            [class.btn-outline-primary]="selectedFilter !== service"
+            (click)="selectedFilter = service; applyFilter()">
+            {{ service | titlecase }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Testimonials Grid -->
+<section class="py-5">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-4 col-md-6 mb-4" *ngFor="let testimonial of paginatedTestimonials">
+        <div class="testimonial-card card h-100 shadow-sm border-0 rounded-4 overflow-hidden">
+          <div class="card-body p-4">
+            <!-- Header -->
+            <div class="d-flex align-items-center mb-3">
+              <img [src]="testimonial.image || 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=60&h=60&fit=crop&crop=face'" 
+                   [alt]="testimonial.name" 
+                   class="rounded-circle me-3" 
+                   style="width: 50px; height: 50px; object-fit: cover;">
+              <div class="flex-grow-1">
+                <h6 class="mb-1 fw-semibold">{{ testimonial.name }}</h6>
+                <small class="text-muted">
+                  <i class="fa fa-map-marker-alt me-1"></i>{{ testimonial.location }}
+                </small>
+              </div>
+              <div class="text-end">
+                <div class="rating mb-1">
+                  <i class="fa fa-star text-warning" *ngFor="let star of getStars(testimonial.rating)"></i>
+                  <i class="fa fa-star text-muted" *ngFor="let star of getEmptyStars(testimonial.rating)"></i>
+                </div>
+                <small class="text-muted">{{ testimonial.date | date:'MMM d, y' }}</small>
+              </div>
+            </div>
+
+            <!-- Service Badge -->
+            <div class="mb-3">
+              <span class="badge bg-primary px-3 py-2 rounded-pill">
+                <i class="fa fa-tag me-1"></i>{{ testimonial.service }}
+              </span>
+              <span class="badge bg-success px-3 py-2 rounded-pill ms-2" *ngIf="testimonial.verified">
+                <i class="fa fa-check-circle me-1"></i>Verified
+              </span>
+            </div>
+
+            <!-- Comment -->
+            <p class="testimonial-comment mb-3">{{ testimonial.comment }}</p>
+
+            <!-- Footer -->
+            <div class="testimonial-footer">
+              <div class="d-flex align-items-center justify-content-between">
+                <small class="text-muted">
+                  <i class="fa fa-calendar me-1"></i>{{ testimonial.date | date:'MMM d, y' }}
+                </small>
+                <div class="d-flex align-items-center">
+                  <i class="fa fa-thumbs-up text-success me-2"></i>
+                  <small class="text-muted">Helpful</small>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pagination -->
+    <div *ngIf="totalPages > 1" class="d-flex justify-content-center mt-4">
+      <nav aria-label="Testimonials pagination">
+        <ul class="pagination">
+          <li class="page-item" [class.disabled]="currentPage === 1">
+            <a class="page-link" href="#" (click)="onPageChange(currentPage - 1); $event.preventDefault()" aria-label="Previous">
+              <span aria-hidden="true">&laquo;</span>
+            </a>
+          </li>
+          <li class="page-item" *ngFor="let page of getPageNumbers()" [class.active]="page === currentPage">
+            <a class="page-link" href="#" (click)="onPageChange(page); $event.preventDefault()">{{ page }}</a>
+          </li>
+          <li class="page-item" [class.disabled]="currentPage === totalPages">
+            <a class="page-link" href="#" (click)="onPageChange(currentPage + 1); $event.preventDefault()" aria-label="Next">
+              <span aria-hidden="true">&raquo;</span>
+            </a>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  </div>
+</section>
+
+<!-- Featured Testimonials -->
+<section class="py-5 bg-light">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-8 mx-auto text-center mb-5">
+        <h2 class="display-5 fw-bold mb-3">Featured Reviews</h2>
+        <p class="lead text-muted">Some of our most recent and highly-rated customer reviews</p>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-lg-6 mb-4">
+        <div class="featured-testimonial card border-0 shadow-lg rounded-4">
+          <div class="card-body p-4">
+            <div class="d-flex align-items-center mb-3">
+              <img src="https://images.unsplash.com/photo-1494790108755-2616b612b786?w=60&h=60&fit=crop&crop=face" 
+                   alt="Sarah Ahmed" 
+                   class="rounded-circle me-3" 
+                   style="width: 60px; height: 60px; object-fit: cover;">
+              <div>
+                <h6 class="mb-1 fw-semibold">Sarah Ahmed</h6>
+                <small class="text-muted">Dubai Marina</small>
+              </div>
+              <div class="ms-auto">
+                <div class="rating">
+                  <i class="fa fa-star text-warning"></i>
+                  <i class="fa fa-star text-warning"></i>
+                  <i class="fa fa-star text-warning"></i>
+                  <i class="fa fa-star text-warning"></i>
+                  <i class="fa fa-star text-warning"></i>
+                </div>
+              </div>
+            </div>
+            <p class="mb-0">"MaidFinder has been a lifesaver! Maria is absolutely wonderful with my children and keeps the house spotless. The booking process was so easy and the support team is fantastic. Highly recommended!"</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-6 mb-4">
+        <div class="featured-testimonial card border-0 shadow-lg rounded-4">
+          <div class="card-body p-4">
+            <div class="d-flex align-items-center mb-3">
+              <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=60&h=60&fit=crop&crop=face" 
+                   alt="Ahmed Hassan" 
+                   class="rounded-circle me-3" 
+                   style="width: 60px; height: 60px; object-fit: cover;">
+              <div>
+                <h6 class="mb-1 fw-semibold">Ahmed Hassan</h6>
+                <small class="text-muted">Abu Dhabi</small>
+              </div>
+              <div class="ms-auto">
+                <div class="rating">
+                  <i class="fa fa-star text-warning"></i>
+                  <i class="fa fa-star text-warning"></i>
+                  <i class="fa fa-star text-warning"></i>
+                  <i class="fa fa-star text-warning"></i>
+                  <i class="fa fa-star text-warning"></i>
+                </div>
+              </div>
+            </div>
+            <p class="mb-0">"Excellent service! Priya is an amazing cook and very professional. The whole family loves her cooking and she's become like part of our family. The quality of service is outstanding!"</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA Section -->
+<section class="py-5 bg-primary text-white">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-8 mx-auto text-center">
+        <h2 class="display-5 fw-bold mb-3">Join Our Happy Customers</h2>
+        <p class="lead mb-4">Experience the same quality service that has made our customers so satisfied</p>
+        <a routerLink="/search" class="btn btn-light btn-lg me-3">Find Your Perfect Maid</a>
+        <a routerLink="/register" class="btn btn-outline-light btn-lg">Sign Up Now</a>
+      </div>
+    </div>
+  </div>
+</section>
+

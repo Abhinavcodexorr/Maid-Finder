@@ -1,0 +1,163 @@
+<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-lg">
+  <div class="container">
+    <a class="navbar-brand fw-bold text-primary" routerLink="/">
+      <i class="fa fa-home me-2"></i>MaidFinder
+    </a>
+    
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav me-auto">
+        <li class="nav-item">
+          <a class="nav-link" routerLink="/" routerLinkActive="active">Home</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" routerLink="/search" routerLinkActive="active">Find Maids</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" routerLink="/subscriptions" routerLinkActive="active">Subscriptions</a>
+        </li>
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">Services</a>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" routerLink="/services">Our Services</a></li>
+            <li><a class="dropdown-item" routerLink="/how-it-works">How It Works</a></li>
+            <li><a class="dropdown-item" routerLink="/pricing">Pricing</a></li>
+          </ul>
+        </li>
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">About</a>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" routerLink="/about">About MaidFinder</a></li>
+            <li><a class="dropdown-item" routerLink="/testimonials">Customer Reviews</a></li>
+            <li><a class="dropdown-item" routerLink="/blog">Blog</a></li>
+            <li><a class="dropdown-item" routerLink="/faqs">FAQ's</a></li>
+          </ul>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" routerLink="/contact" routerLinkActive="active">Contact</a>
+        </li>
+      </ul>
+      
+      <ul class="navbar-nav">
+        <li class="nav-item">
+          <a class="nav-link position-relative" routerLink="/favorites">
+            <i class="fa fa-heart me-1"></i>Favorites
+            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" 
+                  style="font-size: 0.6rem;" 
+                  *ngIf="favoriteCount > 0">
+              {{ favoriteCount }}
+            </span>
+          </a>
+        </li>
+        <ng-container *ngIf="!currentUser; else userMenu">
+          <li class="nav-item">
+            <a class="nav-link" routerLink="/login">Login</a>
+          </li>
+          <li class="nav-item">
+            <a class="btn btn-primary ms-2" routerLink="/register">Sign Up</a>
+          </li>
+        </ng-container>
+        
+        <ng-template #userMenu>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+              <i class="fa fa-user me-1"></i>{{ currentUser?.name }}
+            </a>
+            <ul class="dropdown-menu">
+              <li><a class="dropdown-item" routerLink="/profile/dashboard">Dashboard</a></li>
+              <li><a class="dropdown-item" routerLink="/profile">Profile</a></li>
+              <li><a class="dropdown-item" routerLink="/bookings">My Bookings</a></li>
+              <li><a class="dropdown-item" routerLink="/subscriptions">Subscriptions</a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item" (click)="logout()">Logout</a></li>
+            </ul>
+          </li>
+        </ng-template>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<main>
+  <app-breadcrumb></app-breadcrumb>
+  <router-outlet></router-outlet>
+</main>
+
+<app-back-to-top></app-back-to-top>
+
+<footer class="bg-dark text-light py-5 mt-5">
+  <div class="container">
+    <div class="row g-4">
+      <div class="col-md-3">
+        <h5 class="mb-3">Contact Us</h5>
+        <ul class="list-unstyled mb-4">
+          <li class="mb-2">052 189 3330</li>
+          <li class="mb-2">04 4427 686</li>
+        </ul>
+        <h6 class="mb-3">Stay Connected</h6>
+        <div class="d-flex gap-3">
+          <a href="#" class="text-light"><i class="fa fa-facebook fa-lg"></i></a>
+          <a href="#" class="text-light"><i class="fa fa-twitter fa-lg"></i></a>
+          <a href="#" class="text-light"><i class="fa fa-instagram fa-lg"></i></a>
+          <a href="#" class="text-light"><i class="fa fa-linkedin fa-lg"></i></a>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <h5 class="mb-3">About Us</h5>
+        <ul class="list-unstyled">
+          <li class="mb-2"><a routerLink="/about" class="text-light text-decoration-none">About MaidFinder</a></li>
+          <li class="mb-2"><a routerLink="/testimonials" class="text-light text-decoration-none">Customer Reviews</a></li>
+          <li class="mb-2"><a routerLink="/blog" class="text-light text-decoration-none">Blog</a></li>
+          <li class="mb-2"><a routerLink="/faqs" class="text-light text-decoration-none">FAQs</a></li>
+          <li class="mb-2"><a routerLink="/contact" class="text-light text-decoration-none">Contact Us</a></li>
+        </ul>
+      </div>
+      <div class="col-md-3">
+        <h5 class="mb-3">Services</h5>
+        <ul class="list-unstyled">
+          <li class="mb-2"><a routerLink="/services" class="text-light text-decoration-none">Our Services</a></li>
+          <li class="mb-2"><a routerLink="/how-it-works" class="text-light text-decoration-none">How It Works</a></li>
+          <li class="mb-2"><a routerLink="/pricing" class="text-light text-decoration-none">Pricing</a></li>
+          <li class="mb-2"><a routerLink="/subscriptions" class="text-light text-decoration-none">Subscriptions</a></li>
+        </ul>
+      </div>
+      <div class="col-md-3">
+        <h5 class="mb-3">Customers</h5>
+        <ul class="list-unstyled">
+          <li class="mb-2"><a routerLink="/login" class="text-light text-decoration-none">Customers Login</a></li>
+          <li class="mb-2"><a routerLink="/register" class="text-light text-decoration-none">Register Now</a></li>
+          <li class="mb-2"><a routerLink="/contact" class="text-light text-decoration-none">Customer Enquiries</a></li>
+          <li class="mb-2"><a routerLink="/subscriptions" class="text-light text-decoration-none">About Access Packages</a></li>
+          <li class="mb-2"><a href="#" class="text-light text-decoration-none">Term & Conditions</a></li>
+        </ul>
+      </div>
+      <div class="col-md-3">
+        <h5 class="mb-3">Search Maids</h5>
+        <ul class="list-unstyled">
+          <li class="mb-2"><a routerLink="/search" class="text-light text-decoration-none">Search all maids/ nannies</a></li>
+          <li class="mb-2"><a routerLink="/search" class="text-light text-decoration-none">Live in maids/ nannies</a></li>
+          <li class="mb-2"><a routerLink="/search" class="text-light text-decoration-none">Own visa Maids</a></li>
+          <li class="mb-2"><a routerLink="/search" class="text-light text-decoration-none">full time live out maids/ nannies</a></li>
+          <li class="mb-2"><a routerLink="/search" class="text-light text-decoration-none">Part time maids</a></li>
+          <li class="mb-2"><a routerLink="/search" class="text-light text-decoration-none">Monthly maids - Temporary maids</a></li>
+          <li class="mb-2"><a routerLink="/search" class="text-light text-decoration-none">Nannies for new Born</a></li>
+          <li class="mb-2"><a routerLink="/search" class="text-light text-decoration-none">Maids accepting salary from 1,300 aed</a></li>
+          <li class="mb-2"><a routerLink="/search" class="text-light text-decoration-none">Full time house maids</a></li>
+        </ul>
+        <h5 class="mb-3 mt-4">Maids</h5>
+        <ul class="list-unstyled">
+          <li class="mb-2"><a href="#" class="text-light text-decoration-none">Maids Login</a></li>
+          <li class="mb-2"><a href="#" class="text-light text-decoration-none">Maid Login</a></li>
+          <li class="mb-2"><a href="#" class="text-light text-decoration-none">Register as a Maid</a></li>
+        </ul>
+      </div>
+    </div>
+    <hr class="my-4">
+    <div class="text-center">
+      <p>&copy; 2024 MaidFinder. All rights reserved.</p>
+    </div>
+  </div>
+</footer>

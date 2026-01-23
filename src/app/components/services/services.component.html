@@ -1,0 +1,218 @@
+<!-- Services Header -->
+<section class="services-header bg-primary text-white py-5">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-8 mx-auto text-center">
+        <h1 class="display-4 fw-bold mb-3">Our Services</h1>
+        <p class="lead mb-4">Comprehensive domestic services tailored to your family's needs</p>
+        <div class="row text-center">
+          <div class="col-md-3 mb-3">
+            <div class="stat-item">
+              <h3 class="text-warning fw-bold mb-0">8+</h3>
+              <small class="text-white-50">Service Categories</small>
+            </div>
+          </div>
+          <div class="col-md-3 mb-3">
+            <div class="stat-item">
+              <h3 class="text-warning fw-bold mb-0">100+</h3>
+              <small class="text-white-50">Trained Professionals</small>
+            </div>
+          </div>
+          <div class="col-md-3 mb-3">
+            <div class="stat-item">
+              <h3 class="text-warning fw-bold mb-0">24/7</h3>
+              <small class="text-white-50">Available Support</small>
+            </div>
+          </div>
+          <div class="col-md-3 mb-3">
+            <div class="stat-item">
+              <h3 class="text-warning fw-bold mb-0">100%</h3>
+              <small class="text-white-50">Satisfaction Guaranteed</small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Service Categories Filter -->
+<section class="py-4 bg-light">
+  <div class="container">
+    <div class="row">
+      <div class="col-12">
+        <div class="d-flex flex-wrap justify-content-center gap-2">
+          <button 
+            *ngFor="let category of categories" 
+            class="btn"
+            [class.btn-primary]="selectedCategory === category"
+            [class.btn-outline-primary]="selectedCategory !== category"
+            (click)="selectCategory(category)">
+            {{ category === 'all' ? 'All Services' : category }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Services Grid -->
+<section class="py-5">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-4 col-md-6 mb-4" *ngFor="let service of filteredServices">
+        <div class="service-card card h-100 shadow-sm border-0 rounded-4 overflow-hidden">
+          <div class="card-body p-4">
+            <div class="text-center mb-4">
+              <div class="service-icon bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3">
+                <i class="fa" [class]="service.icon + ' fa-2x'"></i>
+              </div>
+              <h4 class="card-title mb-2">{{ service.name }}</h4>
+              <p class="text-muted">{{ service.description }}</p>
+            </div>
+            
+            <div class="service-features mb-4">
+              <h6 class="fw-semibold mb-3">What's Included:</h6>
+              <ul class="list-unstyled">
+                <li *ngFor="let feature of service.features" class="mb-2">
+                  <i class="fa fa-check text-success me-2"></i>{{ feature }}
+                </li>
+              </ul>
+            </div>
+            
+            <div class="service-details mb-4">
+              <div class="row text-center">
+                <div class="col-6">
+                  <div class="detail-item">
+                    <i class="fa fa-money-bill-wave text-primary mb-2"></i>
+                    <h6 class="mb-1">{{ service.priceRange }}</h6>
+                    <small class="text-muted">Price Range</small>
+                  </div>
+                </div>
+                <div class="col-6">
+                  <div class="detail-item">
+                    <i class="fa fa-clock text-primary mb-2"></i>
+                    <h6 class="mb-1">{{ service.duration }}</h6>
+                    <small class="text-muted">Duration</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="text-center">
+              <button class="btn btn-primary btn-lg w-100 rounded-pill">
+                <i class="fa fa-calendar-plus me-2"></i>Book This Service
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Why Choose Our Services -->
+<section class="py-5 bg-light">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-8 mx-auto text-center mb-5">
+        <h2 class="display-5 fw-bold mb-3">Why Choose Our Services?</h2>
+        <p class="lead text-muted">We provide exceptional domestic services with unmatched quality and reliability</p>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-4 mb-4">
+        <div class="text-center">
+          <div class="feature-icon bg-success text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3">
+            <i class="fa fa-shield-alt fa-2x"></i>
+          </div>
+          <h4>Verified Professionals</h4>
+          <p class="text-muted">All our service providers undergo thorough background checks and verification processes.</p>
+        </div>
+      </div>
+      <div class="col-md-4 mb-4">
+        <div class="text-center">
+          <div class="feature-icon bg-warning text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3">
+            <i class="fa fa-star fa-2x"></i>
+          </div>
+          <h4>Quality Assured</h4>
+          <p class="text-muted">We maintain high standards with regular training and quality assessments.</p>
+        </div>
+      </div>
+      <div class="col-md-4 mb-4">
+        <div class="text-center">
+          <div class="feature-icon bg-info text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3">
+            <i class="fa fa-headset fa-2x"></i>
+          </div>
+          <h4>24/7 Support</h4>
+          <p class="text-muted">Round-the-clock customer support to address any concerns or requests.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Service Process -->
+<section class="py-5">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-8 mx-auto text-center mb-5">
+        <h2 class="display-5 fw-bold mb-3">How Our Services Work</h2>
+        <p class="lead text-muted">Simple steps to get the domestic help you need</p>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-3 mb-4">
+        <div class="text-center">
+          <div class="step-number bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3">
+            <span class="fw-bold fs-4">1</span>
+          </div>
+          <h4>Choose Service</h4>
+          <p class="text-muted">Select the service you need from our comprehensive range of domestic services.</p>
+        </div>
+      </div>
+      <div class="col-md-3 mb-4">
+        <div class="text-center">
+          <div class="step-number bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3">
+            <span class="fw-bold fs-4">2</span>
+          </div>
+          <h4>Book & Schedule</h4>
+          <p class="text-muted">Book your preferred time slot and provide any specific requirements.</p>
+        </div>
+      </div>
+      <div class="col-md-3 mb-4">
+        <div class="text-center">
+          <div class="step-number bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3">
+            <span class="fw-bold fs-4">3</span>
+          </div>
+          <h4>Service Delivery</h4>
+          <p class="text-muted">Our trained professionals arrive on time and deliver exceptional service.</p>
+        </div>
+      </div>
+      <div class="col-md-3 mb-4">
+        <div class="text-center">
+          <div class="step-number bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3">
+            <span class="fw-bold fs-4">4</span>
+          </div>
+          <h4>Quality Check</h4>
+          <p class="text-muted">We ensure quality standards are met and gather your feedback for continuous improvement.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA Section -->
+<section class="py-5 bg-primary text-white">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-8 mx-auto text-center">
+        <h2 class="display-5 fw-bold mb-3">Ready to Get Started?</h2>
+        <p class="lead mb-4">Book your first service today and experience the difference professional domestic help can make.</p>
+        <a routerLink="/search" class="btn btn-light btn-lg me-3">Find a Professional</a>
+        <a routerLink="/contact" class="btn btn-outline-light btn-lg">Contact Us</a>
+      </div>
+    </div>
+  </div>
+</section>
+

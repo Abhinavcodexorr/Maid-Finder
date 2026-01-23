@@ -1,0 +1,235 @@
+<div class="about-page">
+  <!-- Hero Section -->
+  <div class="about-hero bg-primary text-white py-5">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-8 mx-auto text-center">
+          <h1 class="display-4 fw-bold mb-3">About MaidFinder</h1>
+          <p class="lead">Connecting families with trusted domestic helpers across the UAE since 2020</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mission Section -->
+  <div class="container py-5">
+    <div class="row">
+      <div class="col-lg-8 mx-auto text-center mb-5">
+        <h2 class="display-5 fw-bold mb-4">Our Mission</h2>
+        <p class="lead text-muted">
+          At MaidFinder, we believe that every family deserves access to reliable, trustworthy domestic help. 
+          Our platform bridges the gap between families seeking quality domestic assistance and skilled, 
+          verified domestic helpers looking for meaningful employment opportunities.
+        </p>
+      </div>
+    </div>
+
+    <!-- Stats Section -->
+    <div class="row mb-5">
+      <div class="col-lg-8 mx-auto">
+        <div class="row text-center">
+          <div class="col-md-3 mb-4" *ngFor="let stat of stats">
+            <div class="stat-item">
+              <h3 class="display-6 text-primary fw-bold">{{ stat.number }}</h3>
+              <p class="text-muted">{{ stat.label }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Values Section -->
+    <div class="row mb-5">
+      <div class="col-lg-8 mx-auto">
+        <h2 class="text-center mb-4">Our Values</h2>
+        <div class="row">
+          <div class="col-md-4 mb-4">
+            <div class="text-center">
+              <i class="fa fa-shield-alt fa-3x text-primary mb-3"></i>
+              <h5>Safety First</h5>
+              <p class="text-muted">We prioritize the safety and security of both families and domestic helpers through rigorous verification processes.</p>
+            </div>
+          </div>
+          <div class="col-md-4 mb-4">
+            <div class="text-center">
+              <i class="fa fa-handshake fa-3x text-primary mb-3"></i>
+              <h5>Trust & Transparency</h5>
+              <p class="text-muted">We foster trust through transparent processes, genuine reviews, and honest communication.</p>
+            </div>
+          </div>
+          <div class="col-md-4 mb-4">
+            <div class="text-center">
+              <i class="fa fa-heart fa-3x text-primary mb-3"></i>
+              <h5>Quality Service</h5>
+              <p class="text-muted">We are committed to providing exceptional service and ensuring customer satisfaction in every interaction.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Team Section -->
+    <div class="row mb-5">
+      <div class="col-lg-8 mx-auto">
+        <h2 class="text-center mb-4">Meet Our Team</h2>
+        <div class="row">
+          <div class="col-md-4 mb-4" *ngFor="let member of teamMembers">
+            <div class="card h-100 text-center">
+              <div class="card-body">
+                <img [src]="member.image" [alt]="member.name" class="rounded-circle mb-3" style="width: 120px; height: 120px; object-fit: cover;">
+                <h5 class="card-title">{{ member.name }}</h5>
+                <p class="text-primary fw-semibold">{{ member.position }}</p>
+                <p class="text-muted">{{ member.bio }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Our Story Section -->
+    <div class="row mb-5">
+      <div class="col-lg-8 mx-auto">
+        <h2 class="text-center mb-4">Our Story</h2>
+        <div class="row align-items-center">
+          <div class="col-md-6">
+            <h4>Founded in 2020</h4>
+            <p class="text-muted">
+              MaidFinder was born out of a simple need: to make finding reliable domestic help easier and safer for families in the UAE. 
+              Our founders, having experienced the challenges of finding trustworthy domestic helpers, decided to create a platform 
+              that would bridge this gap with technology, transparency, and trust.
+            </p>
+            <p class="text-muted">
+              Today, we're proud to be the leading platform connecting families with verified domestic helpers across all seven emirates, 
+              with over 1,250+ verified professionals and 3,200+ happy families.
+            </p>
+          </div>
+          <div class="col-md-6">
+            <img src="https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=500&h=400&fit=crop" 
+                 alt="Our Story" class="img-fluid rounded-4 shadow">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Process Section -->
+    <div class="row mb-5">
+      <div class="col-lg-8 mx-auto">
+        <h2 class="text-center mb-4">How We Ensure Quality</h2>
+        <div class="row">
+          <div class="col-md-3 mb-4">
+            <div class="text-center">
+              <div class="process-step bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                <i class="fa fa-search fa-2x"></i>
+              </div>
+              <h6>1. Application</h6>
+              <p class="text-muted small">Comprehensive application with detailed information</p>
+            </div>
+          </div>
+          <div class="col-md-3 mb-4">
+            <div class="text-center">
+              <div class="process-step bg-success text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                <i class="fa fa-shield-alt fa-2x"></i>
+              </div>
+              <h6>2. Verification</h6>
+              <p class="text-muted small">Background checks and document verification</p>
+            </div>
+          </div>
+          <div class="col-md-3 mb-4">
+            <div class="text-center">
+              <div class="process-step bg-warning text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                <i class="fa fa-graduation-cap fa-2x"></i>
+              </div>
+              <h6>3. Training</h6>
+              <p class="text-muted small">Professional training and skill assessment</p>
+            </div>
+          </div>
+          <div class="col-md-3 mb-4">
+            <div class="text-center">
+              <div class="process-step bg-info text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                <i class="fa fa-check-circle fa-2x"></i>
+              </div>
+              <h6>4. Approval</h6>
+              <p class="text-muted small">Final approval and platform onboarding</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Awards & Recognition -->
+    <div class="row mb-5">
+      <div class="col-lg-8 mx-auto">
+        <h2 class="text-center mb-4">Awards & Recognition</h2>
+        <div class="row">
+          <div class="col-md-4 mb-4">
+            <div class="award-card card h-100 text-center border-0 shadow-sm">
+              <div class="card-body p-4">
+                <i class="fa fa-trophy fa-3x text-warning mb-3"></i>
+                <h5>Best Domestic Service Platform 2023</h5>
+                <p class="text-muted">UAE Business Awards</p>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4 mb-4">
+            <div class="award-card card h-100 text-center border-0 shadow-sm">
+              <div class="card-body p-4">
+                <i class="fa fa-star fa-3x text-warning mb-3"></i>
+                <h5>Excellence in Customer Service</h5>
+                <p class="text-muted">Dubai Chamber of Commerce</p>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4 mb-4">
+            <div class="award-card card h-100 text-center border-0 shadow-sm">
+              <div class="card-body p-4">
+                <i class="fa fa-medal fa-3x text-warning mb-3"></i>
+                <h5>Innovation in Technology</h5>
+                <p class="text-muted">GITEX Technology Week</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Contact Section -->
+    <div class="row">
+      <div class="col-lg-8 mx-auto">
+        <div class="card bg-light">
+          <div class="card-body text-center p-5">
+            <h3 class="mb-4">Get in Touch</h3>
+            <p class="text-muted mb-4">
+              Have questions or need assistance? We're here to help you find the perfect domestic helper for your family.
+            </p>
+            <div class="row">
+              <div class="col-md-4 mb-3">
+                <i class="fa fa-phone fa-2x text-primary mb-2"></i>
+                <h6>Phone</h6>
+                <p class="text-muted">+971 4 123 4567</p>
+              </div>
+              <div class="col-md-4 mb-3">
+                <i class="fa fa-envelope fa-2x text-primary mb-2"></i>
+                <h6>Email</h6>
+                <p class="text-muted">info&#64;maidfinder.ae</p>
+              </div>
+              <div class="col-md-4 mb-3">
+                <i class="fa fa-map-marker-alt fa-2x text-primary mb-2"></i>
+                <h6>Address</h6>
+                <p class="text-muted">Dubai, UAE</p>
+              </div>
+            </div>
+            <div class="d-flex flex-wrap justify-content-center gap-3">
+              <a href="mailto:info&#64;maidfinder.ae" class="btn btn-primary btn-lg">
+                <i class="fa fa-envelope me-2"></i>Contact Us
+              </a>
+              <a routerLink="/contact" class="btn btn-outline-primary btn-lg">
+                <i class="fa fa-comments me-2"></i>Send Message
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

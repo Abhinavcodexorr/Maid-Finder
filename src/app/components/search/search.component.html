@@ -1,0 +1,284 @@
+<div class="search-page">
+  <!-- Search Header -->
+  <div class="search-header">
+    <div class="container">
+      <div class="row align-items-center min-vh-50">
+        <div class="col-lg-8 mx-auto text-center">
+          <h1 class="display-4 fw-bold mb-4 text-white">Find Your Perfect Maid</h1>
+          <p class="lead text-white-50 mb-4">Browse through verified domestic helpers and find the perfect match for your family</p>
+          
+          <!-- Quick Search Bar -->
+          <div class="quick-search-bar">
+            <div class="row g-3">
+              <div class="col-md-4">
+                <select class="form-select form-select-lg" formControlName="nationality">
+                  <option value="">All Nationalities</option>
+                  <option *ngFor="let nationality of availableNationalities" [value]="nationality">
+                    {{ nationality }}
+                  </option>
+                </select>
+              </div>
+              <div class="col-md-4">
+                <select class="form-select form-select-lg" formControlName="skills">
+                  <option value="">All Skills</option>
+                  <option *ngFor="let skill of availableSkills" [value]="skill">
+                    {{ skill }}
+                  </option>
+                </select>
+              </div>
+              <div class="col-md-4">
+                <select class="form-select form-select-lg" formControlName="location">
+                  <option value="">All Locations</option>
+                  <option value="Dubai">Dubai</option>
+                  <option value="Abu Dhabi">Abu Dhabi</option>
+                  <option value="Sharjah">Sharjah</option>
+                  <option value="Ajman">Ajman</option>
+                </select>
+              </div>
+            </div>
+            <div class="text-center mt-4">
+              <button class="btn btn-warning btn-lg px-5" (click)="searchMaids()">
+                <i class="fa fa-search me-2"></i>Search Maids
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container py-4">
+    <div class="row">
+      <!-- Search Filters Sidebar -->
+      <div class="col-lg-3 mb-4">
+        <div class="card shadow-sm">
+          <div class="card-header bg-primary text-white">
+            <h5 class="mb-0"><i class="fa fa-filter me-2"></i>Search Filters</h5>
+          </div>
+          <div class="card-body">
+            <form [formGroup]="searchForm">
+              <!-- Nationality Filter -->
+              <div class="mb-3">
+                <label class="form-label fw-semibold">Nationality</label>
+                <select formControlName="nationality" class="form-select">
+                  <option value="">All Nationalities</option>
+                  <option *ngFor="let nationality of availableNationalities" [value]="nationality">
+                    {{ nationality }}
+                  </option>
+                </select>
+              </div>
+
+              <!-- Skills Filter -->
+              <div class="mb-3">
+                <label class="form-label fw-semibold">Skills</label>
+                <select formControlName="skills" class="form-select">
+                  <option value="">All Skills</option>
+                  <option *ngFor="let skill of availableSkills" [value]="skill">
+                    {{ skill }}
+                  </option>
+                </select>
+              </div>
+
+              <!-- Experience Filter -->
+              <div class="mb-3">
+                <label class="form-label fw-semibold">Minimum Experience</label>
+                <select formControlName="minExperience" class="form-select">
+                  <option value="">Any Experience</option>
+                  <option value="1">1+ years</option>
+                  <option value="2">2+ years</option>
+                  <option value="3">3+ years</option>
+                  <option value="5">5+ years</option>
+                  <option value="10">10+ years</option>
+                </select>
+              </div>
+
+              <!-- Hourly Rate Filter -->
+              <div class="mb-3">
+                <label class="form-label fw-semibold">Max Hourly Rate (AED)</label>
+                <input type="number" formControlName="maxHourlyRate" class="form-control" placeholder="e.g., 50">
+              </div>
+
+              <!-- Location Filter -->
+              <div class="mb-3">
+                <label class="form-label fw-semibold">Location</label>
+                <input type="text" formControlName="location" class="form-control" placeholder="City or Area">
+              </div>
+
+              <!-- Availability Filter -->
+              <div class="mb-3">
+                <label class="form-label fw-semibold">Availability</label>
+                <select formControlName="availability" class="form-select">
+                  <option value="">All</option>
+                  <option value="available">Available Now</option>
+                  <option value="busy">Currently Busy</option>
+                </select>
+              </div>
+
+              <!-- Languages Filter -->
+              <div class="mb-3">
+                <label class="form-label fw-semibold">Languages</label>
+                <select formControlName="languages" class="form-select">
+                  <option value="">All Languages</option>
+                  <option *ngFor="let language of availableLanguages" [value]="language">
+                    {{ language }}
+                  </option>
+                </select>
+              </div>
+
+              <!-- Verification Filter -->
+              <div class="mb-3">
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" formControlName="isVerified" id="verified">
+                  <label class="form-check-label" for="verified">
+                    Verified Only
+                  </label>
+                </div>
+              </div>
+
+              <!-- Rating Filter -->
+              <div class="mb-3">
+                <label class="form-label fw-semibold">Minimum Rating</label>
+                <select formControlName="minRating" class="form-select">
+                  <option value="">Any Rating</option>
+                  <option value="3">3+ Stars</option>
+                  <option value="4">4+ Stars</option>
+                  <option value="4.5">4.5+ Stars</option>
+                </select>
+              </div>
+
+              <!-- Clear Filters Button -->
+              <button type="button" class="btn btn-outline-secondary w-100" (click)="clearFilters()">
+                <i class="fa fa-refresh me-2"></i>Clear Filters
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- Search Results -->
+      <div class="col-lg-9">
+        <!-- Results Header -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <div>
+            <h4 class="mb-1">Search Results</h4>
+            <p class="text-muted mb-0">{{ totalItems }} maids found</p>
+          </div>
+          <div class="d-flex gap-2">
+            <select class="form-select" style="width: auto;">
+              <option>Sort by: Relevance</option>
+              <option>Sort by: Rating</option>
+              <option>Sort by: Price (Low to High)</option>
+              <option>Sort by: Price (High to Low)</option>
+              <option>Sort by: Experience</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Loading Spinner -->
+        <div *ngIf="isLoading" class="text-center py-5">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+          <p class="mt-3 text-muted">Searching for maids...</p>
+        </div>
+
+        <!-- No Results -->
+        <div *ngIf="!isLoading && filteredMaids.length === 0" class="text-center py-5">
+          <i class="fa fa-search fa-3x text-muted mb-3"></i>
+          <h4>No maids found</h4>
+          <p class="text-muted">Try adjusting your search filters to find more results.</p>
+          <button class="btn btn-primary" (click)="clearFilters()">Clear Filters</button>
+        </div>
+
+        <!-- Maid Cards -->
+        <div *ngIf="!isLoading && filteredMaids.length > 0" class="row">
+          <div class="col-md-6 col-lg-4 mb-4" *ngFor="let maid of paginatedMaids">
+            <div class="maid-card card h-100 shadow-sm border-0 rounded-4 overflow-hidden">
+              <div class="card-img-top position-relative">
+                <img [src]="maid.profileImage || 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=300&h=300&fit=crop&crop=face'" 
+                     [alt]="maid.firstName + ' ' + maid.lastName" 
+                     class="card-img-top" 
+                     style="height: 250px; object-fit: cover;">
+                <div class="position-absolute top-0 end-0 m-3">
+                  <div class="d-flex flex-column gap-2">
+                    <span class="badge bg-success px-3 py-2 rounded-pill" *ngIf="maid.isVerified">
+                      <i class="fa fa-check-circle me-1"></i>Verified
+                    </span>
+                    <button 
+                      type="button" 
+                      class="btn btn-light btn-sm rounded-circle p-2 shadow-sm"
+                      (click)="toggleFavorite(maid.id)"
+                      [class.btn-warning]="isFavorite(maid.id)"
+                      [class.btn-light]="!isFavorite(maid.id)"
+                      title="{{ isFavorite(maid.id) ? 'Remove from favorites' : 'Add to favorites' }}">
+                      <i class="fa" [class.fa-heart]="isFavorite(maid.id)" [class.fa-heart-o]="!isFavorite(maid.id)"></i>
+                    </button>
+                  </div>
+                </div>
+                <div class="position-absolute bottom-0 start-0 m-3">
+                  <span class="badge bg-primary px-3 py-2 rounded-pill">{{ maid.availability | titlecase }}</span>
+                </div>
+                <div class="position-absolute top-0 start-0 m-3">
+                  <span class="badge bg-warning text-dark px-3 py-2 rounded-pill">
+                    <i class="fa fa-star me-1"></i>{{ maid.rating }}
+                  </span>
+                </div>
+              </div>
+              <div class="card-body d-flex flex-column p-4">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                  <h5 class="card-title mb-0">{{ maid.firstName }} {{ maid.lastName }}</h5>
+                  <div class="rating">
+                    <i class="fa fa-star text-warning" *ngFor="let star of [1,2,3,4,5]"></i>
+                    <span class="ms-1 text-muted small">({{ maid.totalReviews }})</span>
+                  </div>
+                </div>
+                <p class="text-muted mb-3">{{ maid.nationality }} • {{ maid.experience }} years experience</p>
+                <div class="mb-3">
+                  <span class="badge bg-light text-dark me-1 mb-1 px-2 py-1" *ngFor="let skill of maid.skills.slice(0, 3)">
+                    {{ skill }}
+                  </span>
+                </div>
+                <div class="location-info mb-3">
+                  <i class="fa fa-map-marker-alt text-muted me-1"></i>
+                  <small class="text-muted">{{ maid.location.city }}, {{ maid.location.country }}</small>
+                </div>
+                <div class="mt-auto">
+                  <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                      <span class="h4 text-primary mb-0">AED {{ maid.hourlyRate }}</span>
+                      <small class="text-muted d-block">per hour</small>
+                    </div>
+                    <a [routerLink]="['/maid', maid.id]" class="btn btn-primary rounded-pill px-4">
+                      <i class="fa fa-eye me-1"></i>View Profile
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pagination -->
+        <div *ngIf="!isLoading && totalPages > 1" class="d-flex justify-content-center mt-4">
+          <nav aria-label="Page navigation">
+            <ul class="pagination">
+              <li class="page-item" [class.disabled]="currentPage === 1">
+                <a class="page-link" href="#" (click)="onPageChange(currentPage - 1); $event.preventDefault()" aria-label="Previous">
+                  <span aria-hidden="true">&laquo;</span>
+                </a>
+              </li>
+              <li class="page-item" *ngFor="let page of getPageNumbers()" [class.active]="page === currentPage">
+                <a class="page-link" href="#" (click)="onPageChange(page); $event.preventDefault()">{{ page }}</a>
+              </li>
+              <li class="page-item" [class.disabled]="currentPage === totalPages">
+                <a class="page-link" href="#" (click)="onPageChange(currentPage + 1); $event.preventDefault()" aria-label="Next">
+                  <span aria-hidden="true">&raquo;</span>
+                </a>
+              </li>
+            </ul>
+          </nav>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,71 @@
+.pricing-page {
+  .hero-section {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 300px;
+    display: flex;
+    align-items: center;
+  }
+
+  .pricing-card {
+    border-radius: 1rem;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    position: relative;
+
+    &:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+    }
+
+    .card-header {
+      border-radius: 1rem 1rem 0 0;
+    }
+
+    .price {
+      .h2 {
+        font-size: 3rem;
+        font-weight: 700;
+      }
+    }
+  }
+
+  .table {
+    border-radius: 0.5rem;
+    overflow: hidden;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+
+    th {
+      background-color: #f8f9fa;
+      font-weight: 600;
+      border: none;
+    }
+
+    td {
+      border-color: #e9ecef;
+      vertical-align: middle;
+    }
+  }
+
+  .accordion {
+    .accordion-item {
+      border: 1px solid #e9ecef;
+      border-radius: 0.5rem;
+      margin-bottom: 1rem;
+
+      .accordion-button {
+        border-radius: 0.5rem;
+        font-weight: 600;
+
+        &:not(.collapsed) {
+          background-color: #e7f3ff;
+          color: #0d6efd;
+        }
+      }
+    }
+  }
+
+  .cta-section {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  }
+}
+
+
