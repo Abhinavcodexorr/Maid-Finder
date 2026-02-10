@@ -4,13 +4,14 @@ A modern web application for connecting families with trusted domestic helpers i
 
 ## Features
 
-- **User Authentication**: Secure login and registration system
+- **User Authentication**: Secure login and registration system for both customers and maids
+- **Separate Authentication Flows**: Distinct login/register pages for customers and maids
 - **Maid Search & Filtering**: Advanced search with multiple filters
 - **Profile Management**: User and maid profile management
 - **Subscription System**: Premium access to contact maid profiles
 - **Booking System**: Direct booking and communication
 - **Responsive Design**: Mobile-first responsive design
-- **Modern UI**: Clean and intuitive user interface
+- **Modern UI**: Clean and intuitive user interface with enhanced UX
 
 ## Technology Stack
 
@@ -29,8 +30,10 @@ src/
 ├── app/
 │   ├── components/
 │   │   ├── auth/
-│   │   │   ├── login/
-│   │   │   └── register/
+│   │   │   ├── login/          # Customer login
+│   │   │   ├── maid-login/     # Maid login
+│   │   │   ├── register/       # Customer registration
+│   │   │   └── maid-register/  # Maid registration
 │   │   ├── home/
 │   │   ├── search/
 │   │   ├── profile/
@@ -70,8 +73,8 @@ src/
 
 1. **Clone the repository**
    ```bash
-   git clone <repository-url>
-   cd maidfinder-clone
+   git clone https://github.com/Abhinavcodexorr/Maid-Finder.git
+   cd Maid-Finder
    ```
 
 2. **Install dependencies**
@@ -98,8 +101,10 @@ The build artifacts will be stored in the `dist/` directory.
 ## Key Components
 
 ### Authentication
-- **Login Component**: User authentication with email/password
-- **Register Component**: New user registration with role selection
+- **Customer Login** (`/login`): Customer authentication with email/password and Google Sign-In
+- **Maid Login** (`/maid-login`): Maid authentication with email/password and Google Sign-In
+- **Customer Register** (`/register`): New customer registration
+- **Maid Register** (`/maid-register`): New maid registration with detailed profile information
 - **Auth Guard**: Route protection for authenticated users
 
 ### Maid Management
@@ -117,7 +122,7 @@ The application is designed to work with a RESTful API. Update the API URLs in t
 
 ```typescript
 // Example: src/services/auth.service.ts
-private readonly API_URL = 'http://localhost:3000/api';
+private readonly API_URL = 'https://themdbgroup.in:3001/api';
 ```
 
 ## Styling
@@ -130,13 +135,23 @@ The application uses:
 
 ## Environment Configuration
 
-Create environment files for different configurations:
+Environment files are configured for different environments:
 
 ```typescript
-// src/environments/environment.ts
+// src/environments/environment.ts (Development)
 export const environment = {
   production: false,
-  apiUrl: 'http://localhost:3000/api'
+  apiUrl: 'https://themdbgroup.in:3001/api',
+  appName: 'MaidFinder',
+  version: '1.0.0'
+};
+
+// src/environments/environment.prod.ts (Production)
+export const environment = {
+  production: true,
+  apiUrl: 'https://themdbgroup.in:3001/api',
+  appName: 'MaidFinder',
+  version: '1.0.0'
 };
 ```
 
@@ -147,12 +162,34 @@ export const environment = {
 npm run build --prod
 ```
 
-### Deploy to Static Hosting
-The built application can be deployed to:
-- **Vercel**: `vercel --prod`
-- **Netlify**: Drag and drop the `dist/` folder
-- **GitHub Pages**: Use Angular CLI deployment
-- **AWS S3**: Upload the `dist/` folder contents
+### Deploy to Vercel
+The application is configured for Vercel deployment:
+
+1. Push code to GitHub
+2. Connect repository to Vercel
+3. Vercel will automatically deploy on every push
+
+Configuration files:
+- `vercel.json`: Vercel deployment configuration
+- `.vercelignore`: Files to exclude from deployment
+
+## Routes
+
+### Customer Routes
+- `/login` - Customer login page
+- `/register` - Customer registration page
+
+### Maid Routes
+- `/maid-login` - Maid login page
+- `/maid-register` - Maid registration page
+
+### Other Routes
+- `/home` - Home page
+- `/search` - Search maids
+- `/profile` - User profile (protected)
+- `/subscriptions` - Subscription plans
+- `/about` - About page
+- `/contact` - Contact page
 
 ## Contributing
 
@@ -174,6 +211,9 @@ For support and questions:
 
 ## Roadmap
 
+- [x] Separate customer and maid authentication flows
+- [x] Enhanced UI/UX with proper icons and routing
+- [x] Google Sign-In integration
 - [ ] Real-time chat functionality
 - [ ] Mobile app development
 - [ ] Advanced payment integration
