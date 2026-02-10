@@ -1,0 +1,350 @@
+<div class="auth-page">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-md-10 col-lg-8">
+        <div class="card shadow-lg border-0">
+          <div class="card-body p-5">
+            <div class="text-center mb-4">
+              <h2 class="fw-bold text-primary">
+                <i class="fa fa-user-plus me-2"></i>Register as a Maid
+              </h2>
+              <p class="text-muted">Create your profile and start finding work opportunities</p>
+            </div>
+
+            <!-- Error Message -->
+            <div *ngIf="errorMessage" class="alert alert-danger" role="alert">
+              <i class="fa fa-exclamation-triangle me-2"></i>{{ errorMessage }}
+            </div>
+
+            <form [formGroup]="maidRegisterForm" (ngSubmit)="onSubmit()">
+              <div class="row">
+                <!-- Full Name -->
+                <div class="col-md-6 mb-3">
+                  <label for="fullName" class="form-label">Full Name <span class="text-danger">*</span></label>
+                  <div class="input-group">
+                    <span class="input-group-text">
+                      <i class="fa fa-user"></i>
+                    </span>
+                    <input
+                      type="text"
+                      id="fullName"
+                      formControlName="fullName"
+                      class="form-control"
+                      [class.is-invalid]="getFieldError('fullName')"
+                      placeholder="Enter your full name">
+                  </div>
+                  <div class="invalid-feedback d-block" *ngIf="getFieldError('fullName')">
+                    {{ getFieldError('fullName') }}
+                  </div>
+                </div>
+
+                <!-- Gender -->
+                <div class="col-md-6 mb-3">
+                  <label for="gender" class="form-label">Gender <span class="text-danger">*</span></label>
+                  <div class="input-group">
+                    <span class="input-group-text">
+                      <i class="fa fa-venus-mars"></i>
+                    </span>
+                    <select
+                      id="gender"
+                      formControlName="gender"
+                      class="form-select"
+                      [class.is-invalid]="getFieldError('gender')">
+                      <option value="">Select Gender</option>
+                      <option value="female">Female</option>
+                      <option value="male">Male</option>
+                    </select>
+                  </div>
+                  <div class="invalid-feedback d-block" *ngIf="getFieldError('gender')">
+                    {{ getFieldError('gender') }}
+                  </div>
+                </div>
+              </div>
+
+              <div class="row">
+                <!-- Nationality -->
+                <div class="col-md-6 mb-3">
+                  <label for="nationality" class="form-label">Nationality <span class="text-danger">*</span></label>
+                  <div class="input-group">
+                    <span class="input-group-text">
+                      <i class="fa fa-globe"></i>
+                    </span>
+                    <input
+                      type="text"
+                      id="nationality"
+                      formControlName="nationality"
+                      class="form-control"
+                      [class.is-invalid]="getFieldError('nationality')"
+                      placeholder="Enter your nationality">
+                  </div>
+                  <div class="invalid-feedback d-block" *ngIf="getFieldError('nationality')">
+                    {{ getFieldError('nationality') }}
+                  </div>
+                </div>
+
+                <!-- Emirate -->
+                <div class="col-md-6 mb-3">
+                  <label for="emirate" class="form-label">Emirate <span class="text-danger">*</span></label>
+                  <div class="input-group">
+                    <span class="input-group-text">
+                      <i class="fa fa-map-marker"></i>
+                    </span>
+                    <select
+                      id="emirate"
+                      formControlName="emirate"
+                      class="form-select"
+                      [class.is-invalid]="getFieldError('emirate')">
+                      <option value="">Select Emirate</option>
+                      <option value="Abu Dhabi">Abu Dhabi</option>
+                      <option value="Dubai">Dubai</option>
+                      <option value="Sharjah">Sharjah</option>
+                      <option value="Ajman">Ajman</option>
+                      <option value="Umm Al Quwain">Umm Al Quwain</option>
+                      <option value="Ras Al Khaimah">Ras Al Khaimah</option>
+                      <option value="Fujairah">Fujairah</option>
+                    </select>
+                  </div>
+                  <div class="invalid-feedback d-block" *ngIf="getFieldError('emirate')">
+                    {{ getFieldError('emirate') }}
+                  </div>
+                </div>
+              </div>
+
+              <div class="row">
+                <!-- Visa Status -->
+                <div class="col-md-6 mb-3">
+                  <label for="visaStatus" class="form-label">Visa Status <span class="text-danger">*</span></label>
+                  <div class="input-group">
+                    <span class="input-group-text">
+                      <i class="fa fa-id-card"></i>
+                    </span>
+                    <select
+                      id="visaStatus"
+                      formControlName="visaStatus"
+                      class="form-select"
+                      [class.is-invalid]="getFieldError('visaStatus')">
+                      <option value="">Select Visa Status</option>
+                      <option value="Own Visa">Own Visa</option>
+                      <option value="Employer Visa">Employer Visa</option>
+                      <option value="Visit Visa">Visit Visa</option>
+                      <option value="No Visa">No Visa</option>
+                    </select>
+                  </div>
+                  <div class="invalid-feedback d-block" *ngIf="getFieldError('visaStatus')">
+                    {{ getFieldError('visaStatus') }}
+                  </div>
+                </div>
+
+                <!-- Visa Expiry Date -->
+                <div class="col-md-6 mb-3">
+                  <label for="visaExpiryDate" class="form-label">Visa Expiry Date <span class="text-danger">*</span></label>
+                  <div class="input-group">
+                    <span class="input-group-text">
+                      <i class="fa fa-calendar"></i>
+                    </span>
+                    <input
+                      type="date"
+                      id="visaExpiryDate"
+                      formControlName="visaExpiryDate"
+                      class="form-control"
+                      [class.is-invalid]="getFieldError('visaExpiryDate')">
+                  </div>
+                  <div class="invalid-feedback d-block" *ngIf="getFieldError('visaExpiryDate')">
+                    {{ getFieldError('visaExpiryDate') }}
+                  </div>
+                </div>
+              </div>
+
+              <div class="row">
+                <!-- Mobile Number -->
+                <div class="col-md-6 mb-3">
+                  <label for="mobileNumber" class="form-label">Mobile Number <span class="text-danger">*</span></label>
+                  <div class="input-group">
+                    <span class="input-group-text bg-light">+971</span>
+                    <input
+                      type="tel"
+                      id="mobileNumber"
+                      formControlName="mobileNumber"
+                      class="form-control"
+                      [class.is-invalid]="getFieldError('mobileNumber')"
+                      placeholder="50 123 4567"
+                      maxlength="9"
+                      (input)="formatMobileNumber($event)">
+                  </div>
+                  <small class="text-muted">Enter 9 digits without country code</small>
+                  <div class="invalid-feedback d-block" *ngIf="getFieldError('mobileNumber')">
+                    {{ getFieldError('mobileNumber') }}
+                  </div>
+                </div>
+
+                <!-- WhatsApp Number -->
+                <div class="col-md-6 mb-3">
+                  <label for="whatsappNumber" class="form-label">WhatsApp Number <span class="text-danger">*</span></label>
+                  <div class="input-group">
+                    <span class="input-group-text bg-light">+971</span>
+                    <select class="form-select" formControlName="whatsappEmirate" style="max-width: 140px;">
+                      <option value="4">04 (Dubai)</option>
+                      <option value="2">02 (Abu Dhabi)</option>
+                      <option value="6">06 (Sharjah)</option>
+                      <option value="3">03 (Ajman)</option>
+                      <option value="9">09 (Ras Al Khaimah)</option>
+                      <option value="7">07 (Fujairah)</option>
+                    </select>
+                    <input
+                      type="tel"
+                      id="whatsappNumber"
+                      formControlName="whatsappNumber"
+                      class="form-control"
+                      [class.is-invalid]="getFieldError('whatsappNumber')"
+                      placeholder="123 4567"
+                      maxlength="7"
+                      (input)="formatWhatsAppNumber($event)">
+                  </div>
+                  <small class="text-muted">Enter 7 digits</small>
+                  <div class="invalid-feedback d-block" *ngIf="getFieldError('whatsappNumber')">
+                    {{ getFieldError('whatsappNumber') }}
+                  </div>
+                </div>
+              </div>
+
+              <div class="row">
+                <!-- Email Address -->
+                <div class="col-md-6 mb-3">
+                  <label for="email" class="form-label">Email Address <span class="text-danger">*</span></label>
+                  <div class="input-group">
+                    <span class="input-group-text">
+                      <i class="fa fa-envelope"></i>
+                    </span>
+                    <input
+                      type="email"
+                      id="email"
+                      formControlName="email"
+                      class="form-control"
+                      [class.is-invalid]="getFieldError('email')"
+                      placeholder="your.email@example.com">
+                  </div>
+                  <div class="invalid-feedback d-block" *ngIf="getFieldError('email')">
+                    {{ getFieldError('email') }}
+                  </div>
+                </div>
+              </div>
+
+              <div class="row">
+                <!-- Password -->
+                <div class="col-md-6 mb-3">
+                  <label for="password" class="form-label">Password <span class="text-danger">*</span></label>
+                  <div class="input-group">
+                    <span class="input-group-text">
+                      <i class="fa fa-lock"></i>
+                    </span>
+                    <input
+                      [type]="showPassword ? 'text' : 'password'"
+                      id="password"
+                      formControlName="password"
+                      class="form-control"
+                      [class.is-invalid]="getFieldError('password')"
+                      placeholder="Create a password">
+                    <button
+                      type="button"
+                      class="btn btn-outline-secondary"
+                      (click)="togglePasswordVisibility()">
+                      <i class="fa" [class.fa-eye]="!showPassword" [class.fa-eye-slash]="showPassword"></i>
+                    </button>
+                  </div>
+                  <div class="invalid-feedback d-block" *ngIf="getFieldError('password')">
+                    {{ getFieldError('password') }}
+                  </div>
+                </div>
+
+                <!-- Confirm Password -->
+                <div class="col-md-6 mb-3">
+                  <label for="confirmPassword" class="form-label">Confirm Password <span class="text-danger">*</span></label>
+                  <div class="input-group">
+                    <span class="input-group-text">
+                      <i class="fa fa-lock"></i>
+                    </span>
+                    <input
+                      [type]="showConfirmPassword ? 'text' : 'password'"
+                      id="confirmPassword"
+                      formControlName="confirmPassword"
+                      class="form-control"
+                      [class.is-invalid]="getFieldError('confirmPassword')"
+                      placeholder="Confirm your password">
+                    <button
+                      type="button"
+                      class="btn btn-outline-secondary"
+                      (click)="toggleConfirmPasswordVisibility()">
+                      <i class="fa" [class.fa-eye]="!showConfirmPassword" [class.fa-eye-slash]="showConfirmPassword"></i>
+                    </button>
+                  </div>
+                  <div class="invalid-feedback d-block" *ngIf="getFieldError('confirmPassword')">
+                    {{ getFieldError('confirmPassword') }}
+                  </div>
+                </div>
+              </div>
+
+              <!-- Terms and Conditions -->
+              <div class="mb-4">
+                <div class="form-check">
+                  <input
+                    class="form-check-input"
+                    type="checkbox"
+                    id="agreeToTerms"
+                    formControlName="agreeToTerms"
+                    [class.is-invalid]="getFieldError('agreeToTerms')">
+                  <label class="form-check-label" for="agreeToTerms">
+                    I agree to the
+                    <a href="#" class="text-decoration-none">Terms of Service</a>
+                    and
+                    <a href="#" class="text-decoration-none">Privacy Policy</a>
+                  </label>
+                </div>
+                <div class="invalid-feedback d-block" *ngIf="getFieldError('agreeToTerms')">
+                  {{ getFieldError('agreeToTerms') }}
+                </div>
+              </div>
+
+              <!-- Submit Button -->
+              <button
+                type="submit"
+                class="btn btn-primary w-100 py-2 mb-3"
+                [disabled]="isLoading">
+                <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2"></span>
+                {{ isLoading ? 'Registering...' : 'Register as Maid' }}
+              </button>
+            </form>
+
+            <!-- Divider -->
+            <div class="text-center my-4">
+              <span class="text-muted">Already have a maid account?</span>
+            </div>
+
+            <!-- Login Link -->
+            <div class="text-center mb-3">
+              <a routerLink="/maid-login" class="btn btn-outline-primary w-100">
+                <i class="fa fa-sign-in me-2"></i>Sign In Instead
+              </a>
+            </div>
+
+            <!-- Switch to Customer Registration -->
+            <div class="text-center">
+              <a routerLink="/register" class="text-decoration-none text-muted small">
+                <i class="fa fa-users me-1"></i>Are you a Customer? Register here
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Additional Info -->
+        <div class="text-center mt-4">
+          <p class="text-muted small">
+            By registering, you agree to our
+            <a href="#" class="text-decoration-none">Terms of Service</a>
+            and
+            <a href="#" class="text-decoration-none">Privacy Policy</a>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

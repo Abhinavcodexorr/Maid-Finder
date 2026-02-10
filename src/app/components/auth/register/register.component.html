@@ -5,7 +5,9 @@
         <div class="card shadow-lg border-0">
           <div class="card-body p-5">
             <div class="text-center mb-4">
-              <h2 class="fw-bold text-primary">Create Account</h2>
+              <h2 class="fw-bold text-primary">
+                <i class="fa fa-users me-2"></i>Customer Registration
+              </h2>
               <p class="text-muted">Join MaidFinder and find your perfect domestic helper</p>
             </div>
 
@@ -171,19 +173,27 @@
                 class="btn btn-primary w-100 py-2 mb-3"
                 [disabled]="isLoading">
                 <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2"></span>
-                {{ isLoading ? 'Creating Account...' : 'Create Account' }}
+                <i class="fa fa-user-plus me-2" *ngIf="!isLoading"></i>
+                {{ isLoading ? 'Creating Account...' : 'Register as Customer' }}
               </button>
             </form>
 
             <!-- Divider -->
             <div class="text-center my-4">
-              <span class="text-muted">Already have an account?</span>
+              <span class="text-muted">Already have a customer account?</span>
             </div>
 
             <!-- Login Link -->
-            <div class="text-center">
+            <div class="text-center mb-3">
               <a routerLink="/login" class="btn btn-outline-primary w-100">
-                Sign In Instead
+                <i class="fa fa-sign-in me-2"></i>Sign In Instead
+              </a>
+            </div>
+
+            <!-- Switch to Maid Registration -->
+            <div class="text-center">
+              <a routerLink="/maid-register" class="text-decoration-none text-muted small">
+                <i class="fa fa-user-circle me-1"></i>Are you a Maid? Register here
               </a>
             </div>
           </div>

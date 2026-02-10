@@ -14,6 +14,8 @@ import { HomeComponent } from './components/home/home.component';
 import { SearchComponent } from './components/search/search.component';
 import { LoginComponent } from './components/auth/login/login.component';
 import { RegisterComponent } from './components/auth/register/register.component';
+import { MaidRegisterComponent } from './components/auth/maid-register/maid-register.component';
+import { MaidLoginComponent } from './components/auth/maid-login/maid-login.component';
 import { ProfileComponent } from './components/profile/profile.component';
 import { SubscriptionsComponent } from './components/subscriptions/subscriptions.component';
 import { AboutComponent } from './components/about/about.component';
@@ -38,6 +40,8 @@ import { BackToTopComponent } from './components/back-to-top/back-to-top.compone
     SearchComponent,
     LoginComponent,
     RegisterComponent,
+    MaidRegisterComponent,
+    MaidLoginComponent,
     ProfileComponent,
     SubscriptionsComponent,
     AboutComponent,

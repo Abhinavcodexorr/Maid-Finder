@@ -11,6 +11,7 @@ import { ToastrService } from 'ngx-toastr';
 export class LoginComponent implements OnInit {
   loginForm: FormGroup;
   isLoading = false;
+  isLoadingGoogle = false;
   showPassword = false;
   errorMessage = '';
 
@@ -102,5 +103,56 @@ export class LoginComponent implements OnInit {
       email: 'guest@maidfinder.com',
       password: 'guest123'
     });
+  }
+
+  signInWithGoogle(): void {
+    this.isLoadingGoogle = true;
+    this.errorMessage = '';
+
+    // Mock Google Sign-In - In production, this would use Google OAuth
+    // Example: Using Firebase Auth or Google Identity Services
+    setTimeout(() => {
+      this.isLoadingGoogle = false;
+      
+      // Simulate successful Google login
+      const mockGoogleUser = {
+        email: 'user@gmail.com',
+        name: 'Google User',
+        picture: 'https://via.placeholder.com/150',
+        provider: 'google'
+      };
+
+      // Store login state
+      localStorage.setItem('isLoggedIn', 'true');
+      localStorage.setItem('userEmail', mockGoogleUser.email);
+      localStorage.setItem('userName', mockGoogleUser.name);
+      localStorage.setItem('userPicture', mockGoogleUser.picture);
+      localStorage.setItem('authProvider', 'google');
+
+      this.toastr.success('Successfully signed in with Google!', 'Welcome!');
+      this.router.navigate(['/profile/dashboard']);
+    }, 1500);
+
+    /* 
+    // Real Google OAuth Implementation Example:
+    // Option 1: Using Firebase Auth
+    import { AngularFireAuth } from '@angular/fire/auth';
+    import { GoogleAuthProvider } from 'firebase/auth';
+    
+    async signInWithGoogle() {
+      try {
+        const provider = new GoogleAuthProvider();
+        const result = await this.afAuth.signInWithPopup(provider);
+        const user = result.user;
+        // Handle successful login
+      } catch (error) {
+        // Handle error
+      }
+    }
+
+    // Option 2: Using Google Identity Services
+    // Add script to index.html: <script src="https://accounts.google.com/gsi/client" async defer></script>
+    // Then use Google.accounts.oauth2.initTokenClient()
+    */
   }
 }
