@@ -199,9 +199,7 @@
                 <div class="col-md-6 mb-3">
                   <label for="whatsappNumber" class="form-label">WhatsApp Number <span class="text-danger">*</span></label>
                   <div class="input-group">
-                    <span class="input-group-text">
-                      <i class="fa fa-whatsapp"></i>
-                    </span>
+                    <span class="input-group-text bg-light">+971</span>
                     <input
                       type="tel"
                       id="whatsappNumber"
@@ -212,7 +210,7 @@
                       maxlength="9"
                       (input)="formatWhatsAppNumber($event)">
                   </div>
-                  <small class="text-muted">Enter 9 digits</small>
+                  <small class="text-muted">Enter 9 digits without country code</small>
                   <div class="invalid-feedback d-block" *ngIf="getFieldError('whatsappNumber')">
                     {{ getFieldError('whatsappNumber') }}
                   </div>
