@@ -26,8 +26,7 @@ export class MaidRegisterComponent implements OnInit {
       visaStatus: ['', [Validators.required]],
       visaExpiryDate: ['', [Validators.required]],
       mobileNumber: ['', [Validators.required, Validators.pattern(/^[0-9]{9}$/)]],
-      whatsappEmirate: ['4', [Validators.required]], // Default Dubai
-      whatsappNumber: ['', [Validators.required, Validators.pattern(/^[0-9]{7}$/)]],
+      whatsappNumber: ['', [Validators.required, Validators.pattern(/^[0-9]{9}$/)]],
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(6)]],
       confirmPassword: ['', [Validators.required]],
@@ -66,8 +65,8 @@ export class MaidRegisterComponent implements OnInit {
       // Format mobile number with country code
       const mobileNumber = `+971${formValue.mobileNumber}`;
       
-      // Format WhatsApp number
-      const whatsappNumber = `+971${formValue.whatsappEmirate}${formValue.whatsappNumber}`;
+      // Format WhatsApp number (Dubai code 4)
+      const whatsappNumber = `+9714${formValue.whatsappNumber}`;
 
       const maidData = {
         fullName: formValue.fullName,
@@ -121,8 +120,8 @@ export class MaidRegisterComponent implements OnInit {
 
   formatWhatsAppNumber(event: any): void {
     let value = event.target.value.replace(/\D/g, '');
-    if (value.length > 7) {
-      value = value.substring(0, 7);
+    if (value.length > 9) {
+      value = value.substring(0, 9);
     }
     this.maidRegisterForm.patchValue({ whatsappNumber: value }, { emitEvent: false });
   }
@@ -143,11 +142,8 @@ export class MaidRegisterComponent implements OnInit {
         return 'Password must be at least 6 characters long';
       }
       if (field.errors['pattern']) {
-        if (fieldName === 'mobileNumber') {
-          return 'Mobile number must be 9 digits';
-        }
-        if (fieldName === 'whatsappNumber') {
-          return 'WhatsApp number must be 7 digits';
+        if (fieldName === 'mobileNumber' || fieldName === 'whatsappNumber') {
+          return 'Number must be 9 digits';
         }
         return 'Please enter a valid number';
       }

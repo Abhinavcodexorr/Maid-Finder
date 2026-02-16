@@ -74,22 +74,6 @@
                     {{ getFieldError('phone') }}
                   </div>
                 </div>
-
-                <!-- Role Field -->
-                <div class="col-md-6 mb-3">
-                  <label for="role" class="form-label">I am a</label>
-                  <select
-                    id="role"
-                    formControlName="role"
-                    class="form-select"
-                    [class.is-invalid]="getFieldError('role')">
-                    <option value="employer">Looking for a maid</option>
-                    <option value="maid">Looking for work as a maid</option>
-                  </select>
-                  <div class="invalid-feedback d-block" *ngIf="getFieldError('role')">
-                    {{ getFieldError('role') }}
-                  </div>
-                </div>
               </div>
 
               <div class="row">

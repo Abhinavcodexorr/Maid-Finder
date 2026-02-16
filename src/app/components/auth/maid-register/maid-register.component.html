@@ -69,13 +69,31 @@
                     <span class="input-group-text">
                       <i class="fa fa-globe"></i>
                     </span>
-                    <input
-                      type="text"
+                    <select
                       id="nationality"
                       formControlName="nationality"
-                      class="form-control"
-                      [class.is-invalid]="getFieldError('nationality')"
-                      placeholder="Enter your nationality">
+                      class="form-select"
+                      [class.is-invalid]="getFieldError('nationality')">
+                      <option value="">Select Nationality</option>
+                      <option value="Filipino">Filipino</option>
+                      <option value="Indian">Indian</option>
+                      <option value="Sri Lankan">Sri Lankan</option>
+                      <option value="Indonesian">Indonesian</option>
+                      <option value="Ethiopian">Ethiopian</option>
+                      <option value="Bangladeshi">Bangladeshi</option>
+                      <option value="Nepalese">Nepalese</option>
+                      <option value="Pakistani">Pakistani</option>
+                      <option value="Kenyan">Kenyan</option>
+                      <option value="Ugandan">Ugandan</option>
+                      <option value="Ghanaian">Ghanaian</option>
+                      <option value="Tanzanian">Tanzanian</option>
+                      <option value="Malaysian">Malaysian</option>
+                      <option value="Thai">Thai</option>
+                      <option value="Myanmar">Myanmar</option>
+                      <option value="Cambodian">Cambodian</option>
+                      <option value="Vietnamese">Vietnamese</option>
+                      <option value="Other">Other</option>
+                    </select>
                   </div>
                   <div class="invalid-feedback d-block" *ngIf="getFieldError('nationality')">
                     {{ getFieldError('nationality') }}
@@ -181,26 +199,18 @@
                 <div class="col-md-6 mb-3">
                   <label for="whatsappNumber" class="form-label">WhatsApp Number <span class="text-danger">*</span></label>
                   <div class="input-group">
-                    <span class="input-group-text bg-light">+971</span>
-                    <select class="form-select" formControlName="whatsappEmirate" style="max-width: 140px;">
-                      <option value="4">04 (Dubai)</option>
-                      <option value="2">02 (Abu Dhabi)</option>
-                      <option value="6">06 (Sharjah)</option>
-                      <option value="3">03 (Ajman)</option>
-                      <option value="9">09 (Ras Al Khaimah)</option>
-                      <option value="7">07 (Fujairah)</option>
-                    </select>
+                    <span class="input-group-text bg-light">+971 4</span>
                     <input
                       type="tel"
                       id="whatsappNumber"
                       formControlName="whatsappNumber"
                       class="form-control"
                       [class.is-invalid]="getFieldError('whatsappNumber')"
-                      placeholder="123 4567"
-                      maxlength="7"
+                      placeholder="50 123 4567"
+                      maxlength="9"
                       (input)="formatWhatsAppNumber($event)">
                   </div>
-                  <small class="text-muted">Enter 7 digits</small>
+                  <small class="text-muted">Enter 9 digits without country code</small>
                   <div class="invalid-feedback d-block" *ngIf="getFieldError('whatsappNumber')">
                     {{ getFieldError('whatsappNumber') }}
                   </div>

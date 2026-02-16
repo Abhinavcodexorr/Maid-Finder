@@ -23,7 +23,6 @@ export class RegisterComponent implements OnInit {
       phone: ['', [Validators.required, Validators.pattern(/^[0-9+\-\s()]+$/)]],
       password: ['', [Validators.required, Validators.minLength(6)]],
       confirmPassword: ['', [Validators.required]],
-      role: ['employer', [Validators.required]],
       agreeToTerms: [false, [Validators.requiredTrue]]
     }, { validators: this.passwordMatchValidator });
   }
@@ -47,7 +46,7 @@ export class RegisterComponent implements OnInit {
   onSubmit(): void {
     if (this.registerForm.valid) {
       this.isLoading = true;
-      const { name, email, phone, password, role } = this.registerForm.value;
+      const { name, email, phone, password } = this.registerForm.value;
 
       // Mock registration - in real app, this would call auth service
       setTimeout(() => {
