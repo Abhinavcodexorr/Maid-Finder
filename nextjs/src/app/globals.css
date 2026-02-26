@@ -1,0 +1,46 @@
+@import "tailwindcss";
+
+:root {
+  --brand: #667eea;
+  --brand-dark: #764ba2;
+  --bg: #f5f7fa;
+}
+
+@theme inline {
+  --font-sans: var(--font-inter);
+}
+
+html,
+body {
+  background: linear-gradient(135deg, #f5f7fa 0%, #e6ebf5 100%);
+  color: #0f172a;
+  font-family: var(--font-inter), Inter, sans-serif;
+}
+
+.text-brand {
+  color: var(--brand);
+}
+
+.btn {
+  @apply inline-flex items-center justify-center rounded-xl px-4 py-2 text-sm font-semibold transition-all;
+}
+
+.btn-primary {
+  @apply bg-gradient-to-r from-indigo-500 to-violet-500 text-white shadow-md hover:scale-[1.02] hover:shadow-lg;
+}
+
+.btn-soft {
+  @apply border border-slate-200 bg-white text-slate-700 hover:border-indigo-300 hover:text-indigo-600;
+}
+
+.card {
+  @apply rounded-2xl bg-white/90 p-6 shadow-md backdrop-blur-sm transition hover:-translate-y-1 hover:shadow-xl;
+}
+
+.field {
+  @apply w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none transition focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100;
+}
+
+.footer-link {
+  @apply text-slate-300 transition hover:text-white;
+}
