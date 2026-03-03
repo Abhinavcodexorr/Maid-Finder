@@ -6,6 +6,8 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { saveSession } from "@/lib/auth-mock";
+import { useState } from "react";
+import { api, apiRoutes, ApiError } from "@/lib/api-client";
 
 const schema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -16,6 +18,7 @@ type FormValues = z.infer<typeof schema>;
 
 export default function MaidLoginPage() {
   const router = useRouter();
+  const [apiError, setApiError] = useState<string | null>(null);
   const {
     register,
     handleSubmit,
@@ -23,9 +26,65 @@ export default function MaidLoginPage() {
   } = useForm<FormValues>({ resolver: zodResolver(schema) });
 
   const onSubmit = async (values: FormValues) => {
-    await new Promise((r) => setTimeout(r, 600));
-    saveSession("Maid User", values.email, "maid");
-    router.push("/profile/dashboard");
+    setApiError(null);
+    try {
+      const result = await api.post<{
+        success: boolean;
+        token: string;
+        maid: {
+          id: string;
+          email: string;
+          fullName: string;
+          nationality: string;
+          emirate: string;
+          visaStatus: string;
+          experienceYears: number;
+          monthlySalaryAed: number;
+          skills: string[];
+          imageUrl: string;
+          phone?: string;
+          whatsapp?: string;
+          bio?: string;
+        };
+      }>(apiRoutes.maid.login, {
+        email: values.email.trim(),
+        password: values.password,
+      });
+
+      const token = result?.token;
+      const maidData = result?.maid;
+      if (!token || !maidData?.id) {
+        throw new Error("Login response missing token or maid profile.");
+      }
+      const maidName = maidData?.fullName || "Maid User";
+
+      saveSession(maidName, values.email, "maid", {
+        token,
+        maidProfile: maidData
+          ? {
+              id: maidData.id,
+              fullName: maidData.fullName,
+              nationality: maidData.nationality,
+              emirate: maidData.emirate,
+              visaStatus: maidData.visaStatus,
+              experienceYears: maidData.experienceYears,
+              monthlySalaryAed: maidData.monthlySalaryAed,
+              skills: maidData.skills,
+              imageUrl: maidData.imageUrl,
+              phone: maidData.phone,
+              whatsapp: maidData.whatsapp,
+              bio: maidData.bio,
+            }
+          : undefined,
+      });
+      router.push("/profile/dashboard");
+    } catch (error) {
+      if (error instanceof ApiError) {
+        setApiError(error.message);
+      } else {
+        setApiError(error instanceof Error ? error.message : "Something went wrong while signing in.");
+      }
+    }
   };
 
   return (
@@ -45,6 +104,7 @@ export default function MaidLoginPage() {
             <input className="field" type="password" {...register("password")} />
             {errors.password ? <p className="mt-1 text-xs text-red-600">{errors.password.message}</p> : null}
           </div>
+          {apiError ? <p className="mt-1 text-xs text-red-600">{apiError}</p> : null}
           <button className="btn btn-primary w-full" disabled={isSubmitting} type="submit">
             {isSubmitting ? "Signing in..." : "Sign In as Maid"}
           </button>

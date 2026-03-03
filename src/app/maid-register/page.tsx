@@ -6,6 +6,9 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { EMIRATES, NATIONALITIES, VISA_STATUS } from "@/lib/constants";
+import { useState } from "react";
+import { saveSession } from "@/lib/auth-mock";
+import { api, apiRoutes, ApiError } from "@/lib/api-client";
 
 const schema = z
   .object({
@@ -17,6 +20,11 @@ const schema = z
     visaExpiryDate: z.string().min(1, "Visa expiry date is required"),
     mobileNumber: z.string().regex(/^\d{9}$/, "Mobile number must be 9 digits"),
     whatsappNumber: z.string().regex(/^\d{9}$/, "WhatsApp number must be 9 digits"),
+    experienceYears: z.coerce.number().min(0, "Experience years is required"),
+    monthlySalaryAed: z.coerce.number().min(1, "Monthly salary is required"),
+    skills: z.string().min(2, "Enter at least one skill"),
+    imageUrl: z.string().url("Enter a valid image URL"),
+    bio: z.string().min(10, "Bio should be at least 10 characters"),
     email: z.string().email("Please enter a valid email address"),
     password: z.string().min(6, "Password must be at least 6 characters"),
     confirmPassword: z.string().min(6, "Confirm password is required"),
@@ -26,19 +34,97 @@ const schema = z
     path: ["confirmPassword"],
   });
 
-type FormValues = z.infer<typeof schema>;
+type FormValues = z.input<typeof schema>;
 
 export default function MaidRegisterPage() {
   const router = useRouter();
+  const [apiError, setApiError] = useState<string | null>(null);
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-  } = useForm<FormValues>({ resolver: zodResolver(schema) });
+  } = useForm<FormValues>({
+    resolver: zodResolver(schema),
+    defaultValues: {
+      emirate: "Dubai",
+      visaStatus: "Employer Visa",
+    },
+  });
 
-  const onSubmit = async () => {
-    await new Promise((r) => setTimeout(r, 900));
-    router.push("/maid-login");
+  const onSubmit = async (values: FormValues) => {
+    setApiError(null);
+    const payload = {
+      email: values.email.trim(),
+      password: values.password,
+      fullName: values.fullName.trim(),
+      nationality: values.nationality,
+      emirate: values.emirate,
+      visaStatus: values.visaStatus,
+      experienceYears: Number(values.experienceYears),
+      monthlySalaryAed: Number(values.monthlySalaryAed),
+      skills: values.skills
+        .split(",")
+        .map((skill) => skill.trim().toLowerCase())
+        .filter(Boolean),
+      imageUrl: values.imageUrl.trim(),
+      phone: `+971${values.mobileNumber}`,
+      whatsapp: `+971${values.whatsappNumber}`,
+      bio: values.bio.trim(),
+    };
+
+    try {
+      const result = await api.post<{
+        success: boolean;
+        token: string;
+        maid: {
+          id: string;
+          email: string;
+          fullName: string;
+          nationality: string;
+          emirate: string;
+          visaStatus: string;
+          experienceYears: number;
+          monthlySalaryAed: number;
+          skills: string[];
+          imageUrl: string;
+          phone?: string;
+          whatsapp?: string;
+          bio?: string;
+        };
+      }>(apiRoutes.maid.register, payload);
+
+      const token = result?.token;
+      const maidData = result?.maid;
+      if (!token || !maidData?.id) {
+        throw new Error("Registration succeeded but auth token is missing.");
+      }
+
+      saveSession(maidData.fullName || values.fullName, maidData.email || values.email, "maid", {
+        token,
+        maidProfile: {
+          id: maidData.id,
+          fullName: maidData.fullName,
+          nationality: maidData.nationality,
+          emirate: maidData.emirate,
+          visaStatus: maidData.visaStatus,
+          experienceYears: maidData.experienceYears,
+          monthlySalaryAed: maidData.monthlySalaryAed,
+          skills: maidData.skills,
+          imageUrl: maidData.imageUrl,
+          phone: maidData.phone,
+          whatsapp: maidData.whatsapp,
+          bio: maidData.bio,
+        },
+      });
+
+      router.push("/profile/dashboard");
+    } catch (error) {
+      if (error instanceof ApiError) {
+        setApiError(error.message);
+      } else {
+        setApiError(error instanceof Error ? error.message : "Something went wrong while registering.");
+      }
+    }
   };
 
   return (
@@ -92,11 +178,28 @@ export default function MaidRegisterPage() {
             <input className="field" type="date" {...register("visaExpiryDate")} />
           </Input>
           <Input label="Mobile Number" error={errors.mobileNumber?.message} hint="Prefix +971">
-            <input className="field" placeholder="50 123 4567" {...register("mobileNumber")} />
+            <input className="field" placeholder="501234567" {...register("mobileNumber")} />
           </Input>
           <Input label="WhatsApp Number" error={errors.whatsappNumber?.message} hint="Prefix +971">
-            <input className="field" placeholder="50 123 4567" {...register("whatsappNumber")} />
+            <input className="field" placeholder="501234567" {...register("whatsappNumber")} />
           </Input>
+          <Input label="Experience (Years)" error={errors.experienceYears?.message}>
+            <input className="field" type="number" min={0} {...register("experienceYears")} />
+          </Input>
+          <Input label="Monthly Salary (AED)" error={errors.monthlySalaryAed?.message}>
+            <input className="field" type="number" min={1} {...register("monthlySalaryAed")} />
+          </Input>
+          <Input label="Skills (comma separated)" error={errors.skills?.message}>
+            <input className="field" placeholder="cleaning, cooking, childcare, laundry" {...register("skills")} />
+          </Input>
+          <Input label="Image URL" error={errors.imageUrl?.message}>
+            <input className="field" placeholder="https://example.com/maids/photo.jpg" {...register("imageUrl")} />
+          </Input>
+          <div className="md:col-span-2">
+            <Input label="Bio" error={errors.bio?.message}>
+              <textarea className="field min-h-24" {...register("bio")} />
+            </Input>
+          </div>
           <Input label="Email Address" error={errors.email?.message}>
             <input className="field" type="email" {...register("email")} />
           </Input>
@@ -108,6 +211,7 @@ export default function MaidRegisterPage() {
           </Input>
 
           <div className="md:col-span-2">
+            {apiError ? <p className="mb-3 text-sm text-red-600">{apiError}</p> : null}
             <button className="btn btn-primary w-full" disabled={isSubmitting} type="submit">
               {isSubmitting ? "Registering..." : "Register as Maid"}
             </button>

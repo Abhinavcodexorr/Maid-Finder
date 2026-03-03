@@ -5,6 +5,9 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useState } from "react";
+import { api, apiRoutes, ApiError } from "@/lib/api-client";
+import { saveSession } from "@/lib/auth-mock";
 
 const schema = z
   .object({
@@ -23,15 +26,42 @@ type FormValues = z.infer<typeof schema>;
 
 export default function CustomerRegisterPage() {
   const router = useRouter();
+  const [apiError, setApiError] = useState<string | null>(null);
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<FormValues>({ resolver: zodResolver(schema) });
 
-  const onSubmit = async () => {
-    await new Promise((r) => setTimeout(r, 700));
-    router.push("/login");
+  const onSubmit = async (values: FormValues) => {
+    setApiError(null);
+    try {
+      const result = await api.post<{
+        success: boolean;
+        token?: string;
+        user?: { fullName?: string; email?: string };
+      }>(apiRoutes.user.register, {
+        fullName: values.fullName.trim(),
+        email: values.email.trim(),
+        phone: values.phone.trim(),
+        password: values.password,
+      });
+
+      if (result?.token) {
+        saveSession(result?.user?.fullName || values.fullName, result?.user?.email || values.email, "customer", {
+          token: result.token,
+        });
+        router.push("/profile/dashboard");
+      } else {
+        router.push("/login");
+      }
+    } catch (error) {
+      if (error instanceof ApiError) {
+        setApiError(error.message);
+      } else {
+        setApiError("Unable to register. Please try again.");
+      }
+    }
   };
 
   return (
@@ -69,6 +99,7 @@ export default function CustomerRegisterPage() {
             ) : null}
           </div>
           <div className="md:col-span-2">
+            {apiError ? <p className="mb-2 text-xs text-red-600">{apiError}</p> : null}
             <button className="btn btn-primary w-full" disabled={isSubmitting} type="submit">
               {isSubmitting ? "Creating account..." : "Register as Customer"}
             </button>

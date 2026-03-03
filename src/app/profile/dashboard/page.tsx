@@ -1,7 +1,18 @@
+"use client";
+
 import { PageHeader } from "@/components/layout/page-header";
 import Link from "next/link";
+import { getSession } from "@/lib/auth-mock";
+import { useEffect, useState } from "react";
 
 export default function DashboardPage() {
+  const [maidSignedIn, setMaidSignedIn] = useState(false);
+
+  useEffect(() => {
+    const session = getSession();
+    setMaidSignedIn(session?.role === "maid");
+  }, []);
+
   return (
     <>
       <PageHeader title="Dashboard" subtitle="Overview of your account activity and shortcuts." />
@@ -21,12 +32,25 @@ export default function DashboardPage() {
           </article>
         </div>
         <div className="mt-6 flex flex-wrap gap-3">
-          <Link href="/search" className="btn btn-primary">
-            Find Maids
-          </Link>
-          <Link href="/subscriptions" className="btn btn-soft">
-            Manage Subscription
-          </Link>
+          {maidSignedIn ? (
+            <>
+              <Link href="/profile/edit" className="btn btn-primary">
+                Edit My Profile
+              </Link>
+              <Link href="/maid-register" className="btn btn-soft">
+                Maid Registration Form
+              </Link>
+            </>
+          ) : (
+            <>
+              <Link href="/search" className="btn btn-primary">
+                Find Maids
+              </Link>
+              <Link href="/subscriptions" className="btn btn-soft">
+                Manage Subscription
+              </Link>
+            </>
+          )}
         </div>
       </section>
     </>

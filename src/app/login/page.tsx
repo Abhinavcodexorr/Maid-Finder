@@ -6,6 +6,8 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { saveSession } from "@/lib/auth-mock";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { api, apiRoutes, ApiError } from "@/lib/api-client";
 
 const schema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -16,6 +18,7 @@ type FormValues = z.infer<typeof schema>;
 
 export default function CustomerLoginPage() {
   const router = useRouter();
+  const [apiError, setApiError] = useState<string | null>(null);
   const {
     register,
     handleSubmit,
@@ -23,9 +26,28 @@ export default function CustomerLoginPage() {
   } = useForm<FormValues>({ resolver: zodResolver(schema) });
 
   const onSubmit = async (values: FormValues) => {
-    await new Promise((r) => setTimeout(r, 600));
-    saveSession("Customer User", values.email, "customer");
-    router.push("/profile/dashboard");
+    setApiError(null);
+    try {
+      const result = await api.post<{
+        success: boolean;
+        token: string;
+        user?: { fullName?: string; email?: string };
+      }>(apiRoutes.user.login, {
+        email: values.email.trim(),
+        password: values.password,
+      });
+
+      saveSession(result?.user?.fullName || "Customer User", result?.user?.email || values.email, "customer", {
+        token: result?.token,
+      });
+      router.push("/profile/dashboard");
+    } catch (error) {
+      if (error instanceof ApiError) {
+        setApiError(error.message);
+      } else {
+        setApiError("Unable to login. Please try again.");
+      }
+    }
   };
 
   return (
@@ -45,6 +67,7 @@ export default function CustomerLoginPage() {
             <input className="field" type="password" {...register("password")} />
             {errors.password ? <p className="mt-1 text-xs text-red-600">{errors.password.message}</p> : null}
           </div>
+          {apiError ? <p className="mt-1 text-xs text-red-600">{apiError}</p> : null}
           <button className="btn btn-primary w-full" disabled={isSubmitting} type="submit">
             {isSubmitting ? "Signing in..." : "Sign In as Customer"}
           </button>
