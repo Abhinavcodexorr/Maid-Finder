@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { saveSession } from "@/lib/auth-mock";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { api, apiRoutes, ApiError } from "@/lib/api-client";
 
@@ -18,6 +18,7 @@ type FormValues = z.infer<typeof schema>;
 
 export default function CustomerLoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [apiError, setApiError] = useState<string | null>(null);
   const {
     register,
@@ -27,6 +28,9 @@ export default function CustomerLoginPage() {
 
   const onSubmit = async (values: FormValues) => {
     setApiError(null);
+    const redirectTo = searchParams.get("redirect");
+    const safeRedirect = redirectTo && redirectTo.startsWith("/") ? redirectTo : null;
+
     try {
       const result = await api.post<{
         success: boolean;
@@ -40,7 +44,7 @@ export default function CustomerLoginPage() {
       saveSession(result?.user?.fullName || "Customer User", result?.user?.email || values.email, "customer", {
         token: result?.token,
       });
-      router.push("/profile/dashboard");
+      router.push(safeRedirect || "/profile/dashboard");
     } catch (error) {
       if (error instanceof ApiError) {
         setApiError(error.message);

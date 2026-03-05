@@ -7,6 +7,8 @@ import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import type { MaidProfile } from "@/types";
 import { API_BASE_URL, apiRoutes } from "@/lib/api-client";
+import { useRouter } from "next/navigation";
+import { getSession } from "@/lib/auth-mock";
 
 const MAIDS_API_BASE_URL = `${API_BASE_URL}${apiRoutes.maid.list}`;
 
@@ -78,6 +80,7 @@ export function MaidsGridContent({
   query: MaidQuery;
   fallbackOnError?: boolean;
 }) {
+  const router = useRouter();
   const [maids, setMaids] = useState<MaidProfile[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [apiError, setApiError] = useState<string | null>(null);
@@ -123,6 +126,15 @@ export function MaidsGridContent({
       isMounted = false;
     };
   }, [queryKey]);
+
+  const goToCustomerProtectedPage = (target: string) => {
+    const session = getSession();
+    if (session?.role === "customer") {
+      router.push(target);
+      return;
+    }
+    router.push(`/register?redirect=${encodeURIComponent(target)}`);
+  };
 
   return (
     <section className="mx-auto mt-10 max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -198,9 +210,22 @@ export function MaidsGridContent({
                 <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">No skills added</span>
               ) : null}
             </div>
-            <Link href={`/maid/${maid.id}`} className="btn btn-primary mt-auto w-full">
-              View Profile
-            </Link>
+            <div className="mt-auto grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                className="btn btn-soft w-full"
+                onClick={() => goToCustomerProtectedPage(`/maid/${maid.id}`)}
+              >
+                View Profile
+              </button>
+              <button
+                type="button"
+                className="btn btn-primary w-full"
+                onClick={() => goToCustomerProtectedPage(`/bookings?maidId=${maid.id}`)}
+              >
+                Hire Now
+              </button>
+            </div>
           </motion.article>
         ))}
       </div>

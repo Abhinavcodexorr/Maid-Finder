@@ -8,6 +8,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { api, apiRoutes, ApiError } from "@/lib/api-client";
 import { saveSession } from "@/lib/auth-mock";
+import { useSearchParams } from "next/navigation";
 
 const schema = z
   .object({
@@ -26,6 +27,7 @@ type FormValues = z.infer<typeof schema>;
 
 export default function CustomerRegisterPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [apiError, setApiError] = useState<string | null>(null);
   const {
     register,
@@ -35,6 +37,9 @@ export default function CustomerRegisterPage() {
 
   const onSubmit = async (values: FormValues) => {
     setApiError(null);
+    const redirectTo = searchParams.get("redirect");
+    const safeRedirect = redirectTo && redirectTo.startsWith("/") ? redirectTo : null;
+
     try {
       const result = await api.post<{
         success: boolean;
@@ -51,9 +56,9 @@ export default function CustomerRegisterPage() {
         saveSession(result?.user?.fullName || values.fullName, result?.user?.email || values.email, "customer", {
           token: result.token,
         });
-        router.push("/profile/dashboard");
+        router.push(safeRedirect || "/profile/dashboard");
       } else {
-        router.push("/login");
+        router.push(safeRedirect ? `/login?redirect=${encodeURIComponent(safeRedirect)}` : "/login");
       }
     } catch (error) {
       if (error instanceof ApiError) {
