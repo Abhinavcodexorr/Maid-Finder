@@ -3,7 +3,7 @@ import { PageHeader } from "@/components/layout/page-header";
 export default function ContactPage() {
   return (
     <>
-      <PageHeader title="Contact Us" subtitle="We are here to help families and maids." />
+      <PageHeader title="Contact Us" subtitle="We are here to help." />
       <section className="mx-auto mt-8 max-w-3xl px-4 sm:px-6">
         <div className="card">
           <div className="grid gap-4 md:grid-cols-2">

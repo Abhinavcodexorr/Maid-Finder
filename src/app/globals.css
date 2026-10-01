@@ -1,46 +1,471 @@
 @import "tailwindcss";
 
+/* ================================================================
+   DESIGN TOKENS
+   ================================================================ */
 :root {
-  --brand: #667eea;
-  --brand-dark: #764ba2;
-  --bg: #f5f7fa;
+  /* ---- Brand ---- */
+  --primary: #2563eb;
+  --primary-hover: #1d4ed8;
+  --primary-soft: #eff6ff;
+  --primary-dark: #1e40af;
+
+  /* ---- Accent (warm CTA) ---- */
+  --accent: #f97316;
+  --accent-hover: #ea580c;
+  --accent-soft: #fff7ed;
+
+  /* ---- Neutrals ---- */
+  --bg: #f8fafc;
+  --surface: #ffffff;
+  --ink: #0f172a;
+  --ink-light: #334155;
+  --muted: #64748b;
+  --faint: #94a3b8;
+  --line: #e2e8f0;
+  --line-light: #f1f5f9;
+
+  /* ---- Semantic ---- */
+  --success: #059669;
+  --success-soft: #ecfdf5;
+  --warning: #d97706;
+  --warning-soft: #fffbeb;
+  --error: #dc2626;
+  --error-soft: #fef2f2;
+
+  /* ---- Locked / Protected ---- */
+  --locked: #7c3aed;
+  --locked-soft: #f5f3ff;
+  --locked-dark: #6d28d9;
+
+  /* ---- Gradients ---- */
+  --gradient-primary: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  --gradient-dark: linear-gradient(160deg, #0f172a 0%, #1e293b 100%);
+  --gradient-hero: linear-gradient(135deg, #eff6ff 0%, #f0f9ff 50%, #f8fafc 100%);
+  --gradient-locked: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
+  --gradient-success: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  --gradient-warm: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+
+  /* ---- Shadows ---- */
+  --shadow-xs: 0 1px 2px rgb(0 0 0 / 0.04);
+  --shadow-sm: 0 1px 3px rgb(0 0 0 / 0.06), 0 1px 2px rgb(0 0 0 / 0.04);
+  --shadow-md: 0 4px 12px -2px rgb(0 0 0 / 0.08), 0 2px 4px -2px rgb(0 0 0 / 0.04);
+  --shadow-lg: 0 12px 24px -4px rgb(0 0 0 / 0.1), 0 4px 8px -2px rgb(0 0 0 / 0.04);
+  --shadow-xl: 0 24px 48px -12px rgb(0 0 0 / 0.15);
+
+  /* ---- Radius ---- */
+  --radius-sm: 6px;
+  --radius: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-full: 9999px;
+
+  /* ---- Transitions ---- */
+  --ease: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-spring: cubic-bezier(0.22, 1, 0.36, 1);
+  --duration-fast: 150ms;
+  --duration: 200ms;
+  --duration-slow: 300ms;
+
+  /* ---- Layout ---- */
+  --nav-height: 64px;
+  --mobile-nav-height: 60px;
 }
 
+/* ================================================================
+   TAILWIND THEME
+   ================================================================ */
 @theme inline {
   --font-sans: var(--font-inter);
+  --font-display: var(--font-outfit);
 }
 
-html,
+/* ================================================================
+   BASE
+   ================================================================ */
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  scroll-behavior: smooth;
+}
+
+/* Universal outline reset - removes harsh default browser blue highlight boxes */
+*,
+*::before,
+*::after {
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+:focus,
+:focus-visible {
+  outline: none !important;
+  outline-color: transparent !important;
+  outline-style: none !important;
+  outline-width: 0 !important;
+}
+
+input,
+textarea,
+select,
+button {
+  outline: none !important;
+  -webkit-focus-ring-color: transparent !important;
+}
+
+input:focus,
+input:focus-visible,
+textarea:focus,
+textarea:focus-visible,
+select:focus,
+select:focus-visible,
+button:focus,
+button:focus-visible {
+  outline: none !important;
+  outline-style: none !important;
+  outline-width: 0 !important;
+  -webkit-focus-ring-color: transparent !important;
+}
+
 body {
-  background: linear-gradient(135deg, #f5f7fa 0%, #e6ebf5 100%);
-  color: #0f172a;
-  font-family: var(--font-inter), Inter, sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-inter), "Inter", system-ui, -apple-system, sans-serif;
+  line-height: 1.6;
 }
 
-.text-brand {
-  color: var(--brand);
+h1, h2, h3, h4, .font-display {
+  font-family: var(--font-outfit), "Outfit", system-ui, sans-serif;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
 }
 
+::selection {
+  background: var(--primary);
+  color: white;
+}
+
+/* ================================================================
+   TYPOGRAPHY
+   ================================================================ */
+.text-display { font-size: clamp(2.5rem, 5vw, 3.5rem); font-weight: 700; line-height: 1.08; letter-spacing: -0.03em; }
+.text-h1 { font-size: clamp(1.75rem, 3vw, 2.25rem); font-weight: 700; line-height: 1.15; letter-spacing: -0.025em; }
+.text-h2 { font-size: clamp(1.35rem, 2.5vw, 1.75rem); font-weight: 600; line-height: 1.25; letter-spacing: -0.015em; }
+.text-h3 { font-size: 1.125rem; font-weight: 600; line-height: 1.4; letter-spacing: -0.01em; }
+.text-body { font-size: 0.9375rem; line-height: 1.65; }
+.text-small { font-size: 0.8125rem; line-height: 1.5; }
+.text-caption { font-size: 0.75rem; line-height: 1.4; }
+
+/* ================================================================
+   BUTTONS
+   ================================================================ */
 .btn {
-  @apply inline-flex items-center justify-center rounded-xl px-4 py-2 text-sm font-semibold transition-all;
+  @apply inline-flex items-center justify-center gap-2 text-sm font-semibold transition-all;
+  padding: 10px 20px;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  outline: none;
+  border: none;
+  white-space: nowrap;
 }
+.btn:disabled { @apply cursor-not-allowed opacity-50; }
 
 .btn-primary {
-  @apply bg-gradient-to-r from-indigo-500 to-violet-500 text-white shadow-md hover:scale-[1.02] hover:shadow-lg;
+  background: var(--gradient-primary);
+  @apply text-white;
+  box-shadow: var(--shadow-sm);
+}
+.btn-primary:hover:not(:disabled) {
+  filter: brightness(1.06);
+  box-shadow: var(--shadow-md), 0 0 0 3px rgba(37, 99, 235, 0.15);
+  transform: translateY(-1px);
+}
+.btn-primary:active:not(:disabled) { transform: translateY(0); }
+
+.btn-accent {
+  background: var(--accent);
+  @apply text-white;
+  box-shadow: var(--shadow-sm);
+}
+.btn-accent:hover:not(:disabled) {
+  background: var(--accent-hover);
+  transform: translateY(-1px);
 }
 
-.btn-soft {
-  @apply border border-slate-200 bg-white text-slate-700 hover:border-indigo-300 hover:text-indigo-600;
+.btn-outline {
+  background: transparent;
+  color: var(--ink);
+  border: 1.5px solid var(--line);
+}
+.btn-outline:hover:not(:disabled) {
+  border-color: var(--primary);
+  color: var(--primary);
+  background: var(--primary-soft);
 }
 
+.btn-ghost {
+  background: transparent;
+  color: var(--muted);
+}
+.btn-ghost:hover:not(:disabled) {
+  background: var(--line-light);
+  color: var(--ink);
+}
+
+.btn-locked {
+  background: var(--gradient-locked);
+  @apply text-white;
+  box-shadow: var(--shadow-sm);
+}
+.btn-locked:hover:not(:disabled) {
+  filter: brightness(1.08);
+  transform: translateY(-1px);
+}
+
+.btn-success {
+  background: var(--gradient-success);
+  @apply text-white;
+}
+
+.btn-danger {
+  background: var(--error);
+  @apply text-white;
+}
+
+.btn-sm { padding: 6px 14px; font-size: 0.8125rem; border-radius: var(--radius); }
+.btn-lg { padding: 14px 28px; font-size: 1rem; border-radius: var(--radius-lg); }
+.btn-icon { padding: 8px; border-radius: var(--radius); }
+
+/* ================================================================
+   CARD
+   ================================================================ */
 .card {
-  @apply rounded-2xl bg-white/90 p-6 shadow-md backdrop-blur-sm transition hover:-translate-y-1 hover:shadow-xl;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  transition: all var(--duration) var(--ease);
+}
+.card-hover:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
 }
 
+/* ================================================================
+   FORM FIELDS
+   ================================================================ */
 .field {
-  @apply w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none transition focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100;
+  @apply w-full text-sm outline-none;
+  border: 1.5px solid var(--line);
+  border-radius: var(--radius-md);
+  padding: 10px 14px;
+  color: var(--ink);
+  background: var(--surface);
+  transition: all var(--duration-fast) var(--ease);
+  outline: none !important;
+  -webkit-focus-ring-color: transparent !important;
+}
+.field::placeholder { color: var(--faint); }
+.field:hover { border-color: var(--muted); }
+.field:focus,
+.field:focus-visible {
+  border-color: var(--primary) !important;
+  box-shadow: 0 0 0 3px var(--primary-soft) !important;
+  outline: none !important;
+  -webkit-focus-ring-color: transparent !important;
+}
+.field-error, .field-error:hover { border-color: var(--error); }
+.field-error:focus, .field-error:focus-visible {
+  border-color: var(--error) !important;
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.15) !important;
+  outline: none !important;
+}
+
+/* ================================================================
+   PILLS / BADGES
+   ================================================================ */
+.pill {
+  @apply inline-flex items-center gap-1 text-xs font-semibold;
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+}
+.pill-primary { background: var(--primary-soft); color: var(--primary); }
+.pill-success { background: var(--success-soft); color: var(--success); }
+.pill-warning { background: var(--warning-soft); color: var(--warning); }
+.pill-error { background: var(--error-soft); color: var(--error); }
+.pill-locked { background: var(--locked-soft); color: var(--locked); }
+.pill-neutral { background: var(--line-light); color: var(--muted); }
+
+/* ================================================================
+   MISC COMPONENTS
+   ================================================================ */
+.eyebrow {
+  @apply text-xs font-bold uppercase;
+  letter-spacing: 0.08em;
+  color: var(--primary);
+}
+
+.lock-banner {
+  @apply flex items-center gap-2.5 text-sm font-medium;
+  padding: 12px 16px;
+  border-radius: var(--radius-md);
+  background: var(--locked-soft);
+  color: var(--locked);
+}
+
+.avatar-swatch {
+  @apply flex items-center justify-center font-bold;
+  border-radius: var(--radius-md);
+  background: var(--primary-soft);
+  color: var(--primary-dark);
+  font-family: var(--font-outfit), sans-serif;
 }
 
 .footer-link {
-  @apply text-slate-300 transition hover:text-white;
+  color: rgba(255, 255, 255, 0.55);
+  transition: color var(--duration-fast) var(--ease);
+}
+.footer-link:hover { color: white; }
+
+.divider {
+  border: none;
+  border-top: 1px solid var(--line);
+}
+
+.container-page {
+  @apply mx-auto w-full px-4 sm:px-6 lg:px-8;
+  max-width: 1280px;
+}
+
+/* ================================================================
+   SHIMMER / SKELETON / LOADING EFFECTS
+   ================================================================ */
+@keyframes shimmerWave {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+@keyframes shimmerPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.55; }
+}
+
+.shimmer {
+  position: relative;
+  overflow: hidden;
+  background-color: #f1f5f9;
+}
+
+.shimmer::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.65) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  animation: shimmerWave 1.6s infinite cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none;
+}
+
+.shimmer-dark {
+  position: relative;
+  overflow: hidden;
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+.shimmer-dark::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.15) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  animation: shimmerWave 1.6s infinite cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none;
+}
+
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  background-color: #e2e8f0;
+  border-radius: var(--radius);
+}
+
+.skeleton::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.7) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  animation: shimmerWave 1.5s infinite ease-in-out;
+  pointer-events: none;
+}
+
+/* ================================================================
+   ANIMATIONS & SCROLL UTILITIES
+   ================================================================ */
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes slideDown { from { opacity: 0; transform: translateY(-16px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes scaleIn { from { opacity: 0; transform: scale(0.96); } to { opacity: 1; transform: scale(1); } }
+@keyframes floatGentle { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+
+.animate-fade-in { animation: fadeIn var(--duration-slow) var(--ease) forwards; }
+.animate-slide-up { animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+.animate-scale-in { animation: scaleIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+.animate-float { animation: floatGentle 3s ease-in-out infinite; }
+
+/* ================================================================
+   SCROLLBAR
+   ================================================================ */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--line); border-radius: var(--radius-full); }
+::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* ================================================================
+   MOBILE BOTTOM NAV PADDING
+   ================================================================ */
+@media (max-width: 768px) {
+  main { padding-bottom: var(--mobile-nav-height); }
+}
+
+/* ================================================================
+   FOCUS RING
+   ================================================================ */
+:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* Checkbox + Radio styling */
+input[type="checkbox"],
+input[type="radio"] {
+  accent-color: var(--primary);
 }
