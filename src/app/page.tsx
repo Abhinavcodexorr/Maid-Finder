@@ -9,6 +9,8 @@ import { getFeaturedProviders, getCategories } from "@/lib/services";
 import { TESTIMONIALS } from "@/data/testimonials";
 import { Avatar } from "@/components/ui/avatar";
 import { ScrollReveal, ScrollStagger, ScrollStaggerItem } from "@/components/ui/scroll-reveal";
+import { colorForCategory, colorForIndex } from "@/lib/category-colors";
+import { TiltCard } from "@/components/ui/tilt-card";
 
 /* ================================================================
    CONSTANTS
@@ -29,17 +31,17 @@ const POPULAR_SERVICES = [
 ];
 
 const STEPS = [
-  { n: "01", title: "Tell us what you need", text: "Choose a service and location to find professionals near you.", icon: "search" },
-  { n: "02", title: "Explore professionals", text: "Browse profiles, experience, ratings and reviews — all free.", icon: "users" },
-  { n: "03", title: "Unlock & connect", text: "Choose a membership plan to access protected contact information.", icon: "unlock" },
+  { n: "01", title: "Tell us what you need", icon: "search" },
+  { n: "02", title: "Browse profiles — free", icon: "users" },
+  { n: "03", title: "Unlock & connect", icon: "unlock" },
 ];
 
 const TRUST_ITEMS = [
-  { icon: "shield", title: "Verified Professionals", text: "Professionals with verified badges have their ID checked by our team." },
-  { icon: "eye", title: "Transparent Profiles", text: "Browse full profiles, experience, skills and reviews before committing." },
-  { icon: "lock", title: "Secure Membership", text: "Contact details are protected — unlocked only for active members." },
-  { icon: "search", title: "Easy Discovery", text: "Powerful filters help you find exactly who you need, fast." },
-  { icon: "layers", title: "Multiple Services", text: "One membership unlocks access across all service categories." },
+  { icon: "shield", title: "Verified" },
+  { icon: "eye", title: "Transparent" },
+  { icon: "lock", title: "Secure" },
+  { icon: "search", title: "Easy to find" },
+  { icon: "layers", title: "All-in-one" },
 ];
 
 const fadeUp = (delay = 0) => ({
@@ -95,7 +97,7 @@ export default function HomePage() {
               className="mx-auto mt-5 max-w-xl text-lg leading-relaxed"
               style={{ color: "var(--muted)" }}
             >
-              Discover trusted professionals for cleaning, cooking, plumbing, maintenance, childcare and more.
+              Verified pros, near you. Browse free, connect when you&apos;re ready.
             </motion.p>
 
             {/* Search Box */}
@@ -173,17 +175,29 @@ export default function HomePage() {
         <ScrollStagger
           className="no-scrollbar -mx-4 flex gap-3 overflow-x-auto px-4 pb-2 sm:mx-0 sm:grid sm:grid-cols-3 sm:gap-4 sm:overflow-visible sm:px-0 lg:grid-cols-4 xl:grid-cols-6"
         >
-          {POPULAR_SERVICES.map((svc) => (
-            <ScrollStaggerItem key={svc.label}>
-              <Link
-                href={svc.slug ? `/providers?category=${svc.slug}` : "/providers"}
-                className="card card-hover flex min-w-[130px] flex-col items-center gap-3 px-4 py-5 text-center sm:min-w-0 h-full"
-              >
-                <span className="text-3xl">{svc.emoji}</span>
-                <span className="text-sm font-semibold">{svc.label}</span>
-              </Link>
-            </ScrollStaggerItem>
-          ))}
+          {POPULAR_SERVICES.map((svc, i) => {
+            const swatch = svc.slug ? colorForCategory(svc.slug) : colorForIndex(i);
+            return (
+              <ScrollStaggerItem key={svc.label}>
+                <TiltCard maxTilt={14} scale={1.04} className="min-w-[130px] sm:min-w-0 h-full">
+                <Link
+                  href={svc.slug ? `/providers?category=${svc.slug}` : "/providers"}
+                  className="card card-hover flex flex-col items-center gap-3 px-4 py-5 text-center h-full"
+                >
+                  <motion.span
+                    whileHover={{ scale: 1.08, rotate: -3 }}
+                    whileTap={{ scale: 0.94 }}
+                    className="flex h-14 w-14 items-center justify-center rounded-2xl text-2xl"
+                    style={{ background: swatch.soft }}
+                  >
+                    {svc.emoji}
+                  </motion.span>
+                  <span className="text-sm font-semibold">{svc.label}</span>
+                </Link>
+                </TiltCard>
+              </ScrollStaggerItem>
+            );
+          })}
         </ScrollStagger>
 
         <Link href="/services" className="mt-4 block text-center text-sm font-semibold sm:hidden" style={{ color: "var(--primary)" }}>
@@ -202,24 +216,24 @@ export default function HomePage() {
           <ScrollStagger className="mt-10 grid gap-6 md:grid-cols-3">
             {STEPS.map((step) => (
               <ScrollStaggerItem key={step.n}>
-                <div className="card relative overflow-hidden h-full">
+                <motion.div
+                  whileHover={{ y: -4 }}
+                  className="card relative flex items-center gap-4 overflow-hidden h-full py-6"
+                >
                   <span
-                    className="absolute -right-2 -top-2 font-display text-[4.5rem] font-extrabold leading-none pointer-events-none"
-                    style={{ color: "var(--primary)", opacity: 0.06 }}
+                    className="absolute -right-3 -top-4 font-display text-[5rem] font-extrabold leading-none pointer-events-none"
+                    style={{ color: "var(--primary)", opacity: 0.07 }}
                   >
                     {step.n}
                   </span>
                   <span
-                    className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl"
+                    className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl"
                     style={{ background: "var(--primary-soft)", color: "var(--primary)" }}
                   >
-                    <Icon name={step.icon} className="h-6 w-6" />
+                    <Icon name={step.icon} className="h-7 w-7" />
                   </span>
-                  <h3 className="font-display text-h3">{step.title}</h3>
-                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-                    {step.text}
-                  </p>
-                </div>
+                  <h3 className="font-display text-lg font-bold leading-snug">{step.title}</h3>
+                </motion.div>
               </ScrollStaggerItem>
             ))}
           </ScrollStagger>
@@ -233,21 +247,22 @@ export default function HomePage() {
           <h2 className="font-display text-h2 mt-3">Built for trust and transparency</h2>
         </motion.div>
 
-        <ScrollStagger className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-5">
+        <ScrollStagger className="mt-8 flex flex-wrap justify-center gap-3">
           {TRUST_ITEMS.map((item) => (
             <ScrollStaggerItem key={item.title}>
-              <div className="text-center p-2">
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                className="flex items-center gap-2.5 rounded-full py-2.5 pl-2.5 pr-4"
+                style={{ background: "var(--line-light)" }}
+              >
                 <span
-                  className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl"
-                  style={{ background: "var(--line-light)", color: "var(--primary)" }}
+                  className="flex h-8 w-8 items-center justify-center rounded-full"
+                  style={{ background: "var(--surface)", color: "var(--primary)" }}
                 >
-                  <Icon name={item.icon} className="h-6 w-6" />
+                  <Icon name={item.icon} className="h-4 w-4" />
                 </span>
-                <h3 className="text-sm font-semibold">{item.title}</h3>
-                <p className="mt-1 text-xs leading-relaxed" style={{ color: "var(--muted)" }}>
-                  {item.text}
-                </p>
-              </div>
+                <span className="text-sm font-bold">{item.title}</span>
+              </motion.div>
             </ScrollStaggerItem>
           ))}
         </ScrollStagger>
@@ -269,8 +284,10 @@ export default function HomePage() {
           <ScrollStagger className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {featured.map((provider) => {
               const cat = categories.find((c) => c.id === provider.categoryId);
+              const catColor = colorForCategory(provider.categoryId);
               return (
                 <ScrollStaggerItem key={provider.id}>
+                  <TiltCard maxTilt={6} className="h-full">
                   <Link
                     href={`/providers/${provider.id}`}
                     className="card card-hover flex gap-4 h-full"
@@ -278,6 +295,8 @@ export default function HomePage() {
                     <Avatar
                       initials={`${provider.firstName[0]}${provider.lastName[0]}`}
                       imageUrl={provider.photo}
+                      color={catColor.color}
+                      soft={catColor.soft}
                       className="h-16 w-16 shrink-0 text-lg"
                     />
                     <div className="min-w-0 flex-1">
@@ -306,6 +325,7 @@ export default function HomePage() {
                       </div>
                     </div>
                   </Link>
+                  </TiltCard>
                 </ScrollStaggerItem>
               );
             })}

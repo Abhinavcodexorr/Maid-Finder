@@ -7,7 +7,7 @@ export const TESTIMONIALS: Testimonial[] = [
     area: "Bandra West, Mumbai",
     text: "Found a reliable cook within a day of signing up. The plan paid for itself the moment I called the first number — direct connect with zero agency hassle.",
     rating: 5,
-    avatar: "https://randomuser.me/api/portraits/women/24.jpg",
+    avatar: "/images/testimonials/t1.svg",
   },
   {
     id: "t2",
@@ -15,7 +15,7 @@ export const TESTIMONIALS: Testimonial[] = [
     area: "Indiranagar, Bengaluru",
     text: "Needed a reliable house help after relocating. Browsed for free, unlocked contact details, and had an experienced helper starting the next morning. Zero commission.",
     rating: 5,
-    avatar: "https://randomuser.me/api/portraits/men/35.jpg",
+    avatar: "/images/testimonials/t2.svg",
   },
   {
     id: "t3",
@@ -23,7 +23,7 @@ export const TESTIMONIALS: Testimonial[] = [
     area: "Jubilee Hills, Hyderabad",
     text: "I loved that I could inspect full profiles, verified ID checks, and previous experience before paying. Found a wonderful infant nanny within 48 hours.",
     rating: 5,
-    avatar: "https://randomuser.me/api/portraits/women/50.jpg",
+    avatar: "/images/testimonials/t3.svg",
   },
   {
     id: "t4",
@@ -31,7 +31,7 @@ export const TESTIMONIALS: Testimonial[] = [
     area: "Dwarka, Delhi NCR",
     text: "Hired our family cook and a daily cleaner through Help Zone. The verified badge gave us total confidence and background peace of mind.",
     rating: 5,
-    avatar: "https://randomuser.me/api/portraits/men/61.jpg",
+    avatar: "/images/testimonials/t4.svg",
   },
   {
     id: "t5",
@@ -39,7 +39,7 @@ export const TESTIMONIALS: Testimonial[] = [
     area: "Kothrud, Pune",
     text: "The language and schedule filters saved me hours. Found a Marathi and Hindi-speaking full-time helper near my society immediately.",
     rating: 5,
-    avatar: "https://randomuser.me/api/portraits/women/68.jpg",
+    avatar: "/images/testimonials/t5.svg",
   },
 ];
 

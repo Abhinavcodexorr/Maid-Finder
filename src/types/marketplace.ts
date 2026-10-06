@@ -19,7 +19,7 @@ export interface Provider {
   id: string;
   firstName: string;
   lastName: string;
-  photo: string;
+  photo?: string;
   categoryId: string;
   skills: string[];
   experienceYears: number;
@@ -118,7 +118,7 @@ export interface Testimonial {
   area: string;
   text: string;
   rating: number;
-  avatar: string;
+  avatar?: string;
 }
 
 export interface Faq {
@@ -130,4 +130,27 @@ export interface ContactViewRecord {
   userId: string;
   providerId: string;
   viewedAt: string;
+}
+
+/** A provider's self-service application, submitted from the public "Register as Provider" form. */
+export interface ProviderApplication {
+  id: string;
+  fullName: string;
+  gender: "Male" | "Female";
+  nationality: string;
+  categoryId: string;
+  area: string;
+  city: string;
+  mobileNumber: string;
+  whatsappNumber: string;
+  email: string;
+  password: string;
+  kyc: {
+    idType: string;
+    idNumber: string;
+    idDocumentName: string;
+    photoName: string;
+  };
+  status: "pending" | "approved" | "rejected";
+  submittedAt: string;
 }

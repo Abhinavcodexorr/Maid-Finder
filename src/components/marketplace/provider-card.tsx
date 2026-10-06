@@ -3,11 +3,14 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
 import { useAuth } from "@/context/AuthContext";
 import { getCategoryById, isSaved, toggleSaved } from "@/lib/services";
 import { maskProvider } from "@/lib/services/providers";
 import { Icon } from "@/components/ui/icon";
 import { toast } from "@/components/ui/toaster";
+import { colorForCategory } from "@/lib/category-colors";
+import { TiltCard } from "@/components/ui/tilt-card";
 import type { Provider } from "@/types/marketplace";
 
 const CATEGORY_EMOJIS: Record<string, string> = {
@@ -70,6 +73,7 @@ export function ProviderCard({
 
   const emoji = CATEGORY_EMOJIS[provider.categoryId] ?? "🧹";
   const fullName = `${provider.firstName} ${provider.lastName}`;
+  const catColor = colorForCategory(provider.categoryId);
 
   if (viewMode === "list") {
     return (
@@ -95,7 +99,7 @@ export function ProviderCard({
           ) : (
             <div
               className="flex h-full w-full items-center justify-center text-3xl font-bold text-white"
-              style={{ background: "var(--gradient-primary)" }}
+              style={{ background: catColor.gradient }}
             >
               {provider.firstName[0]}{provider.lastName[0]}
             </div>
@@ -190,10 +194,16 @@ export function ProviderCard({
                   View Contact Number
                 </span>
               ) : (
-                <button type="button" onClick={onUnlock} className="btn btn-primary btn-sm text-xs">
+                <motion.button
+                  type="button"
+                  onClick={onUnlock}
+                  whileHover={{ scale: 1.04 }}
+                  whileTap={{ scale: 0.96 }}
+                  className="btn btn-primary btn-sm text-xs"
+                >
                   <Icon name="lock" className="h-3.5 w-3.5" />
                   Unlock Contact
-                </button>
+                </motion.button>
               )}
             </div>
           </div>
@@ -204,6 +214,7 @@ export function ProviderCard({
 
   // Grid Card View (Default)
   return (
+    <TiltCard className="h-full">
     <Link
       href={`/providers/${provider.id}`}
       className="card card-hover group flex flex-col overflow-hidden p-0 transition-all hover:shadow-md"
@@ -226,7 +237,7 @@ export function ProviderCard({
         ) : (
           <div
             className="flex h-full w-full items-center justify-center text-4xl font-bold text-white"
-            style={{ background: "var(--gradient-primary)" }}
+            style={{ background: catColor.gradient }}
           >
             {provider.firstName[0]}{provider.lastName[0]}
           </div>
@@ -292,10 +303,6 @@ export function ProviderCard({
             </span>
           </div>
 
-          <p className="mt-2 line-clamp-2 text-xs text-[var(--muted)] leading-relaxed">
-            {provider.about}
-          </p>
-
           <div className="mt-3 flex flex-wrap gap-1.5">
             {provider.skills.slice(0, 3).map((s) => (
               <span
@@ -331,19 +338,22 @@ export function ProviderCard({
                 View Contact
               </span>
             ) : (
-              <button
+              <motion.button
                 type="button"
                 onClick={onUnlock}
+                whileHover={{ scale: 1.04 }}
+                whileTap={{ scale: 0.96 }}
                 className="btn btn-primary btn-sm text-xs font-semibold"
               >
                 <Icon name="lock" className="h-3 w-3" />
                 Unlock
-              </button>
+              </motion.button>
             )}
           </div>
         </div>
       </div>
     </Link>
+    </TiltCard>
   );
 }
 

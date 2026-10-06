@@ -103,11 +103,13 @@ function makeJoinedDate(daysAgo: number): string {
   return d.toISOString();
 }
 
-export const PROVIDERS: Provider[] = RAW.map((p, i) => ({
-  id: `${slugify(p.firstName)}-${slugify(p.lastName)}-${i + 1}`,
+export const PROVIDERS: Provider[] = RAW.map((p, i) => {
+  const id = `${slugify(p.firstName)}-${slugify(p.lastName)}-${i + 1}`;
+  return {
+  id,
   firstName: p.firstName,
   lastName: p.lastName,
-  photo: `https://randomuser.me/api/portraits/${p.gender === "male" ? "men" : "women"}/${p.photoSeed}.jpg`,
+  photo: `/images/providers/${id}.svg`,
   categoryId: p.categoryId,
   skills: p.skills,
   experienceYears: p.experienceYears,
@@ -124,7 +126,8 @@ export const PROVIDERS: Provider[] = RAW.map((p, i) => ({
   verified: p.verified,
   rating: p.rating,
   joinedDate: makeJoinedDate(p.joinedDaysAgo),
-}));
+  };
+});
 
 export function getAllProviders(): Provider[] {
   return PROVIDERS;

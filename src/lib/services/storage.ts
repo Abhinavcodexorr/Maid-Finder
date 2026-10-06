@@ -31,4 +31,5 @@ export const STORAGE_KEYS = {
   saved: "helpzone_mkt_saved",
   contactViews: "helpzone_mkt_contact_views",
   resetFlow: "helpzone_mkt_reset_flow",
+  providerApplications: "helpzone_mkt_provider_applications",
 } as const;

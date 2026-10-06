@@ -10,6 +10,7 @@ import { maskProvider } from "@/lib/services/providers";
 import { Icon } from "@/components/ui/icon";
 import { Avatar } from "@/components/ui/avatar";
 import { toast } from "@/components/ui/toaster";
+import { colorForCategory } from "@/lib/category-colors";
 
 const fadeUp = (delay = 0) => ({
   initial: { opacity: 0, y: 14 },
@@ -35,6 +36,7 @@ export default function ProviderProfilePage({ params }: { params: Promise<{ id: 
   if (!provider) notFound();
 
   const category = getCategoryById(provider.categoryId);
+  const catColor = colorForCategory(provider.categoryId);
   const masked = maskProvider(provider, isSubscribed);
   const similar = getSimilarProviders(provider, 3);
   const redirectTo = `/providers/${provider.id}`;
@@ -89,6 +91,8 @@ export default function ProviderProfilePage({ params }: { params: Promise<{ id: 
                     initials={`${provider.firstName[0]}${provider.lastName[0]}`}
                     className="h-full w-full text-4xl"
                     rounded="rounded-none"
+                    color={catColor.color}
+                    soft={catColor.soft}
                   />
                 )}
               </div>

@@ -11,3 +11,4 @@ export * from "@/lib/services/payments";
 export * from "@/lib/services/saved";
 export * from "@/lib/services/contacts";
 export * from "@/lib/services/content";
+export * from "@/lib/services/provider-applications";
