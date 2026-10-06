@@ -1,34 +1,65 @@
 "use client";
 
-import { readJson, writeJson, STORAGE_KEYS } from "@/lib/services/storage";
-import type { ProviderApplication } from "@/types/marketplace";
+import { api, apiRoutes } from "@/lib/api-client";
+import { writeJson, STORAGE_KEYS } from "@/lib/services/storage";
 
-export type ProviderApplicationInput = Omit<ProviderApplication, "id" | "status" | "submittedAt">;
-
-function getAll(): ProviderApplication[] {
-  return readJson<ProviderApplication[]>(STORAGE_KEYS.providerApplications, []);
-}
-
-function saveAll(applications: ProviderApplication[]): void {
-  writeJson(STORAGE_KEYS.providerApplications, applications);
-}
-
-export function providerApplicationEmailExists(email: string): boolean {
-  return getAll().some((a) => a.email.toLowerCase() === email.trim().toLowerCase());
-}
-
-export function submitProviderApplication(input: ProviderApplicationInput): ProviderApplication {
-  if (providerApplicationEmailExists(input.email)) {
-    throw new Error("An application with this email already exists.");
-  }
-
-  const application: ProviderApplication = {
-    ...input,
-    id: `provider-app-${Date.now()}`,
-    status: "pending",
-    submittedAt: new Date().toISOString(),
+export interface ProviderApplicationInput {
+  fullName: string;
+  gender: "Male" | "Female";
+  nationality: string;
+  categoryId: string;
+  area: string;
+  city: string;
+  mobileNumber: string;
+  whatsappNumber: string;
+  email: string;
+  password: string;
+  kyc: {
+    idType: string;
+    idNumber: string;
+    idDocumentFile: File;
+    photoFile: File;
   };
+}
 
-  saveAll([...getAll(), application]);
-  return application;
+export interface ProviderApplicationMaid {
+  id: string;
+  email: string;
+  fullName: string;
+  gender?: string;
+  nationality?: string;
+  categoryId?: string;
+  area?: string;
+  city?: string;
+  mobileNumber?: string;
+  whatsappNumber?: string;
+  imageUrl?: string;
+  applicationStatus: "pending" | "approved" | "rejected";
+}
+
+export interface ProviderApplicationResult {
+  token: string;
+  maid: ProviderApplicationMaid;
+}
+
+export async function submitProviderApplication(input: ProviderApplicationInput): Promise<ProviderApplicationResult> {
+  const formData = new FormData();
+  formData.append("fullName", input.fullName);
+  formData.append("gender", input.gender);
+  formData.append("nationality", input.nationality);
+  formData.append("categoryId", input.categoryId);
+  formData.append("area", input.area);
+  formData.append("city", input.city);
+  formData.append("mobileNumber", input.mobileNumber);
+  formData.append("whatsappNumber", input.whatsappNumber);
+  formData.append("email", input.email);
+  formData.append("password", input.password);
+  formData.append("idType", input.kyc.idType);
+  formData.append("idNumber", input.kyc.idNumber);
+  formData.append("photo", input.kyc.photoFile);
+  formData.append("idDocument", input.kyc.idDocumentFile);
+
+  const result = await api.post<ProviderApplicationResult>(apiRoutes.maid.register, formData);
+  writeJson(STORAGE_KEYS.maidSession, result.token);
+  return result;
 }

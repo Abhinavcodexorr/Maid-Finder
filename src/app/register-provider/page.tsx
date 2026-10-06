@@ -6,6 +6,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { submitProviderApplication, getCategories, getDistinctAreas } from "@/lib/services";
+import { ApiError } from "@/lib/api-client";
 import { Icon } from "@/components/ui/icon";
 import { LogoMark } from "@/components/ui/logo";
 import { toast } from "@/components/ui/toaster";
@@ -44,6 +45,7 @@ export default function RegisterProviderPage() {
 
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [submitted, setSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [details, setDetails] = useState<DetailsValues | null>(null);
 
@@ -79,10 +81,11 @@ export default function RegisterProviderPage() {
     setStep(3);
   };
 
-  const onFinalSubmit = () => {
-    if (!details || !idDocumentFile || !photoFile) return;
+  const onFinalSubmit = async () => {
+    if (!details || !idDocumentFile || !photoFile || isSubmitting) return;
+    setIsSubmitting(true);
     try {
-      submitProviderApplication({
+      await submitProviderApplication({
         fullName: details.fullName.trim(),
         gender: details.gender,
         nationality: details.nationality.trim(),
@@ -96,14 +99,17 @@ export default function RegisterProviderPage() {
         kyc: {
           idType,
           idNumber: idNumber.trim(),
-          idDocumentName: idDocumentFile.name,
-          photoName: photoFile.name,
+          idDocumentFile,
+          photoFile,
         },
       });
       setSubmitted(true);
       toast({ title: "Application submitted", description: "Our team will verify your documents and get in touch.", variant: "success" });
     } catch (err) {
-      toast({ title: "Couldn't submit application", description: err instanceof Error ? err.message : undefined, variant: "error" });
+      const description = err instanceof ApiError ? err.message : err instanceof Error ? err.message : undefined;
+      toast({ title: "Couldn't submit application", description, variant: "error" });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -401,8 +407,10 @@ export default function RegisterProviderPage() {
             </div>
 
             <div className="mt-6 grid grid-cols-2 gap-3">
-              <button type="button" onClick={() => setStep(2)} className="btn btn-outline">← Back</button>
-              <button type="button" onClick={onFinalSubmit} className="btn btn-primary">Submit Application</button>
+              <button type="button" onClick={() => setStep(2)} disabled={isSubmitting} className="btn btn-outline">← Back</button>
+              <button type="button" onClick={onFinalSubmit} disabled={isSubmitting} className="btn btn-primary">
+                {isSubmitting ? "Submitting…" : "Submit Application"}
+              </button>
             </div>
           </>
         )}

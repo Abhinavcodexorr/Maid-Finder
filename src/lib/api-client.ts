@@ -28,6 +28,14 @@ async function parseResponse<T>(response: Response): Promise<T> {
   return data as T;
 }
 
+// FormData bodies (file uploads) must NOT get a manual Content-Type — the
+// browser sets its own multipart boundary. Only JSON bodies get one here.
+function toRequestBody(body: unknown): { body?: BodyInit; headers?: HeadersInit } {
+  if (body === undefined) return {};
+  if (body instanceof FormData) return { body };
+  return { body: JSON.stringify(body), headers: { "Content-Type": "application/json" } };
+}
+
 export const api = {
   get: async <T>(path: string, headers?: HeadersInit): Promise<T> => {
     const response = await fetch(buildUrl(path), {
@@ -38,24 +46,20 @@ export const api = {
     return parseResponse<T>(response);
   },
   post: async <T>(path: string, body?: unknown, headers?: HeadersInit): Promise<T> => {
+    const { body: requestBody, headers: bodyHeaders } = toRequestBody(body);
     const response = await fetch(buildUrl(path), {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        ...headers,
-      },
-      body: body ? JSON.stringify(body) : undefined,
+      headers: { ...bodyHeaders, ...headers },
+      body: requestBody,
     });
     return parseResponse<T>(response);
   },
   put: async <T>(path: string, body?: unknown, headers?: HeadersInit): Promise<T> => {
+    const { body: requestBody, headers: bodyHeaders } = toRequestBody(body);
     const response = await fetch(buildUrl(path), {
       method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        ...headers,
-      },
-      body: body ? JSON.stringify(body) : undefined,
+      headers: { ...bodyHeaders, ...headers },
+      body: requestBody,
     });
     return parseResponse<T>(response);
   },
