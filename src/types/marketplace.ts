@@ -132,25 +132,3 @@ export interface ContactViewRecord {
   viewedAt: string;
 }
 
-/** A provider's self-service application, submitted from the public "Register as Provider" form. */
-export interface ProviderApplication {
-  id: string;
-  fullName: string;
-  gender: "Male" | "Female";
-  nationality: string;
-  categoryId: string;
-  area: string;
-  city: string;
-  mobileNumber: string;
-  whatsappNumber: string;
-  email: string;
-  password: string;
-  kyc: {
-    idType: string;
-    idNumber: string;
-    idDocumentName: string;
-    photoName: string;
-  };
-  status: "pending" | "approved" | "rejected";
-  submittedAt: string;
-}

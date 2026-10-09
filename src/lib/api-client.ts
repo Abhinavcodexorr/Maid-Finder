@@ -69,12 +69,12 @@ export const apiRoutes = {
   auth: {
     logout: "/api/v1/logout",
   },
-  maid: {
-    register: "/api/v1/maids/register",
-    login: "/api/v1/maids/login",
-    me: "/api/v1/maids/me",
-    list: "/api/v1/maids/list",
-    byId: (id: string) => `/api/v1/maids/${id}`,
+  provider: {
+    register: "/api/v1/providers/register",
+    login: "/api/v1/providers/login",
+    me: "/api/v1/providers/me",
+    list: "/api/v1/providers/list",
+    byId: (id: string) => `/api/v1/providers/${id}`,
   },
   user: {
     register: "/api/v1/user/register",

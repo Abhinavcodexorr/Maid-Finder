@@ -22,7 +22,7 @@ export interface ProviderApplicationInput {
   };
 }
 
-export interface ProviderApplicationMaid {
+export interface ProviderApplicationProvider {
   id: string;
   email: string;
   fullName: string;
@@ -39,7 +39,7 @@ export interface ProviderApplicationMaid {
 
 export interface ProviderApplicationResult {
   token: string;
-  maid: ProviderApplicationMaid;
+  provider: ProviderApplicationProvider;
 }
 
 export async function submitProviderApplication(input: ProviderApplicationInput): Promise<ProviderApplicationResult> {
@@ -59,7 +59,7 @@ export async function submitProviderApplication(input: ProviderApplicationInput)
   formData.append("photo", input.kyc.photoFile);
   formData.append("idDocument", input.kyc.idDocumentFile);
 
-  const result = await api.post<ProviderApplicationResult>(apiRoutes.maid.register, formData);
-  writeJson(STORAGE_KEYS.maidSession, result.token);
+  const result = await api.post<ProviderApplicationResult>(apiRoutes.provider.register, formData);
+  writeJson(STORAGE_KEYS.providerSession, result.token);
   return result;
 }

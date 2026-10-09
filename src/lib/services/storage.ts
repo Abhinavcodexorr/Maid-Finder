@@ -32,5 +32,5 @@ export const STORAGE_KEYS = {
   contactViews: "helpzone_mkt_contact_views",
   resetFlow: "helpzone_mkt_reset_flow",
   providerApplications: "helpzone_mkt_provider_applications",
-  maidSession: "helpzone_mkt_maid_session",
+  providerSession: "helpzone_mkt_provider_session",
 } as const;
