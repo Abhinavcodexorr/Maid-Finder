@@ -332,7 +332,8 @@ export default function DashboardOverviewPage() {
                           {fullName}
                         </Link>
                         <p className="truncate text-xs" style={{ color: "var(--muted)" }}>
-                          {cat?.name ?? "Professional"} • ⭐ {provider.rating.toFixed(1)}
+                          {cat?.name ?? "Professional"}
+                          {typeof provider.rating === "number" && <> • ⭐ {provider.rating.toFixed(1)}</>}
                         </p>
                       </div>
                     </div>

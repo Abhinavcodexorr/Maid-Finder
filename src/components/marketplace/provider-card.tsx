@@ -126,10 +126,12 @@ export function ProviderCard({
                 </div>
 
                 <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-[var(--muted)]">
-                  <span className="flex items-center gap-1 font-semibold text-[var(--ink)]">
-                    <Icon name="star" className="h-3.5 w-3.5 text-amber-500" />
-                    {provider.rating.toFixed(1)}
-                  </span>
+                  {typeof provider.rating === "number" && (
+                    <span className="flex items-center gap-1 font-semibold text-[var(--ink)]">
+                      <Icon name="star" className="h-3.5 w-3.5 text-amber-500" />
+                      {provider.rating.toFixed(1)}
+                    </span>
+                  )}
                   <span>{provider.experienceYears} years exp.</span>
                   <span className="flex items-center gap-1">
                     <Icon name="map-pin" className="h-3.5 w-3.5 text-[var(--muted)]" />
@@ -292,10 +294,12 @@ export function ProviderCard({
       <div className="flex flex-1 flex-col justify-between p-4 space-y-3">
         <div>
           <div className="flex flex-wrap items-center justify-between gap-y-1 text-xs text-[var(--muted)]">
-            <span className="flex items-center gap-1 font-semibold text-[var(--ink)]">
-              <Icon name="star" className="h-3.5 w-3.5 text-amber-500" />
-              {provider.rating.toFixed(1)}
-            </span>
+            {typeof provider.rating === "number" && (
+              <span className="flex items-center gap-1 font-semibold text-[var(--ink)]">
+                <Icon name="star" className="h-3.5 w-3.5 text-amber-500" />
+                {provider.rating.toFixed(1)}
+              </span>
+            )}
             <span>{provider.experienceYears} yrs experience</span>
             <span className="flex items-center gap-1">
               <Icon name="map-pin" className="h-3 w-3 text-[var(--muted)]" />

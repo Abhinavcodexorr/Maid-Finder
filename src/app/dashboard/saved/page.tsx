@@ -181,9 +181,11 @@ export default function SavedHelpersPage() {
                     <span className="inline-flex items-center gap-1 rounded-md bg-[var(--surface-muted)] px-2 py-1 font-semibold text-[var(--primary)]">
                       ₹{provider.price.toLocaleString("en-IN")} {provider.priceUnit}
                     </span>
-                    <span className="inline-flex items-center gap-1 rounded-md bg-[var(--surface-muted)] px-2 py-1">
-                      ⭐ {provider.rating.toFixed(1)}
-                    </span>
+                    {typeof provider.rating === "number" && (
+                      <span className="inline-flex items-center gap-1 rounded-md bg-[var(--surface-muted)] px-2 py-1">
+                        ⭐ {provider.rating.toFixed(1)}
+                      </span>
+                    )}
                   </div>
 
                   <p className="mt-3 line-clamp-2 text-xs leading-relaxed" style={{ color: "var(--muted)" }}>

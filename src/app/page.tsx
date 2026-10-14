@@ -2,15 +2,17 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { Icon } from "@/components/ui/icon";
-import { getFeaturedProviders, getCategories } from "@/lib/services";
+import { getCategories, getFeaturedProvidersFrom, fetchLiveProviders } from "@/lib/services";
+import { ProviderCardSkeleton } from "@/components/ui/shimmer";
 import { TESTIMONIALS } from "@/data/testimonials";
 import { Avatar } from "@/components/ui/avatar";
 import { ScrollReveal, ScrollStagger, ScrollStaggerItem } from "@/components/ui/scroll-reveal";
 import { colorForCategory, colorForIndex } from "@/lib/category-colors";
 import { TiltCard } from "@/components/ui/tilt-card";
+import type { Provider } from "@/types/marketplace";
 
 /* ================================================================
    CONSTANTS
@@ -66,7 +68,16 @@ export default function HomePage() {
   const [locationQuery, setLocationQuery] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  const featured = getFeaturedProviders(6);
+  const [liveProviders, setLiveProviders] = useState<Provider[] | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    fetchLiveProviders()
+      .then((list) => { if (!cancelled) setLiveProviders(list); })
+      .catch(() => { if (!cancelled) setLiveProviders([]); });
+    return () => { cancelled = true; };
+  }, []);
+
+  const featured = liveProviders ? getFeaturedProvidersFrom(liveProviders, 6) : [];
   const categories = getCategories();
 
   const onSearch = () => {
@@ -281,6 +292,19 @@ export default function HomePage() {
             </Link>
           </motion.div>
 
+          {liveProviders === null && (
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {Array.from({ length: 6 }).map((_, i) => <ProviderCardSkeleton key={i} />)}
+            </div>
+          )}
+
+          {liveProviders !== null && featured.length === 0 && (
+            <div className="card py-10 text-center text-sm" style={{ color: "var(--muted)" }}>
+              No providers yet — be the first to{" "}
+              <Link href="/register-helper" className="font-semibold" style={{ color: "var(--primary)" }}>register as a helper</Link>.
+            </div>
+          )}
+
           <ScrollStagger className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {featured.map((provider) => {
               const cat = categories.find((c) => c.id === provider.categoryId);
@@ -308,10 +332,12 @@ export default function HomePage() {
                       </div>
                       <p className="text-xs font-medium" style={{ color: "var(--primary)" }}>{cat?.name}</p>
                       <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs" style={{ color: "var(--muted)" }}>
-                        <span className="flex items-center gap-1">
-                          <Icon name="star" className="h-3 w-3" style={{ color: "var(--accent)" }} />
-                          {provider.rating.toFixed(1)}
-                        </span>
+                        {typeof provider.rating === "number" && (
+                          <span className="flex items-center gap-1">
+                            <Icon name="star" className="h-3 w-3" style={{ color: "var(--accent)" }} />
+                            {provider.rating.toFixed(1)}
+                          </span>
+                        )}
                         <span>{provider.experienceYears} yrs exp</span>
                         <span className="flex items-center gap-1">
                           <Icon name="map-pin" className="h-3 w-3" />

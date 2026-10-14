@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
-import { getCategories, getAllProviders } from "@/lib/services";
+import { getCategories, fetchLiveProviders } from "@/lib/services";
 import { Icon } from "@/components/ui/icon";
 import { ScrollReveal, ScrollStagger, ScrollStaggerItem } from "@/components/ui/scroll-reveal";
+import type { Provider } from "@/types/marketplace";
 
 const CATEGORY_DETAILS: Record<
   string,
@@ -74,7 +75,12 @@ const CATEGORY_DETAILS: Record<
 export default function ServicesPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const categories = useMemo(() => getCategories(), []);
-  const allProviders = useMemo(() => getAllProviders(), []);
+  const [allProviders, setAllProviders] = useState<Provider[]>([]);
+  useEffect(() => {
+    let cancelled = false;
+    fetchLiveProviders().then((list) => { if (!cancelled) setAllProviders(list); }).catch(() => {});
+    return () => { cancelled = true; };
+  }, []);
 
   // Filter categories by search
   const filteredCategories = useMemo(() => {

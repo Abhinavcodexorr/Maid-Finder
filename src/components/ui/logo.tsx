@@ -60,16 +60,16 @@ export function Logo({
     );
   }
 
-  // Horizontal logo layout (Mark + HelpZone + Slogan)
-  // Height calculated from size parameter
+  // Horizontal wordmark (helpZone), light variant for light backgrounds,
+  // dark variant (white "help") for dark backgrounds like the footer.
   const height = size;
-  const width = Math.round(height * 4.4); // Aspect ratio of logo-horizontal is ~1066 x 240 (~4.44)
+  const width = Math.round(height * (1000 / 304)); // native aspect ratio of logo-light.png / logo-dark.png
 
   return (
     <span className={`inline-flex items-center gap-2.5 ${className}`}>
       <Image
-        src={isDark ? "/logo-horizontal-white.png" : "/logo-horizontal.png"}
-        alt="Help Zone - Clean Homes, Happy Lives"
+        src={isDark ? "/logo-dark.png" : "/logo-light.png"}
+        alt="Help Zone"
         width={width * 2}
         height={height * 2}
         className="h-auto object-contain"

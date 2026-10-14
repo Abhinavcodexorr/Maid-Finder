@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
@@ -10,12 +10,13 @@ import {
   getDistinctCities,
   getDistinctLanguages,
   getSkillsForCategory,
-  getProviders,
+  getProvidersFrom,
+  fetchLiveProviders,
 } from "@/lib/services";
 import { Icon } from "@/components/ui/icon";
 import { ProviderCard, ProviderCardSkeleton } from "@/components/marketplace/provider-card";
 import { ScrollReveal, ScrollStagger, ScrollStaggerItem } from "@/components/ui/scroll-reveal";
-import type { AvailabilityType, Gender, ProviderFilters } from "@/types/marketplace";
+import type { AvailabilityType, Gender, Provider, ProviderFilters } from "@/types/marketplace";
 
 const EXPERIENCE_OPTIONS: { id: NonNullable<ProviderFilters["experience"]>; label: string }[] = [
   { id: "0-1", label: "0 – 1 years" },
@@ -60,9 +61,19 @@ export function BrowseProviders({
   const cities = useMemo(() => getDistinctCities(), []);
   const languages = useMemo(() => getDistinctLanguages(), []);
 
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+
+  const [liveProviders, setLiveProviders] = useState<Provider[] | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    fetchLiveProviders()
+      .then((list) => { if (!cancelled) setLiveProviders(list); })
+      .catch(() => { if (!cancelled) setLiveProviders([]); })
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
+  }, []);
 
   const categoryIds = lockedCategoryId ? [lockedCategoryId] : csv(searchParams.get("category"));
   const area = searchParams.get("area") ?? "";
@@ -83,7 +94,7 @@ export function BrowseProviders({
 
   const result = useMemo(
     () =>
-      getProviders({
+      getProvidersFrom(liveProviders ?? [], {
         q,
         categoryIds: categoryIds.length > 0 ? categoryIds : undefined,
         area: area || undefined,
@@ -97,7 +108,7 @@ export function BrowseProviders({
         page,
         pageSize: 9,
       }),
-    [q, categoryIds, area, experience, availabilityType, gender, selectedLanguages, selectedSkills, verifiedOnly, sort, page]
+    [liveProviders, q, categoryIds, area, experience, availabilityType, gender, selectedLanguages, selectedSkills, verifiedOnly, sort, page]
   );
 
   const updateParams = (patch: Record<string, string | null>) => {

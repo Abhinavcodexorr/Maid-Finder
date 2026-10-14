@@ -5,12 +5,13 @@ import Link from "next/link";
 import { useRouter, notFound } from "next/navigation";
 import { motion } from "framer-motion";
 import { useAuth } from "@/context/AuthContext";
-import { getProviderById, getCategoryById, getSimilarProviders, isSaved, toggleSaved, recordContactView } from "@/lib/services";
+import { getProviderById, getCategoryById, getSimilarProviders, getSimilarProvidersFrom, isSaved, toggleSaved, recordContactView, fetchLiveProviderById, fetchLiveProviders } from "@/lib/services";
 import { maskProvider } from "@/lib/services/providers";
 import { Icon } from "@/components/ui/icon";
 import { Avatar } from "@/components/ui/avatar";
 import { toast } from "@/components/ui/toaster";
 import { colorForCategory } from "@/lib/category-colors";
+import type { Provider } from "@/types/marketplace";
 
 const fadeUp = (delay = 0) => ({
   initial: { opacity: 0, y: 14 },
@@ -22,8 +23,30 @@ export default function ProviderProfilePage({ params }: { params: Promise<{ id: 
   const { id } = use(params);
   const router = useRouter();
   const { user, isSubscribed } = useAuth();
-  const provider = getProviderById(id);
+  const [provider, setProvider] = useState<Provider | null | undefined>(undefined);
+  const [similar, setSimilar] = useState<Provider[]>([]);
   const [saved, setSaved] = useState(false);
+
+  // Live providers first (real backend IDs); falls back to the mock catalog
+  // so any link into the original demo data keeps working too.
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const live = await fetchLiveProviderById(id);
+      if (cancelled) return;
+      if (live) {
+        setProvider(live);
+        fetchLiveProviders().then((list) => {
+          if (!cancelled) setSimilar(getSimilarProvidersFrom(list, live, 3));
+        });
+        return;
+      }
+      const mock = getProviderById(id) ?? null;
+      setProvider(mock);
+      if (mock) setSimilar(getSimilarProviders(mock, 3));
+    })();
+    return () => { cancelled = true; };
+  }, [id]);
 
   useEffect(() => {
     if (user && provider) setSaved(isSaved(user.id, provider.id));
@@ -33,12 +56,18 @@ export default function ProviderProfilePage({ params }: { params: Promise<{ id: 
     if (user && provider && isSubscribed) recordContactView(user.id, provider.id);
   }, [user, provider, isSubscribed]);
 
+  if (provider === undefined) {
+    return (
+      <div className="container-page py-16 text-center text-sm" style={{ color: "var(--muted)" }}>
+        Loading profile…
+      </div>
+    );
+  }
   if (!provider) notFound();
 
   const category = getCategoryById(provider.categoryId);
   const catColor = colorForCategory(provider.categoryId);
   const masked = maskProvider(provider, isSubscribed);
-  const similar = getSimilarProviders(provider, 3);
   const redirectTo = `/providers/${provider.id}`;
 
   const onUnlock = () => {
@@ -114,10 +143,12 @@ export default function ProviderProfilePage({ params }: { params: Promise<{ id: 
               </p>
 
               <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm" style={{ color: "var(--muted)" }}>
-                <span className="flex items-center gap-1.5">
-                  <Icon name="star" className="h-4 w-4" style={{ color: "var(--accent)" }} />
-                  <span className="font-semibold" style={{ color: "var(--ink)" }}>{provider.rating.toFixed(1)}</span>
-                </span>
+                {typeof provider.rating === "number" && (
+                  <span className="flex items-center gap-1.5">
+                    <Icon name="star" className="h-4 w-4" style={{ color: "var(--accent)" }} />
+                    <span className="font-semibold" style={{ color: "var(--ink)" }}>{provider.rating.toFixed(1)}</span>
+                  </span>
+                )}
                 <span className="flex items-center gap-1.5">
                   <Icon name="briefcase" className="h-4 w-4" />
                   {provider.experienceYears} years experience
@@ -188,8 +219,19 @@ export default function ProviderProfilePage({ params }: { params: Promise<{ id: 
                 <p className="mt-1 text-xs" style={{ color: "var(--muted)" }}>Years Experience</p>
               </div>
               <div className="card py-4 text-center">
-                <p className="font-display text-2xl font-bold" style={{ color: "var(--primary)" }}>{provider.rating}</p>
-                <p className="mt-1 text-xs" style={{ color: "var(--muted)" }}>Rating</p>
+                {typeof provider.rating === "number" ? (
+                  <>
+                    <p className="font-display text-2xl font-bold" style={{ color: "var(--primary)" }}>{provider.rating}</p>
+                    <p className="mt-1 text-xs" style={{ color: "var(--muted)" }}>Rating</p>
+                  </>
+                ) : (
+                  <>
+                    <p className="font-display text-2xl font-bold" style={{ color: provider.verified ? "var(--success)" : "var(--muted)" }}>
+                      {provider.verified ? "Yes" : "Pending"}
+                    </p>
+                    <p className="mt-1 text-xs" style={{ color: "var(--muted)" }}>Verified</p>
+                  </>
+                )}
               </div>
               <div className="card py-4 text-center">
                 <p className="font-display text-2xl font-bold capitalize" style={{ color: "var(--primary)" }}>{provider.availabilityType.split("-")[0]}</p>
@@ -340,10 +382,12 @@ export default function ProviderProfilePage({ params }: { params: Promise<{ id: 
                       <p className="truncate text-sm font-semibold">{p.firstName} {p.lastName[0]}.</p>
                       <p className="text-xs" style={{ color: "var(--primary)" }}>{cat?.name}</p>
                       <div className="mt-1 flex items-center gap-2 text-xs" style={{ color: "var(--muted)" }}>
-                        <span className="flex items-center gap-1">
-                          <Icon name="star" className="h-3 w-3" style={{ color: "var(--accent)" }} />
-                          {p.rating.toFixed(1)}
-                        </span>
+                        {typeof p.rating === "number" && (
+                          <span className="flex items-center gap-1">
+                            <Icon name="star" className="h-3 w-3" style={{ color: "var(--accent)" }} />
+                            {p.rating.toFixed(1)}
+                          </span>
+                        )}
                         <span>{p.experienceYears} yrs</span>
                       </div>
                     </div>

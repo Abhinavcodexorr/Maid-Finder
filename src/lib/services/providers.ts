@@ -124,7 +124,7 @@ function sortProviders(list: Provider[], sort: ProviderFilters["sort"]): Provide
     case "experience":
       return copy.sort((a, b) => b.experienceYears - a.experienceYears);
     case "rating":
-      return copy.sort((a, b) => b.rating - a.rating);
+      return copy.sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0));
     case "price-asc":
       return copy.sort((a, b) => a.price - b.price);
     case "price-desc":
@@ -144,10 +144,15 @@ export interface ProviderSearchResult {
 }
 
 export function getProviders(filters: ProviderFilters = {}): ProviderSearchResult {
+  return getProvidersFrom(PROVIDERS, filters);
+}
+
+/** Same filter/sort/pagination as getProviders, but over any provider list — used to run it over live-fetched data instead of the mock catalog. */
+export function getProvidersFrom(source: Provider[], filters: ProviderFilters = {}): ProviderSearchResult {
   const page = filters.page ?? 1;
   const pageSize = filters.pageSize ?? 9;
 
-  const filtered = sortProviders(PROVIDERS.filter((p) => matchesFilters(p, filters)), filters.sort);
+  const filtered = sortProviders(source.filter((p) => matchesFilters(p, filters)), filters.sort);
   const total = filtered.length;
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
   const start = (page - 1) * pageSize;
@@ -161,11 +166,24 @@ export function getProviderById(id: string): Provider | undefined {
 }
 
 export function getSimilarProviders(provider: Provider, limit = 3): Provider[] {
-  return PROVIDERS.filter((p) => p.categoryId === provider.categoryId && p.id !== provider.id).slice(0, limit);
+  return getSimilarProvidersFrom(PROVIDERS, provider, limit);
+}
+
+export function getSimilarProvidersFrom(source: Provider[], provider: Provider, limit = 3): Provider[] {
+  return source.filter((p) => p.categoryId === provider.categoryId && p.id !== provider.id).slice(0, limit);
 }
 
 export function getFeaturedProviders(limit = 6): Provider[] {
-  return [...PROVIDERS].sort((a, b) => b.rating - a.rating).slice(0, limit);
+  return getFeaturedProvidersFrom(PROVIDERS, limit);
+}
+
+/** Same "top-rated first" ordering as getFeaturedProviders, but over any provider list. Falls back to newest-first when ratings are absent (e.g. live data). */
+export function getFeaturedProvidersFrom(source: Provider[], limit = 6): Provider[] {
+  const hasRatings = source.some((p) => typeof p.rating === "number");
+  const sorted = hasRatings
+    ? [...source].sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0))
+    : [...source].sort((a, b) => new Date(b.joinedDate).getTime() - new Date(a.joinedDate).getTime());
+  return sorted.slice(0, limit);
 }
 
 export function getAllProviders(): Provider[] {

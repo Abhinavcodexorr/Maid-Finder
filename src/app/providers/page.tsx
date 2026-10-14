@@ -10,7 +10,8 @@ import {
   getDistinctCities,
   getDistinctLanguages,
   getSkillsForCategory,
-  getProviders,
+  getProvidersFrom,
+  fetchLiveProviders,
   isSaved,
   toggleSaved,
 } from "@/lib/services";
@@ -162,10 +163,12 @@ function ProviderCard({
                 </div>
 
                 <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-[var(--muted)]">
-                  <span className="flex items-center gap-1 font-semibold text-[var(--ink)]">
-                    <Icon name="star" className="h-3.5 w-3.5 text-amber-500" />
-                    {provider.rating.toFixed(1)}
-                  </span>
+                  {typeof provider.rating === "number" && (
+                    <span className="flex items-center gap-1 font-semibold text-[var(--ink)]">
+                      <Icon name="star" className="h-3.5 w-3.5 text-amber-500" />
+                      {provider.rating.toFixed(1)}
+                    </span>
+                  )}
                   <span>{provider.experienceYears} years exp.</span>
                   <span className="flex items-center gap-1">
                     <Icon name="map-pin" className="h-3.5 w-3.5 text-[var(--muted)]" />
@@ -329,10 +332,12 @@ function ProviderCard({
         <div>
           {/* Key Details Bar */}
           <div className="flex flex-wrap items-center justify-between gap-y-1 text-xs text-[var(--muted)]">
-            <span className="flex items-center gap-1 font-semibold text-[var(--ink)]">
-              <Icon name="star" className="h-3.5 w-3.5 text-amber-500" />
-              {provider.rating.toFixed(1)}
-            </span>
+            {typeof provider.rating === "number" && (
+              <span className="flex items-center gap-1 font-semibold text-[var(--ink)]">
+                <Icon name="star" className="h-3.5 w-3.5 text-amber-500" />
+                {provider.rating.toFixed(1)}
+              </span>
+            )}
             <span>{provider.experienceYears} yrs experience</span>
             <span className="flex items-center gap-1">
               <Icon name="map-pin" className="h-3 w-3 text-[var(--muted)]" />
@@ -661,9 +666,19 @@ function ProvidersContent() {
   const cities = useMemo(() => getDistinctCities(), []);
   const languages = useMemo(() => getDistinctLanguages(), []);
 
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [mobileFilters, setMobileFilters] = useState(false);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+
+  const [liveProviders, setLiveProviders] = useState<Provider[] | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    fetchLiveProviders()
+      .then((list) => { if (!cancelled) setLiveProviders(list); })
+      .catch(() => { if (!cancelled) setLiveProviders([]); })
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
+  }, []);
 
   // Search parameters
   const categoryIds = csv(searchParams.get("category"));
@@ -692,7 +707,7 @@ function ProvidersContent() {
 
   const result = useMemo(
     () =>
-      getProviders({
+      getProvidersFrom(liveProviders ?? [], {
         q,
         categoryIds: categoryIds.length > 0 ? categoryIds : undefined,
         area: area || undefined,
@@ -706,14 +721,14 @@ function ProvidersContent() {
         page,
         pageSize: 9,
       }),
-    [q, categoryIds, area, experience, availabilityType, gender, selectedLanguages, selectedSkills, verifiedOnly, sort, page]
+    [liveProviders, q, categoryIds, area, experience, availabilityType, gender, selectedLanguages, selectedSkills, verifiedOnly, sort, page]
   );
 
   // Suggested candidates in case of 0 results
   const suggested = useMemo(() => {
-    if (result.total > 0) return [];
-    return getProviders({ pageSize: 6, sort: "rating" }).items;
-  }, [result.total]);
+    if (result.total > 0 || !liveProviders) return [];
+    return getProvidersFrom(liveProviders, { pageSize: 6, sort: "rating" }).items;
+  }, [result.total, liveProviders]);
 
   const updateParams = (patch: Record<string, string | null>) => {
     setLoading(true);
@@ -839,7 +854,7 @@ function ProvidersContent() {
                   : "border border-[var(--line)] bg-white text-[var(--ink-secondary)] hover:border-[var(--muted)]"
               }`}
             >
-              🌟 All Helpers ({getProviders().total})
+              🌟 All Helpers ({(liveProviders ?? []).length})
             </button>
             {categories.map((c) => {
               const active = categoryIds.includes(c.id) || categoryIds.includes(c.slug);

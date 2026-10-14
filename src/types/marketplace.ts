@@ -34,7 +34,8 @@ export interface Provider {
   phone: string;
   about: string;
   verified: boolean;
-  rating: number;
+  /** Absent for live providers — the real API has no rating/review system yet. */
+  rating?: number;
   joinedDate: string;
 }
 
