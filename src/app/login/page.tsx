@@ -20,12 +20,12 @@ function LoginContent() {
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
-  const onSubmit = (e: React.FormEvent) => {
+  const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setSubmitting(true);
     try {
-      login(identifier, password);
+      await login(identifier, password);
       toast({ title: "Welcome back!", variant: "success" });
       router.push(redirect);
     } catch (err) {
@@ -186,10 +186,6 @@ function LoginContent() {
               {submitting ? "Logging in..." : "Log in"}
             </button>
           </form>
-
-          <div className="mt-5 rounded-xl p-3 text-center text-xs" style={{ background: "var(--primary-soft)", color: "var(--primary)" }}>
-            Demo: <b>demo@helpzone.in</b> / <b>Demo@1234</b>
-          </div>
 
           <p className="mt-6 text-center text-sm" style={{ color: "var(--muted)" }}>
             New to Help Zone?{" "}

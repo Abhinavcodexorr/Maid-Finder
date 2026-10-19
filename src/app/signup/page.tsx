@@ -7,7 +7,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useAuth } from "@/context/AuthContext";
-import { getCategories, emailExists, phoneExists, updateLookingFor, getDistinctAreas } from "@/lib/services";
+import { getCategories, updateLookingFor, getDistinctAreas } from "@/lib/services";
 import { Icon } from "@/components/ui/icon";
 import { LogoMark } from "@/components/ui/logo";
 import { toast } from "@/components/ui/toaster";
@@ -26,9 +26,9 @@ const accountSchema = z
     confirmPassword: z.string(),
     agree: z.literal(true, { error: "You must agree to the Terms & Privacy Policy" }),
   })
-  .refine((v) => v.password === v.confirmPassword, { message: "Passwords do not match", path: ["confirmPassword"] })
-  .refine((v) => !emailExists(v.email), { message: "An account with this email already exists", path: ["email"] })
-  .refine((v) => !phoneExists(v.phone), { message: "An account with this phone number already exists", path: ["phone"] });
+  .refine((v) => v.password === v.confirmPassword, { message: "Passwords do not match", path: ["confirmPassword"] });
+  // Duplicate email/phone checks now happen server-side against the real
+  // database (see the catch block in onStep1) instead of a local mock list.
 
 type AccountValues = z.infer<typeof accountSchema>;
 
@@ -68,9 +68,9 @@ function SignupContent() {
     formState: { errors, isSubmitting },
   } = useForm<AccountValues>({ resolver: zodResolver(accountSchema) });
 
-  const onStep1 = (values: AccountValues) => {
+  const onStep1 = async (values: AccountValues) => {
     try {
-      const user = signup({
+      const user = await signup({
         firstName: values.firstName,
         lastName: values.lastName,
         email: values.email,

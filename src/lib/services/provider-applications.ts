@@ -1,6 +1,6 @@
 "use client";
 
-import { api, apiRoutes } from "@/lib/api-client";
+import { ApiError } from "@/lib/api-client";
 import { writeJson, STORAGE_KEYS } from "@/lib/services/storage";
 
 export interface ProviderApplicationInput {
@@ -59,7 +59,14 @@ export async function submitProviderApplication(input: ProviderApplicationInput)
   formData.append("photo", input.kyc.photoFile);
   formData.append("idDocument", input.kyc.idDocumentFile);
 
-  const result = await api.post<ProviderApplicationResult>(apiRoutes.provider.register, formData);
+  // Goes through our own /api/providers/register proxy (same-origin), not
+  // the external API directly — see src/app/api/providers/register/route.ts.
+  const response = await fetch("/api/providers/register", { method: "POST", body: formData });
+  const data = await response.json().catch(() => null);
+  if (!response.ok || data?.success === false) {
+    throw new ApiError(data?.message || `Request failed with status ${response.status}`, response.status, data);
+  }
+  const result = data as ProviderApplicationResult;
   writeJson(STORAGE_KEYS.providerSession, result.token);
   return result;
 }

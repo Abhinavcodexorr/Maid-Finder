@@ -38,7 +38,20 @@ export interface ApiProvider {
   languages?: string[];
   duration?: string;
   applicationStatus?: "pending" | "approved" | "rejected";
+  profileComplete?: boolean;
+  isActive?: boolean;
   createdAt?: string;
+}
+
+/**
+ * Only providers who finished the complete-profile step, were approved by
+ * review, and haven't been deactivated should ever reach a family's view —
+ * a pending/rejected/incomplete/deactivated provider stays invisible on the
+ * public site even though the backend returns it (it only excludes
+ * hard-deactivated rows itself).
+ */
+function isPubliclyVisible(raw: ApiProvider): boolean {
+  return raw.profileComplete === true && raw.applicationStatus === "approved" && raw.isActive !== false;
 }
 
 interface ListResponse {
@@ -115,7 +128,7 @@ export async function fetchLiveProviders(): Promise<Provider[]> {
   const response = await fetch("/api/providers/list?limit=500", { cache: "no-store" });
   const res: ListResponse = await response.json();
   if (!res.success) throw new Error("Could not load providers.");
-  return (res.data || []).map(mapApiProviderToProvider);
+  return (res.data || []).filter(isPubliclyVisible).map(mapApiProviderToProvider);
 }
 
 export async function fetchLiveProviderById(id: string): Promise<Provider | null> {
@@ -123,7 +136,8 @@ export async function fetchLiveProviderById(id: string): Promise<Provider | null
     const response = await fetch(`/api/providers/${id}`, { cache: "no-store" });
     if (!response.ok) return null;
     const res: OneResponse = await response.json();
-    return res.success && res.data ? mapApiProviderToProvider(res.data) : null;
+    if (!res.success || !res.data || !isPubliclyVisible(res.data)) return null;
+    return mapApiProviderToProvider(res.data);
   } catch {
     return null;
   }

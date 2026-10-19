@@ -33,4 +33,6 @@ export const STORAGE_KEYS = {
   resetFlow: "helpzone_mkt_reset_flow",
   providerApplications: "helpzone_mkt_provider_applications",
   providerSession: "helpzone_mkt_provider_session",
+  customerToken: "helpzone_mkt_customer_token",
+  customerUser: "helpzone_mkt_customer_user",
 } as const;
