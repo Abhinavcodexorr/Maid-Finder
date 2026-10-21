@@ -1,9 +1,10 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
-import { getSavedProviders, getRecentlyViewed, getCategories } from "@/lib/services";
+import { fetchFavouriteProviders, getRecentlyViewed, getCategories } from "@/lib/services";
+import type { Provider } from "@/types/marketplace";
 import { Icon } from "@/components/ui/icon";
 import { Avatar } from "@/components/ui/avatar";
 
@@ -23,9 +24,17 @@ export default function DashboardOverviewPage() {
 
   const categories = useMemo(() => getCategories(), []);
 
-  const savedProviders = useMemo(() => {
-    if (!user) return [];
-    return getSavedProviders(user.id);
+  const [savedProviders, setSavedProviders] = useState<Provider[]>([]);
+
+  useEffect(() => {
+    // Nothing to fetch while logged out — the page renders null below in
+    // that case anyway (see the `if (!user) return null` further down).
+    if (!user) return;
+    let cancelled = false;
+    fetchFavouriteProviders()
+      .then((list) => { if (!cancelled) setSavedProviders(list); })
+      .catch(() => { if (!cancelled) setSavedProviders([]); });
+    return () => { cancelled = true; };
   }, [user]);
 
   const recentProviders = useMemo(() => {

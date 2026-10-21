@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { useAuth } from "@/context/AuthContext";
-import { getCategoryById, isSaved, toggleSaved } from "@/lib/services";
+import { getCategoryById, getCachedFavouriteIds, toggleFavouriteCached } from "@/lib/services";
 import { maskProvider } from "@/lib/services/providers";
 import { Icon } from "@/components/ui/icon";
 import { toast } from "@/components/ui/toaster";
@@ -41,27 +41,34 @@ export function ProviderCard({
   const [saved, setSaved] = useState(false);
 
   useEffect(() => {
-    if (user) {
-      setSaved(isSaved(user.id, provider.id));
-    }
+    if (!user) return;
+    let cancelled = false;
+    getCachedFavouriteIds()
+      .then((ids) => { if (!cancelled) setSaved(ids.has(provider.id)); })
+      .catch(() => {});
+    return () => { cancelled = true; };
   }, [user, provider.id]);
 
-  const onToggleSave = (e: React.MouseEvent) => {
+  const onToggleSave = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     if (!user) {
       router.push(`/login?redirect=${encodeURIComponent(`/providers/${provider.id}`)}`);
       return;
     }
-    const next = toggleSaved(user.id, provider.id);
-    setSaved(next);
-    toast({
-      title: next ? "Helper Saved" : "Helper Removed",
-      description: next
-        ? `${provider.firstName} ${provider.lastName} added to your shortlist.`
-        : `${provider.firstName} ${provider.lastName} removed from your shortlist.`,
-      variant: next ? "success" : "info",
-    });
+    try {
+      const next = await toggleFavouriteCached(provider.id, saved);
+      setSaved(next);
+      toast({
+        title: next ? "Helper Saved" : "Helper Removed",
+        description: next
+          ? `${provider.firstName} ${provider.lastName} added to your shortlist.`
+          : `${provider.firstName} ${provider.lastName} removed from your shortlist.`,
+        variant: next ? "success" : "info",
+      });
+    } catch (err) {
+      toast({ title: "Couldn't update saved list", description: err instanceof Error ? err.message : undefined, variant: "error" });
+    }
   };
 
   const onUnlock = (e: React.MouseEvent) => {

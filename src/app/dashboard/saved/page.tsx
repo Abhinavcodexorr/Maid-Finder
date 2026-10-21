@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
-import { getSavedProviders, toggleSaved, getCategories } from "@/lib/services";
+import { fetchFavouriteProviders, toggleFavouriteCached, getCategories } from "@/lib/services";
 import { Icon } from "@/components/ui/icon";
 import { Avatar } from "@/components/ui/avatar";
 import { toast } from "@/components/ui/toaster";
+import type { Provider } from "@/types/marketplace";
 
 const CATEGORY_EMOJIS: Record<string, string> = {
   "cat-cook": "🍳",
@@ -22,33 +23,56 @@ const CATEGORY_EMOJIS: Record<string, string> = {
 export default function SavedHelpersPage() {
   const { user, isSubscribed } = useAuth();
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
-  const [tick, setTick] = useState(0);
+  const [savedProviders, setSavedProviders] = useState<Provider[]>([]);
+  const [loading, setLoading] = useState(true);
 
   const categories = useMemo(() => getCategories(), []);
 
-  const savedProviders = useMemo(() => {
-    if (!user) return [];
-    void tick; // depend on state updates
-    return getSavedProviders(user.id);
-  }, [user, tick]);
+  useEffect(() => {
+    // Nothing to fetch while logged out — the page renders null below in
+    // that case anyway (see the `if (!user) return null` further down).
+    if (!user) return;
+    let cancelled = false;
+    // Marks the fetch as in-flight (relevant if `user` changes after mount,
+    // e.g. a different account logs in without a full page reload) — not
+    // state derivable from render, so this is an intentional effect sync.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setLoading(true);
+    fetchFavouriteProviders()
+      .then((list) => { if (!cancelled) setSavedProviders(list); })
+      .catch(() => { if (!cancelled) setSavedProviders([]); })
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
+  }, [user]);
 
   const filteredProviders = useMemo(() => {
     if (selectedCategory === "all") return savedProviders;
     return savedProviders.filter((p) => p.categoryId === selectedCategory);
   }, [savedProviders, selectedCategory]);
 
-  const handleRemove = (providerId: string, name: string) => {
+  const handleRemove = async (providerId: string, name: string) => {
     if (!user) return;
-    toggleSaved(user.id, providerId);
-    setTick((t) => t + 1);
-    toast({
-      title: "Removed from saved",
-      description: `${name} has been removed from your saved list.`,
-      variant: "info",
-    });
+    try {
+      await toggleFavouriteCached(providerId, true);
+      setSavedProviders((prev) => prev.filter((p) => p.id !== providerId));
+      toast({
+        title: "Removed from saved",
+        description: `${name} has been removed from your saved list.`,
+        variant: "info",
+      });
+    } catch (err) {
+      toast({ title: "Couldn't remove helper", description: err instanceof Error ? err.message : undefined, variant: "error" });
+    }
   };
 
   if (!user) return null;
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20 text-sm" style={{ color: "var(--muted)" }}>
+        Loading saved helpers…
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

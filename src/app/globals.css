@@ -33,10 +33,11 @@
   --error: #dc2626;
   --error-soft: #fef2f2;
 
-  /* ---- Locked / Protected ---- */
-  --locked: #7c3aed;
-  --locked-soft: #f5f3ff;
-  --locked-dark: #6d28d9;
+  /* ---- Locked / Protected (kept as its own semantic token, but mapped to
+     the brand's royal blue rather than purple — see --primary above) ---- */
+  --locked: #2563eb;
+  --locked-soft: #eff6ff;
+  --locked-dark: #1e40af;
 
   /* ---- Category accent colors (one per service, used for avatar fallbacks & tiles) ---- */
   --cat-cook: #c2410c;
@@ -62,7 +63,7 @@
   --gradient-primary: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
   --gradient-dark: linear-gradient(160deg, #0f172a 0%, #1e293b 100%);
   --gradient-hero: linear-gradient(135deg, #eff6ff 0%, #f0f9ff 50%, #f8fafc 100%);
-  --gradient-locked: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
+  --gradient-locked: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
   --gradient-success: linear-gradient(135deg, #10b981 0%, #059669 100%);
   --gradient-warm: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
 

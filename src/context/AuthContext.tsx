@@ -9,6 +9,7 @@ import {
   type LiveSignupInput,
 } from "@/lib/services/live-customer-auth";
 import { getActiveSubscription, getDaysRemaining, isSubscribed as checkSubscribed } from "@/lib/services/subscription";
+import { clearFavouritesCache } from "@/lib/services/live-favourites";
 import type { PublicUser } from "@/lib/services/auth";
 import type { Subscription } from "@/types/marketplace";
 
@@ -73,6 +74,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = useCallback(() => {
     logoutCustomer();
+    clearFavouritesCache();
     refresh();
   }, [refresh]);
 

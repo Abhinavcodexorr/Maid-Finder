@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter, notFound } from "next/navigation";
 import { motion } from "framer-motion";
 import { useAuth } from "@/context/AuthContext";
-import { getProviderById, getCategoryById, getSimilarProviders, getSimilarProvidersFrom, isSaved, toggleSaved, recordContactView, fetchLiveProviderById, fetchLiveProviders } from "@/lib/services";
+import { getProviderById, getCategoryById, getSimilarProviders, getSimilarProvidersFrom, getCachedFavouriteIds, toggleFavouriteCached, recordContactView, fetchLiveProviderById, fetchLiveProviders } from "@/lib/services";
 import { maskProvider } from "@/lib/services/providers";
 import { Icon } from "@/components/ui/icon";
 import { Avatar } from "@/components/ui/avatar";
@@ -49,7 +49,12 @@ export default function ProviderProfilePage({ params }: { params: Promise<{ id: 
   }, [id]);
 
   useEffect(() => {
-    if (user && provider) setSaved(isSaved(user.id, provider.id));
+    if (!user || !provider) return;
+    let cancelled = false;
+    getCachedFavouriteIds()
+      .then((ids) => { if (!cancelled) setSaved(ids.has(provider.id)); })
+      .catch(() => {});
+    return () => { cancelled = true; };
   }, [user, provider]);
 
   useEffect(() => {
@@ -78,14 +83,18 @@ export default function ProviderProfilePage({ params }: { params: Promise<{ id: 
     router.push(`/membership?redirect=${encodeURIComponent(redirectTo)}`);
   };
 
-  const onToggleSave = () => {
+  const onToggleSave = async () => {
     if (!user) {
       router.push(`/login?redirect=${encodeURIComponent(redirectTo)}`);
       return;
     }
-    const next = toggleSaved(user.id, provider.id);
-    setSaved(next);
-    toast({ title: next ? "Saved to your list" : "Removed from saved", variant: "success" });
+    try {
+      const next = await toggleFavouriteCached(provider.id, saved);
+      setSaved(next);
+      toast({ title: next ? "Saved to your list" : "Removed from saved", variant: "success" });
+    } catch (err) {
+      toast({ title: "Couldn't update saved list", description: err instanceof Error ? err.message : undefined, variant: "error" });
+    }
   };
 
   const whatsappHref = masked.phone ? `https://wa.me/${masked.phone.replace(/\D/g, "")}` : undefined;

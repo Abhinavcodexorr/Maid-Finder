@@ -63,7 +63,7 @@ export function Logo({
   // Horizontal wordmark (helpZone), light variant for light backgrounds,
   // dark variant (white "help") for dark backgrounds like the footer.
   const height = size;
-  const width = Math.round(height * (1000 / 304)); // native aspect ratio of logo-light.png / logo-dark.png
+  const width = Math.round(height * (1969 / 491)); // native aspect ratio of logo-light.png / logo-dark.png
 
   return (
     <span className={`inline-flex items-center gap-2.5 ${className}`}>
