@@ -1,13 +1,14 @@
 "use client";
 
-import { Suspense } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { useAuth } from "@/context/AuthContext";
-import { getPlans } from "@/lib/services";
+import { fetchLivePlans } from "@/lib/services";
 import { Icon } from "@/components/ui/icon";
 import { ScrollReveal, ScrollStagger, ScrollStaggerItem } from "@/components/ui/scroll-reveal";
+import type { Plan } from "@/types/marketplace";
 
 const fadeUp = (delay = 0) => ({
   initial: { opacity: 0, y: 20 },
@@ -29,7 +30,17 @@ function MembershipContent() {
   const searchParams = useSearchParams();
   const redirect = searchParams.get("redirect") || "/providers";
   const { user, isSubscribed } = useAuth();
-  const plans = getPlans();
+  const [plans, setPlans] = useState<Plan[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetchLivePlans()
+      .then((list) => { if (!cancelled) setPlans(list); })
+      .catch(() => { if (!cancelled) setPlans([]); })
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
+  }, []);
 
   const onSelect = (planId: string) => {
     if (!user) {
@@ -72,6 +83,13 @@ function MembershipContent() {
 
       {/* Plans Grid */}
       <section className="container-page py-12">
+        {loading ? (
+          <div className="py-16 text-center text-sm" style={{ color: "var(--muted)" }}>Loading plans…</div>
+        ) : plans.length === 0 ? (
+          <div className="mx-auto max-w-md py-16 text-center text-sm" style={{ color: "var(--muted)" }}>
+            No membership plans are available right now. Please check back shortly.
+          </div>
+        ) : (
         <ScrollStagger className="mx-auto grid max-w-4xl gap-6 lg:grid-cols-3">
           {plans.map((plan) => {
             const isPopular = plan.isPopular;
@@ -133,6 +151,7 @@ function MembershipContent() {
             );
           })}
         </ScrollStagger>
+        )}
       </section>
 
       {/* FAQ-style trust section */}

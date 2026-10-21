@@ -1,12 +1,13 @@
 "use client";
 
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
-import { getPlanById, processPayment } from "@/lib/services";
+import { fetchLivePlanById, processPayment } from "@/lib/services";
 import { Icon } from "@/components/ui/icon";
 import { LogoMark } from "@/components/ui/logo";
 import { toast } from "@/components/ui/toaster";
+import type { Plan } from "@/types/marketplace";
 
 function CheckoutContent() {
   const router = useRouter();
@@ -15,12 +16,28 @@ function CheckoutContent() {
   const redirect = searchParams.get("redirect") || "/providers";
   const { user } = useAuth();
 
-  const plan = getPlanById(planId);
+  const [plan, setPlan] = useState<Plan | null | undefined>(undefined);
   const [processing, setProcessing] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetchLivePlanById(planId)
+      .then((p) => { if (!cancelled) setPlan(p); })
+      .catch(() => { if (!cancelled) setPlan(null); });
+    return () => { cancelled = true; };
+  }, [planId]);
 
   if (!user) {
     router.push(`/login?redirect=${encodeURIComponent(`/checkout?plan=${planId}&redirect=${encodeURIComponent(redirect)}`)}`);
     return null;
+  }
+
+  if (plan === undefined) {
+    return (
+      <div className="container-page py-16 text-center text-sm" style={{ color: "var(--muted)" }}>
+        Loading plan…
+      </div>
+    );
   }
 
   if (!plan) {
@@ -44,7 +61,7 @@ function CheckoutContent() {
     try {
       // Simulate payment delay
       await new Promise((r) => setTimeout(r, 1200));
-      processPayment(user.id, plan.id, "Card");
+      processPayment(user.id, plan, "Card");
       toast({ title: "Payment successful!", variant: "success" });
       router.push(`/checkout/success?redirect=${encodeURIComponent(redirect)}`);
     } catch (err) {

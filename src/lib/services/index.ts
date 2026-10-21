@@ -4,7 +4,6 @@
 
 export * from "@/lib/services/categories";
 export * from "@/lib/services/providers";
-export * from "@/lib/services/plans";
 export * from "@/lib/services/auth";
 export * from "@/lib/services/subscription";
 export * from "@/lib/services/payments";
@@ -14,3 +13,4 @@ export * from "@/lib/services/provider-applications";
 export * from "@/lib/services/live-providers";
 export * from "@/lib/services/live-customer-auth";
 export * from "@/lib/services/live-favourites";
+export * from "@/lib/services/live-plans";

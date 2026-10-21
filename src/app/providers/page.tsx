@@ -6,9 +6,9 @@ import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   getCategories,
-  getDistinctAreas,
-  getDistinctCities,
-  getDistinctLanguages,
+  getDistinctAreasFrom,
+  getDistinctCitiesFrom,
+  getDistinctLanguagesFrom,
   getSkillsForCategory,
   getProvidersFrom,
   fetchLiveProviders,
@@ -669,15 +669,15 @@ function ProvidersContent() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const categories = useMemo(() => getCategories(), []);
-  const areas = useMemo(() => getDistinctAreas(), []);
-  const cities = useMemo(() => getDistinctCities(), []);
-  const languages = useMemo(() => getDistinctLanguages(), []);
 
   const [loading, setLoading] = useState(true);
   const [mobileFilters, setMobileFilters] = useState(false);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
 
   const [liveProviders, setLiveProviders] = useState<Provider[] | null>(null);
+  const areas = useMemo(() => getDistinctAreasFrom(liveProviders ?? []), [liveProviders]);
+  const cities = useMemo(() => getDistinctCitiesFrom(liveProviders ?? []), [liveProviders]);
+  const languages = useMemo(() => getDistinctLanguagesFrom(liveProviders ?? []), [liveProviders]);
   useEffect(() => {
     let cancelled = false;
     fetchLiveProviders()

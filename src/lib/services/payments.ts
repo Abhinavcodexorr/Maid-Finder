@@ -1,9 +1,8 @@
 "use client";
 
 import { readJson, writeJson, STORAGE_KEYS } from "@/lib/services/storage";
-import { getPlanById } from "@/lib/services/plans";
 import { activatePlan } from "@/lib/services/subscription";
-import type { Payment, PaymentMode, Subscription } from "@/types/marketplace";
+import type { Payment, PaymentMode, Plan, Subscription } from "@/types/marketplace";
 
 function getAll(): Payment[] {
   return readJson<Payment[]>(STORAGE_KEYS.payments, []);
@@ -26,12 +25,11 @@ export function getPaymentHistory(userId: string): Payment[] {
  */
 export function mockPay(params: {
   userId: string;
-  planId: string;
+  plan: Plan;
   mode: PaymentMode;
   forceFail?: boolean;
 }): { payment: Payment; subscription: Subscription | null } {
-  const plan = getPlanById(params.planId);
-  if (!plan) throw new Error("Plan not found.");
+  const { plan } = params;
 
   const payment: Payment = {
     id: `pay-${Date.now()}`,
@@ -51,14 +49,14 @@ export function mockPay(params: {
     return { payment, subscription: null };
   }
 
-  const subscription = activatePlan(params.userId, plan.id);
+  const subscription = activatePlan(params.userId, plan);
   return { payment, subscription };
 }
 
 export function processPayment(
   userId: string,
-  planId: string,
+  plan: Plan,
   mode: PaymentMode = "Card"
 ): { payment: Payment; subscription: Subscription | null } {
-  return mockPay({ userId, planId, mode });
+  return mockPay({ userId, plan, mode });
 }

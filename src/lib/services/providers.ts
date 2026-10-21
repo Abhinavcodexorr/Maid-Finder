@@ -191,11 +191,11 @@ export function getAllProviders(): Provider[] {
 }
 
 export function getDistinctAreas(): string[] {
-  return Array.from(new Set(PROVIDERS.map((p) => p.area))).sort();
+  return getDistinctAreasFrom(PROVIDERS);
 }
 
 export function getDistinctCities(): string[] {
-  return Array.from(new Set(PROVIDERS.map((p) => p.city))).sort();
+  return getDistinctCitiesFrom(PROVIDERS);
 }
 
 export function getDistinctLocations(): string[] {
@@ -205,7 +205,23 @@ export function getDistinctLocations(): string[] {
 }
 
 export function getDistinctLanguages(): string[] {
-  return Array.from(new Set(PROVIDERS.flatMap((p) => p.languages))).sort();
+  return getDistinctLanguagesFrom(PROVIDERS);
+}
+
+// `*From` variants run the same logic over any provider array — used to
+// derive filter options from the live-fetched catalog instead of the mock
+// PROVIDERS constant, so e.g. the city dropdown reflects where real
+// registered providers actually are.
+export function getDistinctAreasFrom(source: Provider[]): string[] {
+  return Array.from(new Set(source.map((p) => p.area).filter(Boolean))).sort();
+}
+
+export function getDistinctCitiesFrom(source: Provider[]): string[] {
+  return Array.from(new Set(source.map((p) => p.city).filter(Boolean))).sort();
+}
+
+export function getDistinctLanguagesFrom(source: Provider[]): string[] {
+  return Array.from(new Set(source.flatMap((p) => p.languages))).sort();
 }
 
 

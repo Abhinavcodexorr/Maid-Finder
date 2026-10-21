@@ -1,15 +1,22 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
-import { getPlans, getPaymentHistory } from "@/lib/services";
+import { fetchLivePlans, getPaymentHistory } from "@/lib/services";
 import { Icon } from "@/components/ui/icon";
 import { toast } from "@/components/ui/toaster";
+import type { Plan } from "@/types/marketplace";
 
 export default function DashboardMembershipPage() {
   const { user, isSubscribed, subscription, daysRemaining } = useAuth();
-  const plans = useMemo(() => getPlans(), []);
+  const [plans, setPlans] = useState<Plan[]>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetchLivePlans().then((list) => { if (!cancelled) setPlans(list); }).catch(() => {});
+    return () => { cancelled = true; };
+  }, []);
 
   const payments = useMemo(() => {
     if (!user) return [];

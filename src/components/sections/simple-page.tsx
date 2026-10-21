@@ -16,7 +16,7 @@ export function SimplePage({ title, subtitle }: SimplePageProps) {
             This page can be expanded with the final copy while keeping the same route and layout.
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
-            <Link href="/search" className="btn btn-primary">
+            <Link href="/providers" className="btn btn-primary">
               Browse Providers
             </Link>
             <Link href="/contact" className="btn btn-soft">

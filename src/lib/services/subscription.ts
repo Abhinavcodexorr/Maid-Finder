@@ -1,8 +1,7 @@
 "use client";
 
 import { readJson, writeJson, STORAGE_KEYS } from "@/lib/services/storage";
-import { getPlanById } from "@/lib/services/plans";
-import type { Subscription } from "@/types/marketplace";
+import type { Plan, Subscription } from "@/types/marketplace";
 
 type SubscriptionMap = Record<string, Subscription>;
 
@@ -34,10 +33,7 @@ export function getDaysRemaining(userId: string): number {
 }
 
 /** Activates a plan for the user, extending an already-active plan's expiry rather than overwriting it. */
-export function activatePlan(userId: string, planId: string): Subscription {
-  const plan = getPlanById(planId);
-  if (!plan) throw new Error("Plan not found.");
-
+export function activatePlan(userId: string, plan: Plan): Subscription {
   const map = getAll();
   const existing = map[userId];
   const now = new Date();
