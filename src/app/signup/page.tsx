@@ -7,7 +7,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useAuth } from "@/context/AuthContext";
-import { getCategories, updateLookingFor } from "@/lib/services";
+import { getCategories, saveLiveCustomerProfile, updateLookingFor } from "@/lib/services";
 import { Icon } from "@/components/ui/icon";
 import { Logo } from "@/components/ui/logo";
 import { toast } from "@/components/ui/toaster";
@@ -140,6 +140,14 @@ function SignupContent() {
       requirementType: skipped ? undefined : (requirementType as AvailabilityType) || undefined,
       onboardingDismissed: true,
     });
+    if (!skipped) {
+      void saveLiveCustomerProfile({
+        city: preferredCity || undefined,
+        state: preferredState || undefined,
+        lookingFor: selectedCategories,
+        requirementType: requirementType || undefined,
+      });
+    }
     toast({ title: "Welcome to Help Zone! 🎉", description: "Your account is ready.", variant: "success" });
     router.push(redirect);
   };

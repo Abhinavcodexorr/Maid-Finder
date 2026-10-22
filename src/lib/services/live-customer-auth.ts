@@ -78,6 +78,22 @@ export async function registerCustomer(input: LiveSignupInput): Promise<PublicUs
   return persist(result);
 }
 
+/** Saves the customer's location and interests on the real backend (shown in the admin panel). Best effort. */
+export async function saveLiveCustomerProfile(profile: {
+  city?: string;
+  state?: string;
+  lookingFor?: string[];
+  requirementType?: string;
+}): Promise<void> {
+  const token = getCustomerToken();
+  if (!token) return;
+  await fetch("/api/customers/me", {
+    method: "PUT",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+    body: JSON.stringify(profile),
+  }).catch(() => undefined);
+}
+
 export async function loginCustomer(email: string, password: string): Promise<PublicUser> {
   const result = await postJson("/api/customers/login", {
     email: email.trim().toLowerCase(),
