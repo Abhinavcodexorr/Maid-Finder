@@ -3,7 +3,7 @@
 import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
-import { fetchLivePlanById, processPayment } from "@/lib/services";
+import { fetchLivePlanById, processPayment, recordLiveSubscription } from "@/lib/services";
 import { Icon } from "@/components/ui/icon";
 import { LogoMark } from "@/components/ui/logo";
 import { toast } from "@/components/ui/toaster";
@@ -61,7 +61,9 @@ function CheckoutContent() {
     try {
       // Simulate payment delay
       await new Promise((r) => setTimeout(r, 1200));
-      processPayment(user.id, plan, "Card");
+      const { payment } = processPayment(user.id, plan, "Card");
+      // Tell the backend, so the purchase shows in the admin panel.
+      await recordLiveSubscription(plan.id, payment.id);
       toast({ title: "Payment successful!", variant: "success" });
       router.push(`/checkout/success?redirect=${encodeURIComponent(redirect)}`);
     } catch (err) {
