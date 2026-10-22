@@ -1,15 +1,15 @@
 "use client";
 
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useAuth } from "@/context/AuthContext";
-import { getCategories, updateLookingFor, getDistinctAreas } from "@/lib/services";
+import { getCategories, updateLookingFor } from "@/lib/services";
 import { Icon } from "@/components/ui/icon";
-import { LogoMark } from "@/components/ui/logo";
+import { Logo } from "@/components/ui/logo";
 import { toast } from "@/components/ui/toaster";
 import type { AvailabilityType } from "@/types/marketplace";
 
@@ -53,14 +53,53 @@ function SignupContent() {
   const redirect = searchParams.get("redirect") || "/";
   const { signup } = useAuth();
   const categories = getCategories();
-  const areas = getDistinctAreas();
 
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [showPassword, setShowPassword] = useState(false);
   const [newUserId, setNewUserId] = useState<string | null>(null);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-  const [preferredArea, setPreferredArea] = useState("");
   const [requirementType, setRequirementType] = useState<AvailabilityType | "">("");
+
+  // Preferred location: state first, then city — the city list is fetched
+  // for whichever state is picked, from a free, no-key India states/cities
+  // dataset (see src/lib/india-geo.ts), not a flat free-text area list.
+  const [states, setStates] = useState<string[]>([]);
+  const [preferredState, setPreferredState] = useState("");
+  const [cities, setCities] = useState<string[]>([]);
+  const [citiesLoading, setCitiesLoading] = useState(false);
+  const [preferredCity, setPreferredCity] = useState("");
+
+  useEffect(() => {
+    fetch("/api/geo/states")
+      .then((res) => res.json())
+      .then((data) => { if (data?.success) setStates(data.data); })
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    if (!preferredState) return;
+    // Marks the fetch as in-flight — not state derivable from render, so
+    // this is an intentional effect sync (see the dashboard/saved page for
+    // the same pattern).
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setCitiesLoading(true);
+    fetch(`/api/geo/cities?state=${encodeURIComponent(preferredState)}`)
+      .then((res) => res.json())
+      .then((data) => setCities(data?.success ? data.data : []))
+      .catch(() => setCities([]))
+      .finally(() => setCitiesLoading(false));
+  }, [preferredState]);
+
+  // Clearing and re-fetching happen together here, on the actual user
+  // action that invalidates the old city list — not derived reactively
+  // from state in an effect, which is what the city-fetch effect above is
+  // for (fetching is a real external-system sync; resetting local state in
+  // response to a local state change is not).
+  const onStateChange = (value: string) => {
+    setPreferredState(value);
+    setCities([]);
+    setPreferredCity("");
+  };
 
   const {
     register,
@@ -92,9 +131,12 @@ function SignupContent() {
 
   const finishOnboarding = (skipped: boolean) => {
     if (!newUserId) return;
+    const preferredArea = preferredCity && preferredState
+      ? `${preferredCity}, ${preferredState}`
+      : preferredState || undefined;
     updateLookingFor(newUserId, {
       lookingFor: skipped ? [] : selectedCategories,
-      preferredArea: skipped ? undefined : preferredArea || undefined,
+      preferredArea: skipped ? undefined : preferredArea,
       requirementType: skipped ? undefined : (requirementType as AvailabilityType) || undefined,
       onboardingDismissed: true,
     });
@@ -106,9 +148,8 @@ function SignupContent() {
 
   return (
     <section className="mx-auto max-w-xl px-4 py-12 sm:px-6">
-      <div className="mb-6 flex items-center justify-center gap-2.5">
-        <LogoMark size={28} />
-        <span className="font-display text-lg font-semibold">Help Zone</span>
+      <div className="mb-6 flex items-center justify-center">
+        <Logo size={32} />
       </div>
 
       {/* Step indicator */}
@@ -248,13 +289,25 @@ function SignupContent() {
             </p>
             <div className="mt-5 grid gap-4 sm:grid-cols-2">
               <div>
-                <label className="mb-1.5 block text-sm font-semibold">Preferred area</label>
-                <select className="field" value={preferredArea} onChange={(e) => setPreferredArea(e.target.value)}>
-                  <option value="">Select area</option>
-                  {areas.map((a) => <option key={a} value={a}>{a}</option>)}
+                <label className="mb-1.5 block text-sm font-semibold">State</label>
+                <select className="field" value={preferredState} onChange={(e) => onStateChange(e.target.value)}>
+                  <option value="">Select state</option>
+                  {states.map((s) => <option key={s} value={s}>{s}</option>)}
                 </select>
               </div>
               <div>
+                <label className="mb-1.5 block text-sm font-semibold">City</label>
+                <select
+                  className="field"
+                  value={preferredCity}
+                  onChange={(e) => setPreferredCity(e.target.value)}
+                  disabled={!preferredState || citiesLoading}
+                >
+                  <option value="">{citiesLoading ? "Loading…" : "Select city"}</option>
+                  {cities.map((c) => <option key={c} value={c}>{c}</option>)}
+                </select>
+              </div>
+              <div className="sm:col-span-2">
                 <label className="mb-1.5 block text-sm font-semibold">Service type</label>
                 <select className="field" value={requirementType} onChange={(e) => setRequirementType(e.target.value as AvailabilityType)}>
                   <option value="">Any type</option>

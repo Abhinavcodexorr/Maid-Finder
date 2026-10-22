@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { Icon } from "@/components/ui/icon";
-import { LogoMark } from "@/components/ui/logo";
+import { Logo } from "@/components/ui/logo";
 import { toast } from "@/components/ui/toaster";
 
 function LoginContent() {
@@ -70,10 +70,7 @@ function LoginContent() {
             href="/"
             className="inline-flex items-center gap-2.5 rounded-full border border-white/20 bg-slate-950/40 px-3.5 py-1.5 backdrop-blur-md transition-all hover:bg-slate-950/60"
           >
-            <LogoMark size={26} />
-            <span className="font-display text-sm font-semibold tracking-tight text-white">
-              Help Zone
-            </span>
+            <Logo size={24} theme="dark" />
           </Link>
 
           <span className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-[11px] font-medium text-white/90 backdrop-blur-md">

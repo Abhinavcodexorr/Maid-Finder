@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { requestPasswordReset, resetPasswordWithOtp, isValidMockOtp } from "@/lib/services";
 import { Icon } from "@/components/ui/icon";
-import { LogoMark } from "@/components/ui/logo";
+import { Logo } from "@/components/ui/logo";
 import { toast } from "@/components/ui/toaster";
 
 type Step = "identify" | "otp" | "reset" | "done";
@@ -63,9 +63,8 @@ export default function ForgotPasswordPage() {
 
   return (
     <section className="mx-auto flex min-h-[calc(100vh-73px)] max-w-md flex-col justify-center px-4 py-12 sm:px-6">
-      <div className="mb-6 flex items-center justify-center gap-2.5">
-        <LogoMark size={30} />
-        <span className="font-display text-xl font-semibold">Help Zone</span>
+      <div className="mb-6 flex items-center justify-center">
+        <Logo size={32} />
       </div>
 
       <div className="card">

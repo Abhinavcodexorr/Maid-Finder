@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { fetchLivePlanById, processPayment, recordLiveSubscription } from "@/lib/services";
 import { Icon } from "@/components/ui/icon";
-import { LogoMark } from "@/components/ui/logo";
+import { Logo } from "@/components/ui/logo";
 import { toast } from "@/components/ui/toaster";
 import type { Plan } from "@/types/marketplace";
 
@@ -76,7 +76,7 @@ function CheckoutContent() {
   return (
     <section className="mx-auto max-w-2xl px-4 py-12 sm:px-6">
       <div className="mb-8 text-center">
-        <LogoMark size={36} />
+        <Logo size={36} className="justify-center" />
         <h1 className="font-display text-h2 mt-4">Complete Your Purchase</h1>
         <p className="mt-1 text-sm" style={{ color: "var(--muted)" }}>
           You&apos;re subscribing to the <b>{plan.name}</b> plan.

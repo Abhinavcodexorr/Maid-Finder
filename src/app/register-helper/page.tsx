@@ -8,7 +8,7 @@ import { z } from "zod";
 import { submitProviderApplication, completeProviderProfile } from "@/lib/services";
 import { ApiError } from "@/lib/api-client";
 import { Icon } from "@/components/ui/icon";
-import { LogoMark } from "@/components/ui/logo";
+import { Logo } from "@/components/ui/logo";
 import { toast } from "@/components/ui/toaster";
 import { colorForIndex } from "@/lib/category-colors";
 
@@ -248,8 +248,7 @@ export default function RegisterHelperPage() {
   return (
     <section className="mx-auto max-w-xl px-4 py-12 sm:px-6">
       <div className="mb-6 flex items-center justify-center gap-2.5">
-        <LogoMark size={28} />
-        <span className="font-display text-lg font-semibold">Help Zone</span>
+        <Logo size={32} />
         <span className="pill pill-primary">Helper</span>
       </div>
 
