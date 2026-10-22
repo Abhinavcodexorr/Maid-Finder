@@ -14,7 +14,7 @@ function CheckoutContent() {
   const searchParams = useSearchParams();
   const planId = searchParams.get("plan") || "";
   const redirect = searchParams.get("redirect") || "/providers";
-  const { user } = useAuth();
+  const { user, refresh } = useAuth();
 
   const [plan, setPlan] = useState<Plan | null | undefined>(undefined);
   const [processing, setProcessing] = useState(false);
@@ -64,6 +64,12 @@ function CheckoutContent() {
       const { payment } = processPayment(user.id, plan, "Card");
       // Tell the backend, so the purchase shows in the admin panel.
       await recordLiveSubscription(plan.id, payment.id);
+      // processPayment writes the new subscription straight to localStorage;
+      // AuthContext's in-memory subscription/isSubscribed only reflect what
+      // it read at mount, so every page reading isSubscribed from useAuth()
+      // (provider cards, detail pages) would keep showing "locked" until a
+      // hard refresh remounted it. Sync it now instead of waiting for that.
+      refresh();
       toast({ title: "Payment successful!", variant: "success" });
       router.push(`/checkout/success?redirect=${encodeURIComponent(redirect)}`);
     } catch (err) {
