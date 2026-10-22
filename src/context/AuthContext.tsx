@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   registerCustomer,
@@ -60,8 +60,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // longer valid) still "looks" logged in from localStorage alone — this is
   // the only way to catch that, so on finding it, the user is logged out
   // and sent home rather than left on a page that will keep failing.
+  //
+  // Runs once per signed-in user id, guarded by a ref rather than firing
+  // on every `user` object identity change — `refresh()` re-reads a fresh
+  // object from localStorage each time (even for the same account), and
+  // without this guard a failed verification's own refresh() call would
+  // re-trigger this same effect, looping forever against /api/customers/me.
+  const verifiedUserIdRef = useRef<string | null>(null);
   useEffect(() => {
-    if (!user) return;
+    if (!user || verifiedUserIdRef.current === user.id) return;
+    verifiedUserIdRef.current = user.id;
     let cancelled = false;
     verifyCustomerSession().then((valid) => {
       if (cancelled || valid) return;
@@ -95,6 +103,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const logout = useCallback(() => {
     logoutCustomer();
     clearFavouritesCache();
+    verifiedUserIdRef.current = null;
     refresh();
   }, [refresh]);
 

@@ -117,10 +117,15 @@ export function logoutCustomer(): void {
 
 /**
  * Checks the stored session against the real backend (GET /api/v1/user/me).
- * Returns false — and clears the stale session — when the token is invalid,
- * expired, or the account it refers to no longer exists/is deactivated
- * (the backend returns 401 for all of these). A network failure is treated
- * as "can't tell", not as a reason to log someone out.
+ * Returns false — and clears the stale session — only on an explicit 401
+ * (invalid/expired token, or the account was deleted/deactivated: the
+ * backend returns 401 for all of these). Anything else — a network
+ * failure, a 404/502 from a backend route that isn't deployed yet, a
+ * transient 500 — is treated as "can't tell", not as a reason to log
+ * someone out: that distinction also matters structurally, since the
+ * caller reacts to `false` by refreshing user state, and a route that's
+ * simply unreachable would never stop returning `false`, so treating it
+ * the same as a real 401 would retry forever instead of giving up once.
  */
 export async function verifyCustomerSession(): Promise<boolean> {
   const token = getCustomerToken();
@@ -134,7 +139,7 @@ export async function verifyCustomerSession(): Promise<boolean> {
       logoutCustomer();
       return false;
     }
-    return response.ok;
+    return true;
   } catch {
     return true;
   }
