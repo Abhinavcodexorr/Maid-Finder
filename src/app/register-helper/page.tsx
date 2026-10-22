@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { submitProviderApplication, getDistinctCities } from "@/lib/services";
+import { submitProviderApplication, completeProviderProfile } from "@/lib/services";
 import { ApiError } from "@/lib/api-client";
 import { Icon } from "@/components/ui/icon";
 import { LogoMark } from "@/components/ui/logo";
@@ -32,13 +32,13 @@ const SERVICES = [
 
 const EXPERIENCE_OPTIONS = ["< 1 year", "1–3 years", "3–5 years", "5–10 years", "10+ years"];
 
-const ID_TYPES = [
-  { id: "Aadhaar Card", emoji: "🪪" },
-  { id: "PAN Card", emoji: "💳" },
-  { id: "Voter ID", emoji: "🗳️" },
-  { id: "Driving License", emoji: "🚗" },
-  { id: "Passport", emoji: "📘" },
-];
+const EXPERIENCE_YEARS: Record<string, number> = {
+  "< 1 year": 0,
+  "1–3 years": 2,
+  "3–5 years": 4,
+  "5–10 years": 7,
+  "10+ years": 12,
+};
 
 const TALKING_POINTS = [
   { emoji: "👋", text: "Say your name and where you live" },
@@ -59,7 +59,8 @@ const basicSchema = z
     gender: z.enum(["Male", "Female"], { error: "Select your gender" }),
     mobileNumber: z.string().regex(/^[0-9]{7,10}$/, "Enter a valid mobile number"),
     email: z.string().email("Enter a valid email address"),
-    city: z.string().min(1, "Select your city"),
+    state: z.string().min(1, "Select your work state"),
+    city: z.string().min(1, "Select your work city"),
     password: z.string().min(8, "At least 8 characters").regex(/[A-Za-z]/, "Must include a letter").regex(/\d/, "Must include a number"),
     confirmPassword: z.string(),
   })
@@ -82,8 +83,6 @@ function passwordStrength(pw: string): { score: number; label: string; color: st
    COMPONENT
    ================================================================ */
 export default function RegisterHelperPage() {
-  const cities = getDistinctCities();
-
   const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
   const [submitted, setSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -95,10 +94,13 @@ export default function RegisterHelperPage() {
   const [experience, setExperience] = useState("");
   const [servicesError, setServicesError] = useState("");
 
-  // Step 3: KYC
-  const [idType, setIdType] = useState("");
-  const [idNumber, setIdNumber] = useState("");
-  const [idDocumentFile, setIdDocumentFile] = useState<File | null>(null);
+  // Step 3: KYC — both Aadhaar and PAN are collected (number + photo each),
+  // not a choice between ID types, since the backend's complete-profile
+  // step accepts a full list of ID proofs per provider.
+  const [aadhaarNumber, setAadhaarNumber] = useState("");
+  const [aadhaarFile, setAadhaarFile] = useState<File | null>(null);
+  const [panNumber, setPanNumber] = useState("");
+  const [panFile, setPanFile] = useState<File | null>(null);
   const [selfieFile, setSelfieFile] = useState<File | null>(null);
   const [consent, setConsent] = useState(false);
   const [kycError, setKycError] = useState("");
@@ -106,16 +108,45 @@ export default function RegisterHelperPage() {
   // Step 4: Video
   const [videoFile, setVideoFile] = useState<File | null>(null);
 
+  // Work state/city are resolved from a pincode via India Post's free,
+  // no-key lookup (api.postalpincode.in) instead of a hardcoded state/city
+  // list — the resolved names are plain text, editable in case the lookup
+  // is wrong or down, and that's what gets saved either way.
+  const [pincode, setPincode] = useState("");
+  const [pincodeStatus, setPincodeStatus] = useState<"idle" | "loading" | "found" | "not-found" | "error">("idle");
+
   const {
     register,
     handleSubmit,
     watch,
+    setValue,
     formState: { errors },
-  } = useForm<BasicValues>({ resolver: zodResolver(basicSchema) });
+  } = useForm<BasicValues>({ resolver: zodResolver(basicSchema), defaultValues: { state: "", city: "" } });
 
   const pw = watch("password") || "";
   const strength = useMemo(() => passwordStrength(pw), [pw]);
-  const isAadhaar = idType === "Aadhaar Card";
+
+  const onPincodeChange = (value: string) => {
+    const digits = value.replace(/\D/g, "").slice(0, 6);
+    setPincode(digits);
+    if (digits.length !== 6) {
+      setPincodeStatus("idle");
+      return;
+    }
+    setPincodeStatus("loading");
+    fetch(`/api/geo/pincode/${digits}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data?.success) {
+          setValue("state", data.state, { shouldValidate: true });
+          setValue("city", data.city, { shouldValidate: true });
+          setPincodeStatus("found");
+        } else {
+          setPincodeStatus("not-found");
+        }
+      })
+      .catch(() => setPincodeStatus("error"));
+  };
 
   const onStep1 = (values: BasicValues) => {
     setBasic(values);
@@ -134,10 +165,10 @@ export default function RegisterHelperPage() {
   };
 
   const onStep3 = () => {
-    if (!idType) return setKycError("Select a government ID type.");
-    if (!idNumber.trim()) return setKycError("Enter your ID number.");
-    if (isAadhaar && idNumber.replace(/\s/g, "").length !== 12) return setKycError("Aadhaar number must be 12 digits.");
-    if (!idDocumentFile) return setKycError(`Upload a photo of your ${idType}.`);
+    if (aadhaarNumber.replace(/\s/g, "").length !== 12) return setKycError("Aadhaar number must be 12 digits.");
+    if (!aadhaarFile) return setKycError("Upload a photo of your Aadhaar Card.");
+    if (panNumber.trim().length !== 10) return setKycError("PAN number must be 10 characters.");
+    if (!panFile) return setKycError("Upload a photo of your PAN Card.");
     if (!selfieFile) return setKycError("Take a clear selfie.");
     if (!consent) return setKycError("Please confirm the consent checkbox.");
     setKycError("");
@@ -145,28 +176,43 @@ export default function RegisterHelperPage() {
   };
 
   const onFinalSubmit = async () => {
-    if (!basic || !idDocumentFile || !selfieFile || isSubmitting) return;
+    if (!basic || !aadhaarFile || !panFile || !selfieFile || isSubmitting) return;
     setIsSubmitting(true);
     try {
-      const primaryCategoryId = SERVICES.find((s) => s.id === selectedServices[0])?.categoryId ?? "cat-maid";
-      await submitProviderApplication({
+      const categoryIds = Array.from(
+        new Set(selectedServices.map((id) => SERVICES.find((s) => s.id === id)?.categoryId).filter((c): c is string => Boolean(c)))
+      );
+      const primaryCategoryId = categoryIds[0] ?? "cat-maid";
+
+      const { token } = await submitProviderApplication({
         fullName: `${basic.firstName.trim()} ${basic.lastName.trim()}`,
         gender: basic.gender,
         nationality: "Indian",
         categoryId: primaryCategoryId,
         area: basic.city.trim(),
         city: basic.city.trim(),
+        state: basic.state,
         mobileNumber: basic.mobileNumber,
         whatsappNumber: basic.mobileNumber,
         email: basic.email.trim().toLowerCase(),
         password: basic.password,
-        kyc: {
-          idType,
-          idNumber: idNumber.trim(),
-          idDocumentFile,
-          photoFile: selfieFile,
-        },
+        photoFile: selfieFile,
       });
+
+      await completeProviderProfile({
+        token,
+        categoryIds,
+        experienceYears: EXPERIENCE_YEARS[experience],
+        skills: selectedServices,
+        panNumber: panNumber.trim().toUpperCase(),
+        state: basic.state,
+        idProofs: [
+          { idType: "Aadhaar Card", idNumber: aadhaarNumber.trim(), file: aadhaarFile },
+          { idType: "PAN Card", idNumber: panNumber.trim().toUpperCase(), file: panFile },
+        ],
+        videoFile,
+      });
+
       setSubmitted(true);
       toast({ title: "Profile submitted!", description: "We'll verify your documents and notify you once you're live.", variant: "success" });
     } catch (err) {
@@ -272,11 +318,47 @@ export default function RegisterHelperPage() {
               </div>
 
               <div>
-                <select defaultValue="" className={`field ${errors.city ? "field-error" : ""}`} {...register("city")}>
-                  <option value="" disabled>City</option>
-                  {cities.map((c) => <option key={c} value={c}>{c}</option>)}
-                </select>
-                {errors.city && <p className="mt-1 text-xs" style={{ color: "var(--error)" }}>{errors.city.message}</p>}
+                <label className="mb-1.5 block text-sm font-semibold" htmlFor="pincode">Work area pincode</label>
+                <div className="relative">
+                  <input
+                    id="pincode"
+                    placeholder="e.g. 400001"
+                    inputMode="numeric"
+                    maxLength={6}
+                    value={pincode}
+                    onChange={(e) => onPincodeChange(e.target.value)}
+                    className="field"
+                  />
+                  {pincodeStatus === "loading" && (
+                    <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs" style={{ color: "var(--muted)" }}>
+                      Looking up…
+                    </span>
+                  )}
+                  {pincodeStatus === "found" && (
+                    <Icon name="check-circle" className="absolute right-3.5 top-1/2 h-4 w-4 -translate-y-1/2" style={{ color: "var(--success)" }} />
+                  )}
+                </div>
+                {pincodeStatus === "not-found" && (
+                  <p className="mt-1 text-xs" style={{ color: "var(--warning)" }}>
+                    No match for that pincode — enter your state and city below manually.
+                  </p>
+                )}
+                {pincodeStatus === "error" && (
+                  <p className="mt-1 text-xs" style={{ color: "var(--warning)" }}>
+                    Couldn&apos;t look that up right now — enter your state and city below manually.
+                  </p>
+                )}
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <input placeholder="Work state" className={`field ${errors.state ? "field-error" : ""}`} {...register("state")} />
+                  {errors.state && <p className="mt-1 text-xs" style={{ color: "var(--error)" }}>{errors.state.message}</p>}
+                </div>
+                <div>
+                  <input placeholder="Work city" className={`field ${errors.city ? "field-error" : ""}`} {...register("city")} />
+                  {errors.city && <p className="mt-1 text-xs" style={{ color: "var(--error)" }}>{errors.city.message}</p>}
+                </div>
               </div>
 
               <p className="mt-2 text-sm font-semibold">Create login password</p>
@@ -399,65 +481,69 @@ export default function RegisterHelperPage() {
               Your documents are encrypted and only used for verification. They are never shown to families.
             </div>
 
-            <p className="mt-5 text-sm font-semibold">Government ID</p>
-            <div className="mt-3 flex flex-wrap gap-2">
-              {ID_TYPES.map((t) => (
-                <button
-                  key={t.id}
-                  type="button"
-                  onClick={() => setIdType(t.id)}
-                  className="flex items-center gap-2 rounded-full px-4 py-2.5 text-sm font-semibold transition-all"
-                  style={{
-                    background: idType === t.id ? "var(--primary-soft)" : "var(--surface)",
-                    color: idType === t.id ? "var(--primary)" : "var(--ink)",
-                    border: idType === t.id ? "1.5px solid var(--primary)" : "1.5px solid var(--line)",
-                  }}
-                >
-                  <span>{t.emoji}</span>
-                  {t.id}
-                </button>
-              ))}
+            {/* Aadhaar */}
+            <p className="mt-5 text-sm font-semibold">🪪 Aadhaar Card</p>
+            <div className="mt-3">
+              <label className="mb-1.5 block text-sm font-semibold" htmlFor="aadhaarNumber">Aadhaar Number</label>
+              <input
+                id="aadhaarNumber"
+                placeholder="XXXX XXXX XXXX"
+                inputMode="numeric"
+                maxLength={14}
+                value={aadhaarNumber}
+                onChange={(e) => {
+                  const digits = e.target.value.replace(/\D/g, "").slice(0, 12);
+                  setAadhaarNumber(digits.replace(/(\d{4})(?=\d)/g, "$1 "));
+                }}
+                className="field"
+              />
+            </div>
+            <div className="mt-3">
+              <label
+                htmlFor="aadhaarDocument"
+                className="flex cursor-pointer items-center gap-3 rounded-xl border-2 border-dashed p-4 transition-colors hover:border-[var(--primary)]"
+                style={{ borderColor: "var(--line)" }}
+              >
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl" style={{ background: "var(--primary-soft)", color: "var(--primary)" }}>
+                  <Icon name="upload" className="h-5 w-5" />
+                </span>
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-semibold">{aadhaarFile ? aadhaarFile.name : "Upload your Aadhaar Card"}</p>
+                  <p className="text-xs" style={{ color: "var(--muted)" }}>JPG, PNG or PDF</p>
+                </div>
+                <input id="aadhaarDocument" type="file" accept="image/*,.pdf" className="hidden" onChange={(e) => setAadhaarFile(e.target.files?.[0] ?? null)} />
+              </label>
             </div>
 
-            {idType && (
-              <>
-                <div className="mt-5">
-                  <label className="mb-1.5 block text-sm font-semibold" htmlFor="idNumber">
-                    {isAadhaar ? "Aadhaar Number" : `${idType} Number`}
-                  </label>
-                  <input
-                    id="idNumber"
-                    placeholder={isAadhaar ? "XXXX XXXX XXXX" : "Enter your ID number"}
-                    inputMode={isAadhaar ? "numeric" : "text"}
-                    maxLength={isAadhaar ? 14 : undefined}
-                    value={idNumber}
-                    onChange={(e) => {
-                      if (!isAadhaar) return setIdNumber(e.target.value);
-                      const digits = e.target.value.replace(/\D/g, "").slice(0, 12);
-                      setIdNumber(digits.replace(/(\d{4})(?=\d)/g, "$1 "));
-                    }}
-                    className="field"
-                  />
+            {/* PAN */}
+            <p className="mt-5 text-sm font-semibold">💳 PAN Card</p>
+            <div className="mt-3">
+              <label className="mb-1.5 block text-sm font-semibold" htmlFor="panNumber">PAN Number</label>
+              <input
+                id="panNumber"
+                placeholder="ABCDE1234F"
+                maxLength={10}
+                value={panNumber}
+                onChange={(e) => setPanNumber(e.target.value.toUpperCase().slice(0, 10))}
+                className="field"
+              />
+            </div>
+            <div className="mt-3">
+              <label
+                htmlFor="panDocument"
+                className="flex cursor-pointer items-center gap-3 rounded-xl border-2 border-dashed p-4 transition-colors hover:border-[var(--primary)]"
+                style={{ borderColor: "var(--line)" }}
+              >
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl" style={{ background: "var(--primary-soft)", color: "var(--primary)" }}>
+                  <Icon name="upload" className="h-5 w-5" />
+                </span>
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-semibold">{panFile ? panFile.name : "Upload your PAN Card"}</p>
+                  <p className="text-xs" style={{ color: "var(--muted)" }}>JPG, PNG or PDF</p>
                 </div>
-
-                <div className="mt-4">
-                  <label
-                    htmlFor="idDocument"
-                    className="flex cursor-pointer items-center gap-3 rounded-xl border-2 border-dashed p-4 transition-colors hover:border-[var(--primary)]"
-                    style={{ borderColor: "var(--line)" }}
-                  >
-                    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl" style={{ background: "var(--primary-soft)", color: "var(--primary)" }}>
-                      <Icon name="upload" className="h-5 w-5" />
-                    </span>
-                    <div className="min-w-0">
-                      <p className="truncate text-sm font-semibold">{idDocumentFile ? idDocumentFile.name : `Upload your ${idType}`}</p>
-                      <p className="text-xs" style={{ color: "var(--muted)" }}>JPG, PNG or PDF</p>
-                    </div>
-                    <input id="idDocument" type="file" accept="image/*,.pdf" className="hidden" onChange={(e) => setIdDocumentFile(e.target.files?.[0] ?? null)} />
-                  </label>
-                </div>
-              </>
-            )}
+                <input id="panDocument" type="file" accept="image/*,.pdf" className="hidden" onChange={(e) => setPanFile(e.target.files?.[0] ?? null)} />
+              </label>
+            </div>
 
             <p className="mt-5 text-sm font-semibold">Live selfie</p>
             <label

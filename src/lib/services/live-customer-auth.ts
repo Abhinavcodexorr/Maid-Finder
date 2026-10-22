@@ -98,3 +98,28 @@ export function logoutCustomer(): void {
   removeKey(STORAGE_KEYS.customerToken);
   removeKey(STORAGE_KEYS.customerUser);
 }
+
+/**
+ * Checks the stored session against the real backend (GET /api/v1/user/me).
+ * Returns false — and clears the stale session — when the token is invalid,
+ * expired, or the account it refers to no longer exists/is deactivated
+ * (the backend returns 401 for all of these). A network failure is treated
+ * as "can't tell", not as a reason to log someone out.
+ */
+export async function verifyCustomerSession(): Promise<boolean> {
+  const token = getCustomerToken();
+  if (!token) return false;
+  try {
+    const response = await fetch("/api/customers/me", {
+      headers: { Authorization: `Bearer ${token}` },
+      cache: "no-store",
+    });
+    if (response.status === 401) {
+      logoutCustomer();
+      return false;
+    }
+    return response.ok;
+  } catch {
+    return true;
+  }
+}

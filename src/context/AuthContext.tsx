@@ -1,11 +1,13 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   registerCustomer,
   loginCustomer,
   getCurrentCustomer,
   logoutCustomer,
+  verifyCustomerSession,
   type LiveSignupInput,
 } from "@/lib/services/live-customer-auth";
 import { getActiveSubscription, getDaysRemaining, isSubscribed as checkSubscribed } from "@/lib/services/subscription";
@@ -28,6 +30,7 @@ interface AuthContextValue {
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const router = useRouter();
   // Starts null/loading on both server and first client paint — the server
   // has no localStorage to read, so seeding user state from it during the
   // initial render (even via a lazy useState initializer) would make the
@@ -51,6 +54,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     refresh();
     setLoading(false);
   }, [refresh]);
+
+  // Validates the stored session against the real backend. A stale session
+  // (the account was deleted, deactivated, or the token is otherwise no
+  // longer valid) still "looks" logged in from localStorage alone — this is
+  // the only way to catch that, so on finding it, the user is logged out
+  // and sent home rather than left on a page that will keep failing.
+  useEffect(() => {
+    if (!user) return;
+    let cancelled = false;
+    verifyCustomerSession().then((valid) => {
+      if (cancelled || valid) return;
+      clearFavouritesCache();
+      refresh();
+      router.push("/");
+    });
+    return () => { cancelled = true; };
+  }, [user, refresh, router]);
 
   // Real backend only logs in by email (no phone-login support on the
   // customer side yet) — passed straight through either way.
