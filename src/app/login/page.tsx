@@ -121,68 +121,100 @@ function LoginContent() {
       </div>
 
       {/* Right panel — Form */}
-      <div className="flex flex-col justify-center px-6 py-16 sm:px-10 lg:px-16">
+      <div
+        className="flex flex-col justify-center px-6 py-16 sm:px-10 lg:px-16"
+        style={{ background: "linear-gradient(180deg, var(--surface) 0%, var(--line-light) 100%)" }}
+      >
         <div className="mx-auto w-full max-w-sm">
-          <h1 className="font-display text-h1">Welcome back</h1>
-          <p className="mt-1 text-sm" style={{ color: "var(--muted)" }}>
-            Log in to unlock contact details and pricing.
-          </p>
+          {/* Mobile-only branding — the hero panel with the logo is lg:flex only, so phones had none at all */}
+          <Link href="/" className="mb-8 flex items-center justify-center lg:hidden">
+            <Logo size={30} />
+          </Link>
 
-          <form className="mt-8" onSubmit={onSubmit}>
-            <div>
-              <label className="mb-1.5 block text-sm font-semibold" htmlFor="login-id">
-                Email or mobile number
-              </label>
-              <input
-                id="login-id"
-                className="field"
-                placeholder="you@example.com or 9876543210"
-                value={identifier}
-                onChange={(e) => setIdentifier(e.target.value)}
-                autoComplete="email"
-              />
-            </div>
+          <div className="card border-0 shadow-xl" style={{ boxShadow: "var(--shadow-xl)" }}>
+            <span
+              className="mb-4 flex h-11 w-11 items-center justify-center rounded-2xl"
+              style={{ background: "var(--gradient-primary)" }}
+            >
+              <Icon name="lock" className="h-5 w-5 text-white" />
+            </span>
+            <h1 className="font-display text-h1">Welcome back</h1>
+            <p className="mt-1 text-sm" style={{ color: "var(--muted)" }}>
+              Log in to unlock contact details and pricing.
+            </p>
 
-            <div className="mt-4">
-              <label className="mb-1.5 block text-sm font-semibold" htmlFor="login-pw">
-                Password
-              </label>
-              <div className="relative">
-                <input
-                  id="login-pw"
-                  className="field pr-16"
-                  type={showPassword ? "text" : "password"}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  autoComplete="current-password"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword((s) => !s)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold"
-                  style={{ color: "var(--primary)" }}
-                >
-                  {showPassword ? "Hide" : "Show"}
-                </button>
+            <form className="mt-7" onSubmit={onSubmit}>
+              <div>
+                <label className="mb-1.5 block text-sm font-semibold" htmlFor="login-id">
+                  Email or mobile number
+                </label>
+                <div className="relative">
+                  <Icon name="mail" className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2" style={{ color: "var(--faint)" }} />
+                  <input
+                    id="login-id"
+                    className="field pl-10"
+                    placeholder="you@example.com or 9876543210"
+                    value={identifier}
+                    onChange={(e) => setIdentifier(e.target.value)}
+                    autoComplete="email"
+                  />
+                </div>
               </div>
-            </div>
 
-            <div className="mt-4 flex items-center justify-between text-sm">
-              <label className="flex items-center gap-2">
-                <input type="checkbox" defaultChecked />
-                Remember me
-              </label>
-              <Link href="/forgot-password" className="font-semibold" style={{ color: "var(--primary)" }}>
-                Forgot password?
-              </Link>
-            </div>
+              <div className="mt-4">
+                <label className="mb-1.5 block text-sm font-semibold" htmlFor="login-pw">
+                  Password
+                </label>
+                <div className="relative">
+                  <Icon name="lock" className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2" style={{ color: "var(--faint)" }} />
+                  <input
+                    id="login-pw"
+                    className="field pl-10 pr-11"
+                    type={showPassword ? "text" : "password"}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    autoComplete="current-password"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((s) => !s)}
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 rounded-md p-1 transition-colors hover:bg-[var(--surface-muted)]"
+                  >
+                    <Icon name={showPassword ? "eye-off" : "eye"} className="h-4 w-4" style={{ color: "var(--muted)" }} />
+                  </button>
+                </div>
+              </div>
 
-            {error && <p className="mt-3 text-sm" style={{ color: "var(--error)" }}>{error}</p>}
+              <div className="mt-4 flex items-center justify-between text-sm">
+                <label className="flex cursor-pointer items-center gap-2" style={{ color: "var(--ink-light)" }}>
+                  <input type="checkbox" defaultChecked style={{ accentColor: "var(--primary)" }} className="h-4 w-4 rounded" />
+                  Remember me
+                </label>
+                <Link href="/forgot-password" className="font-semibold" style={{ color: "var(--primary)" }}>
+                  Forgot password?
+                </Link>
+              </div>
 
-            <button type="submit" disabled={submitting} className="btn btn-primary mt-6 w-full btn-lg">
-              {submitting ? "Logging in..." : "Log in"}
-            </button>
-          </form>
+              {error && (
+                <div className="mt-4 flex items-start gap-2 rounded-xl p-3 text-sm" style={{ background: "var(--error-soft)", color: "var(--error)" }}>
+                  <Icon name="alert-circle" className="mt-0.5 h-4 w-4 shrink-0" />
+                  {error}
+                </div>
+              )}
+
+              <button type="submit" disabled={submitting} className="btn btn-primary mt-6 w-full btn-lg">
+                {submitting ? (
+                  <>
+                    <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                    Logging in...
+                  </>
+                ) : (
+                  "Log in"
+                )}
+              </button>
+            </form>
+          </div>
 
           <p className="mt-6 text-center text-sm" style={{ color: "var(--muted)" }}>
             New to Help Zone?{" "}
