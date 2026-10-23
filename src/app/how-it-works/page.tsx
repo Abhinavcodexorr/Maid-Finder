@@ -11,7 +11,7 @@ const FAQS = [
     a: "Unlike traditional agencies that charge 1 to 2 months of helper salary (₹15,000 to ₹30,000) every time you hire, we charge a modest one-time membership starting at ₹499. This covers background verification, platform maintenance, and protects helpers from unsolicited spam calls.",
   },
   {
-    q: "Are the helpers on MaidFinder verified?",
+    q: "Are the helpers on Help Zone verified?",
     a: "Yes. Every candidate profile undergoes identity verification using Aadhaar/Govt ID, recent photograph check, and previous employment verification before being awarded the verified badge.",
   },
   {
@@ -63,7 +63,7 @@ export default function HowItWorksPage() {
       <section className="container-page py-16 sm:py-20">
         <div className="text-center mb-12">
           <h2 className="font-display text-2xl font-bold sm:text-3xl" style={{ color: "var(--ink)" }}>
-            How MaidFinder Works in 3 Simple Steps
+            How Help Zone Works in 3 Simple Steps
           </h2>
           <p className="mt-2 text-sm text-[var(--muted)]">
             From search to doorstep trial in less than 24 hours.
@@ -121,7 +121,7 @@ export default function HowItWorksPage() {
         </div>
       </section>
 
-      {/* Comparison: MaidFinder vs Traditional Agencies */}
+      {/* Comparison: Help Zone vs Traditional Agencies */}
       <section className="container-page pb-16">
         <div className="rounded-3xl border border-[var(--line)] bg-white p-6 shadow-sm sm:p-12">
           <div className="text-center max-w-xl mx-auto mb-10">
@@ -129,7 +129,7 @@ export default function HowItWorksPage() {
               Smart Comparison
             </span>
             <h2 className="font-display text-2xl font-bold sm:text-3xl mt-1" style={{ color: "var(--ink)" }}>
-              Why Families Choose MaidFinder
+              Why Families Choose Help Zone
             </h2>
             <p className="text-sm text-[var(--muted)] mt-2">
               Compare our direct marketplace model against traditional offline placement agencies.
@@ -141,7 +141,7 @@ export default function HowItWorksPage() {
               <thead>
                 <tr className="border-b border-[var(--line)]">
                   <th className="pb-4 font-semibold text-[var(--muted)]">Feature</th>
-                  <th className="pb-4 font-bold text-[var(--primary)]">MaidFinder Marketplace</th>
+                  <th className="pb-4 font-bold text-[var(--primary)]">Help Zone Marketplace</th>
                   <th className="pb-4 font-semibold text-[var(--muted)]">Traditional Offline Agency</th>
                 </tr>
               </thead>
