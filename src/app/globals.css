@@ -222,6 +222,18 @@ h1, h2, h3, h4, .font-display {
 }
 .btn-primary:active:not(:disabled) { transform: translateY(0); }
 
+/* Light sweep across primary buttons on hover */
+.btn-primary { position: relative; overflow: hidden; }
+.btn-primary::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg, transparent 35%, rgba(255, 255, 255, 0.35) 50%, transparent 65%);
+  transform: translateX(-120%);
+  pointer-events: none;
+}
+.btn-primary:hover:not(:disabled)::after { transform: translateX(120%); transition: transform 0.7s ease; }
+
 .btn-accent {
   background: var(--accent);
   @apply text-white;
@@ -476,6 +488,25 @@ h1, h2, h3, h4, .font-display {
 .animate-slide-up { animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
 .animate-scale-in { animation: scaleIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
 .animate-float { animation: floatGentle 3s ease-in-out infinite; }
+
+/* Floating 3D elements: a bigger, slower bob, with a delay variant so a pair never moves in step. */
+@keyframes floatDepth { 0%, 100% { transform: translateZ(70px) translateY(0); } 50% { transform: translateZ(70px) translateY(-12px); } }
+.float-depth { animation: floatDepth 5s ease-in-out infinite; }
+.float-depth-delay { animation: floatDepth 6s ease-in-out -2.5s infinite; }
+
+/* Slow drift for the blurred background blobs */
+@keyframes blobDrift { 0%, 100% { transform: translate(0, 0) scale(1); } 50% { transform: translate(24px, 18px) scale(1.08); } }
+.blob-drift { animation: blobDrift 14s ease-in-out infinite; }
+
+/* Soft expanding ring behind step icons */
+@keyframes ringPulse { 0% { transform: scale(1); opacity: 0.45; } 100% { transform: scale(1.7); opacity: 0; } }
+.ring-pulse { background: var(--primary); animation: ringPulse 2.6s ease-out infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .float-depth, .float-depth-delay, .blob-drift, .ring-pulse, .animate-float { animation: none; }
+  .float-depth, .float-depth-delay { transform: translateZ(70px); }
+  .btn-primary:hover:not(:disabled)::after { transition: none; }
+}
 
 /* ================================================================
    SCROLLBAR

@@ -17,6 +17,8 @@ import { TestimonialsCarousel } from "@/components/sections/testimonials-carouse
 import { ScrollReveal, ScrollStagger, ScrollStaggerItem } from "@/components/ui/scroll-reveal";
 import { colorForCategory, colorForIndex } from "@/lib/category-colors";
 import { TiltCard } from "@/components/ui/tilt-card";
+import { ParallaxStage } from "@/components/ui/parallax-stage";
+import { CountUp } from "@/components/ui/count-up";
 import type { Provider } from "@/types/marketplace";
 
 /* ================================================================
@@ -101,12 +103,12 @@ export default function HomePage() {
       <section className="relative overflow-hidden" style={{ background: "var(--gradient-hero)" }}>
         <div
           aria-hidden
-          className="pointer-events-none absolute -right-24 -top-24 h-80 w-80 rounded-full opacity-60 blur-3xl"
+          className="blob-drift pointer-events-none absolute -right-24 -top-24 h-80 w-80 rounded-full opacity-60 blur-3xl"
           style={{ background: "radial-gradient(circle, rgba(59,130,246,0.35), transparent 70%)" }}
         />
         <div
           aria-hidden
-          className="pointer-events-none absolute -bottom-32 -left-24 h-72 w-72 rounded-full opacity-50 blur-3xl"
+          className="blob-drift pointer-events-none absolute -bottom-32 -left-24 h-72 w-72 rounded-full opacity-50 blur-3xl"
           style={{ background: "radial-gradient(circle, rgba(14,165,233,0.25), transparent 70%)" }}
         />
         <div className="container-page relative grid items-center gap-12 py-14 xl:grid-cols-[1.1fr_0.9fr] xl:py-24">
@@ -191,42 +193,50 @@ export default function HomePage() {
                 { v: "12+", l: "Service categories" },
               ].map((t) => (
                 <div key={t.l}>
-                  <p className="font-display text-2xl font-bold" style={{ color: "var(--primary)" }}>{t.v}</p>
+                  <p className="font-display text-2xl font-bold" style={{ color: "var(--primary)" }}><CountUp value={t.v} /></p>
                   <p className="text-xs" style={{ color: "var(--muted)" }}>{t.l}</p>
                 </div>
               ))}
             </motion.div>
           </div>
 
-          {/* Hero visual */}
+          {/* Hero visual — rotates toward the cursor; the two cards float in front of the photo */}
           <motion.div {...heroAnim(0.2)} className="relative mx-auto hidden w-full max-w-md xl:block">
-            <div className="absolute -inset-3 rounded-[2rem] opacity-70 blur-xl" style={{ background: "var(--gradient-primary)" }} />
-            <div className="relative overflow-hidden rounded-[1.75rem] border-4 border-white shadow-2xl">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src="/images/auth-service-hero.jpg"
-                alt="A verified Help Zone professional at work"
-                className="h-[480px] w-full object-cover"
-              />
-            </div>
-            <div className="absolute -left-8 top-10 flex items-center gap-3 rounded-2xl bg-white p-3 shadow-xl" style={{ border: "1px solid var(--line)" }}>
-              <span className="flex h-10 w-10 items-center justify-center rounded-xl" style={{ background: "var(--success-soft)", color: "var(--success)" }}>
-                <Icon name="shield" className="h-5 w-5" />
-              </span>
-              <div>
-                <p className="text-sm font-bold" style={{ color: "var(--ink)" }}>Identity verified</p>
-                <p className="text-xs" style={{ color: "var(--muted)" }}>Aadhaar &amp; PAN checked</p>
+            <ParallaxStage>
+              <div className="absolute -inset-3 rounded-[2rem] opacity-70 blur-xl" style={{ background: "var(--gradient-primary)" }} />
+              <div className="relative overflow-hidden rounded-[1.75rem] border-4 border-white shadow-2xl">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/images/auth-service-hero.jpg"
+                  alt="A verified Help Zone professional at work"
+                  className="h-[480px] w-full object-cover"
+                />
               </div>
-            </div>
-            <div className="absolute -right-6 bottom-12 flex items-center gap-3 rounded-2xl bg-white p-3 shadow-xl" style={{ border: "1px solid var(--line)" }}>
-              <span className="flex h-10 w-10 items-center justify-center rounded-xl" style={{ background: "var(--primary-soft)", color: "var(--primary)" }}>
-                <Icon name="phone" className="h-5 w-5" />
-              </span>
-              <div>
-                <p className="text-sm font-bold" style={{ color: "var(--ink)" }}>Call directly</p>
-                <p className="text-xs" style={{ color: "var(--muted)" }}>No agency in between</p>
+              <div
+                className="float-depth absolute -left-8 top-10 flex items-center gap-3 rounded-2xl bg-white p-3 shadow-xl"
+                style={{ border: "1px solid var(--line)" }}
+              >
+                <span className="flex h-10 w-10 items-center justify-center rounded-xl" style={{ background: "var(--success-soft)", color: "var(--success)" }}>
+                  <Icon name="shield" className="h-5 w-5" />
+                </span>
+                <div>
+                  <p className="text-sm font-bold" style={{ color: "var(--ink)" }}>Identity verified</p>
+                  <p className="text-xs" style={{ color: "var(--muted)" }}>Aadhaar &amp; PAN checked</p>
+                </div>
               </div>
-            </div>
+              <div
+                className="float-depth-delay absolute -right-6 bottom-12 flex items-center gap-3 rounded-2xl bg-white p-3 shadow-xl"
+                style={{ border: "1px solid var(--line)" }}
+              >
+                <span className="flex h-10 w-10 items-center justify-center rounded-xl" style={{ background: "var(--primary-soft)", color: "var(--primary)" }}>
+                  <Icon name="phone" className="h-5 w-5" />
+                </span>
+                <div>
+                  <p className="text-sm font-bold" style={{ color: "var(--ink)" }}>Call directly</p>
+                  <p className="text-xs" style={{ color: "var(--muted)" }}>No agency in between</p>
+                </div>
+              </div>
+            </ParallaxStage>
           </motion.div>
         </div>
       </section>
@@ -323,16 +333,19 @@ export default function HomePage() {
               {STEPS.map((step) => (
                 <ScrollStaggerItem key={step.n}>
                   <div className="relative flex flex-col items-center text-center">
-                    <span
-                      className="relative flex h-16 w-16 items-center justify-center rounded-2xl text-white shadow-lg ring-8 ring-[var(--primary-soft)]"
-                      style={{ background: "var(--gradient-primary)" }}
-                    >
-                      <Icon name={step.icon} className="h-7 w-7" />
+                    <span className="relative">
+                      <span aria-hidden className="ring-pulse absolute inset-0 rounded-2xl" />
                       <span
-                        className="absolute -right-2 -top-2 flex h-6 w-6 items-center justify-center rounded-full bg-white text-xs font-bold shadow"
-                        style={{ color: "var(--primary)" }}
+                        className="relative flex h-16 w-16 items-center justify-center rounded-2xl text-white shadow-lg ring-8 ring-[var(--primary-soft)]"
+                        style={{ background: "var(--gradient-primary)" }}
                       >
-                        {step.n.replace(/^0/, "")}
+                        <Icon name={step.icon} className="h-7 w-7" />
+                        <span
+                          className="absolute -right-2 -top-2 flex h-6 w-6 items-center justify-center rounded-full bg-white text-xs font-bold shadow"
+                          style={{ color: "var(--primary)" }}
+                        >
+                          {step.n.replace(/^0/, "")}
+                        </span>
                       </span>
                     </span>
                     <h3 className="font-display mt-5 text-lg font-bold leading-snug">{step.title}</h3>
@@ -364,6 +377,7 @@ export default function HomePage() {
           <ScrollStagger className="grid gap-4 sm:grid-cols-2">
             {FEATURES.map((f) => (
               <ScrollStaggerItem key={f.title}>
+                <TiltCard maxTilt={7} scale={1.03} className="h-full">
                 <div className="card card-hover h-full">
                   <span
                     className="flex h-11 w-11 items-center justify-center rounded-xl"
@@ -374,6 +388,7 @@ export default function HomePage() {
                   <h3 className="font-display mt-4 text-base font-bold">{f.title}</h3>
                   <p className="mt-1.5 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>{f.body}</p>
                 </div>
+                </TiltCard>
               </ScrollStaggerItem>
             ))}
           </ScrollStagger>
