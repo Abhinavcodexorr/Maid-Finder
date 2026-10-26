@@ -5,7 +5,9 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Icon } from "@/components/ui/icon";
-import { getCategories, getFeaturedProvidersFrom, fetchLiveProviders } from "@/lib/services";
+import { getCategories, getFeaturedProvidersFrom, fetchLiveProviders, fetchCatalogServices } from "@/lib/services";
+import type { CatalogService } from "@/lib/services";
+import { emojiForService } from "@/lib/service-emoji";
 import { ProviderCardSkeleton } from "@/components/ui/shimmer";
 import { TESTIMONIALS } from "@/data/testimonials";
 import { FAQS } from "@/data/faqs";
@@ -20,21 +22,6 @@ import type { Provider } from "@/types/marketplace";
 /* ================================================================
    CONSTANTS
    ================================================================ */
-const POPULAR_SERVICES = [
-  { emoji: "🧹", label: "Cleaning", slug: "cat-maid" },
-  { emoji: "🍳", label: "Cooking", slug: "cat-cook" },
-  { emoji: "🔧", label: "Plumbing", slug: "cat-plumber" },
-  { emoji: "⚡", label: "Electrical", slug: "cat-electrician" },
-  { emoji: "🌱", label: "Gardening", slug: "" },
-  { emoji: "👶", label: "Babysitting", slug: "cat-babysitter" },
-  { emoji: "🛠", label: "Handyman", slug: "cat-carpenter" },
-  { emoji: "❄️", label: "AC Repair", slug: "" },
-  { emoji: "🎨", label: "Painting", slug: "cat-painter" },
-  { emoji: "🚗", label: "Driver", slug: "cat-driver" },
-  { emoji: "👴", label: "Elder Care", slug: "cat-elderly-care" },
-  { emoji: "🏠", label: "Home Maintenance", slug: "" },
-];
-
 const STEPS = [
   { n: "01", title: "Tell us what you need", icon: "search", body: "Pick a service and your area to see verified professionals near you." },
   { n: "02", title: "Browse profiles — free", icon: "users", body: "Compare experience, skills and verification status without signing up." },
@@ -54,7 +41,8 @@ const HELPER_PERKS = [
   { icon: "trending-up", title: "Keep 100% of your earnings", body: "We never take a commission." },
 ];
 
-const HERO_SERVICE_COUNT = 8;
+const HOME_SERVICE_COUNT = 8;
+const HERO_CHIP_COUNT = 5;
 
 const POPULAR_CITIES = ["Mumbai", "Delhi", "Bengaluru", "Hyderabad", "Pune", "Chennai", "Kolkata", "Ahmedabad", "Surat", "Jaipur"];
 
@@ -80,6 +68,13 @@ export default function HomePage() {
   const router = useRouter();
   const [serviceQuery, setServiceQuery] = useState("");
   const [locationQuery, setLocationQuery] = useState("");
+
+  const [catalog, setCatalog] = useState<CatalogService[] | null>(null);
+  useEffect(() => {
+    fetchCatalogServices()
+      .then(setCatalog)
+      .catch(() => setCatalog([]));
+  }, []);
 
   const [liveProviders, setLiveProviders] = useState<Provider[] | null>(null);
   useEffect(() => {
@@ -172,14 +167,14 @@ export default function HomePage() {
             {/* Quick service chips */}
             <motion.div {...heroAnim(0.3)} className="mt-5 flex flex-wrap items-center justify-center gap-2 xl:justify-start">
               <span className="text-xs font-semibold" style={{ color: "var(--muted)" }}>Popular:</span>
-              {POPULAR_SERVICES.slice(0, 5).map((svc) => (
+              {(catalog ?? []).slice(0, HERO_CHIP_COUNT).map((svc) => (
                 <Link
-                  key={svc.label}
-                  href={svc.slug ? `/providers?category=${svc.slug}` : "/providers"}
+                  key={svc.key}
+                  href={`/providers?category=${svc.key}`}
                   className="rounded-full border bg-white/80 px-3 py-1 text-xs font-semibold backdrop-blur transition-colors hover:border-[var(--primary)] hover:text-[var(--primary)]"
                   style={{ borderColor: "var(--line)", color: "var(--ink-light)" }}
                 >
-                  {svc.emoji} {svc.label}
+                  {emojiForService(svc.name)} {svc.name}
                 </Link>
               ))}
             </motion.div>
@@ -248,23 +243,42 @@ export default function HomePage() {
           </Link>
         </motion.div>
 
+        {catalog === null && (
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
+            {Array.from({ length: HOME_SERVICE_COUNT }).map((_, i) => (
+              <div key={i} className="card shimmer h-[74px]" />
+            ))}
+          </div>
+        )}
+
+        {catalog !== null && catalog.length === 0 && (
+          <div className="card py-10 text-center text-sm" style={{ color: "var(--muted)" }}>
+            Services are unavailable right now. Please try again shortly.
+          </div>
+        )}
+
         <ScrollStagger className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
-          {POPULAR_SERVICES.slice(0, HERO_SERVICE_COUNT).map((svc, i) => {
-            const swatch = svc.slug ? colorForCategory(svc.slug) : colorForIndex(i);
+          {(catalog ?? []).slice(0, HOME_SERVICE_COUNT).map((svc, i) => {
+            const swatch = colorForIndex(i);
             return (
-              <ScrollStaggerItem key={svc.label}>
+              <ScrollStaggerItem key={svc.key}>
                 <TiltCard maxTilt={8} scale={1.03} className="h-full">
                   <Link
-                    href={svc.slug ? `/providers?category=${svc.slug}` : "/providers"}
+                    href={`/providers?category=${svc.key}`}
                     className="card card-hover flex h-full items-center gap-3 !p-3 sm:gap-4 sm:!p-4"
                   >
                     <span
-                      className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl text-2xl"
+                      className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl text-2xl"
                       style={{ background: swatch.soft }}
                     >
-                      {svc.emoji}
+                      {svc.imageUrl ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={svc.imageUrl} alt="" className="h-full w-full object-cover" />
+                      ) : (
+                        emojiForService(svc.name)
+                      )}
                     </span>
-                    <span className="flex-1 text-sm font-semibold">{svc.label}</span>
+                    <span className="flex-1 text-sm font-semibold">{svc.name}</span>
                     <Icon name="arrow-right" className="hidden h-4 w-4 shrink-0 sm:block" style={{ color: "var(--faint)" }} />
                   </Link>
                 </TiltCard>

@@ -17,6 +17,8 @@ export interface ProviderApplicationProvider {
   fullName?: string;
   firstName?: string;
   lastName?: string;
+  gender?: string;
+  nationality?: string;
   categoryIds?: string[];
   area?: string;
   city?: string;
@@ -43,6 +45,7 @@ export interface CatalogService {
   id: string;
   key: string;
   name: string;
+  imageUrl?: string;
 }
 
 async function postJson<T>(url: string, body: unknown): Promise<T> {
@@ -70,7 +73,7 @@ export async function verifyProviderOtp(mobileNumber: string, otp: string): Prom
   return result;
 }
 
-/** The services a helper can say they do ("What work do you do?"). */
+/** The admin-managed service catalog — used for "What work do you do?" and the home page's service tiles. */
 export async function fetchCatalogServices(): Promise<CatalogService[]> {
   const response = await fetch("/api/services");
   const data = await response.json().catch(() => null);
@@ -128,6 +131,8 @@ export interface CompleteProfileInput {
   token: string;
   firstName?: string;
   lastName?: string;
+  gender?: "Male" | "Female";
+  nationality?: string;
   area?: string;
   city?: string;
   state?: string;
@@ -151,6 +156,8 @@ export async function completeProviderProfile(input: CompleteProfileInput): Prom
   const generalInfo = {
     ...(input.firstName && { firstName: input.firstName }),
     ...(input.lastName && { lastName: input.lastName }),
+    ...(input.gender && { gender: input.gender }),
+    ...(input.nationality && { nationality: input.nationality }),
     ...(input.area && { area: input.area }),
     ...(input.city && { city: input.city }),
     ...(input.state && { state: input.state }),
