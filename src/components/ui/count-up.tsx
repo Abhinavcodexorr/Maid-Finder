@@ -15,13 +15,19 @@ export function CountUp({ value, duration = 1.6 }: { value: string; duration?: n
   const reduceMotion = useReducedMotion();
   const [current, setCurrent] = useState(0);
 
+  const hasNumber = match !== null;
   const target = match ? Number(match[2]) : 0;
 
   useEffect(() => {
-    if (!inView || !match || reduceMotion) return;
-    const controls = animate(0, target, { duration, ease: [0.22, 1, 0.36, 1], onUpdate: (v) => setCurrent(Math.round(v)) });
+    if (!inView || !hasNumber || reduceMotion) return;
+    const controls = animate(0, target, {
+      duration,
+      ease: [0.22, 1, 0.36, 1],
+      onUpdate: (v) => setCurrent(Math.round(v)),
+      onComplete: () => setCurrent(target),
+    });
     return () => controls.stop();
-  }, [inView, match, reduceMotion, target, duration]);
+  }, [inView, hasNumber, reduceMotion, target, duration]);
 
   if (!match) return <span ref={ref}>{value}</span>;
   const [, prefix, , suffix] = match;
