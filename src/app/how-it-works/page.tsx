@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { Icon } from "@/components/ui/icon";
+import { PageHeader } from "@/components/layout/page-header";
 
 const FAQS = [
   {
@@ -33,31 +34,22 @@ export default function HowItWorksPage() {
 
   return (
     <div className="min-h-screen bg-[var(--surface-muted)] pb-20">
-      {/* Hero Header */}
-      <section className="border-b border-[var(--line)] bg-white py-16 sm:py-24">
-        <div className="container-page text-center">
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-[var(--primary-soft)] px-3 py-1 text-xs font-bold uppercase tracking-wider text-[var(--primary)]">
-            <Icon name="sparkles" className="h-3.5 w-3.5" /> Direct Domestic Staffing
-          </span>
-          <h1 className="font-display text-3xl font-extrabold tracking-tight sm:text-5xl mt-4" style={{ color: "var(--ink)" }}>
-            The Transparent Way to Hire <br className="hidden sm:inline" />
-            <span style={{ color: "var(--primary)" }}>Domestic Help in India</span>
-          </h1>
-          <p className="mx-auto mt-4 max-w-2xl text-base sm:text-lg text-[var(--muted)] leading-relaxed">
-            Skip untrustworthy middlemen, inflated broker commissions, and false promises. Connect directly with verified maids, cooks, babysitters, and caregivers.
-          </p>
-
-          <div className="mt-8 flex flex-wrap justify-center gap-3">
-            <Link href="/providers" className="btn btn-primary btn-lg">
-              <Icon name="search" className="h-4 w-4" />
-              Browse 1,200+ Verified Helpers
-            </Link>
-            <Link href="/membership" className="btn btn-secondary btn-lg">
-              View Membership Plans
-            </Link>
-          </div>
+      <PageHeader
+        eyebrow="Direct Domestic Staffing"
+        title="The Transparent Way to Hire"
+        accent="Domestic Help in India"
+        subtitle="Skip middlemen, inflated broker commissions and false promises. Connect directly with verified maids, cooks, babysitters and caregivers."
+      >
+        <div className="flex flex-wrap justify-center gap-3">
+          <Link href="/providers" className="btn btn-primary btn-lg">
+            <Icon name="search" className="h-4 w-4" />
+            Browse Verified Helpers
+          </Link>
+          <Link href="/membership" className="btn btn-outline btn-lg">
+            View Membership Plans
+          </Link>
         </div>
-      </section>
+      </PageHeader>
 
       {/* 3 Step Walkthrough */}
       <section className="container-page py-16 sm:py-20">
@@ -99,7 +91,7 @@ export default function HowItWorksPage() {
               Unlock Direct Contacts
             </h3>
             <p className="text-sm text-[var(--muted)] leading-relaxed">
-              Get an affordable pass starting at ₹499 to immediately unlock candidates&apos; verified phone numbers and direct WhatsApp links.
+              Get an affordable membership to instantly unlock candidates&apos; verified phone numbers and direct WhatsApp links.
             </p>
           </div>
 
@@ -148,12 +140,12 @@ export default function HowItWorksPage() {
               <tbody className="divide-y divide-[var(--line-light)]">
                 <tr>
                   <td className="py-4 font-medium" style={{ color: "var(--ink)" }}>Brokerage Fee</td>
-                  <td className="py-4 font-bold text-[var(--success)]">₹0 Commission (One-time pass from ₹499)</td>
+                  <td className="py-4 font-bold text-[var(--success)]">₹0 commission — one affordable membership</td>
                   <td className="py-4 text-[var(--error)]">₹15,000 – ₹35,000 upfront commission</td>
                 </tr>
                 <tr>
                   <td className="py-4 font-medium" style={{ color: "var(--ink)" }}>Candidate Choice</td>
-                  <td className="py-4 font-semibold text-[var(--ink)]">1,200+ searchable profiles with photos & bio</td>
+                  <td className="py-4 font-semibold text-[var(--ink)]">Searchable profiles with photos, skills & experience</td>
                   <td className="py-4 text-[var(--muted)]">2 or 3 candidates pushed by the agent</td>
                 </tr>
                 <tr>

@@ -226,7 +226,7 @@ export function ProviderCard({
     <TiltCard className="h-full">
     <Link
       href={`/providers/${provider.id}`}
-      className="card card-hover group flex flex-col overflow-hidden p-0 transition-all hover:shadow-md"
+      className="card card-hover group flex h-full w-full flex-col overflow-hidden p-0 transition-all hover:shadow-md"
     >
       <div className="relative h-52 w-full overflow-hidden bg-[var(--surface-muted)]">
         {!imgLoaded && !imgFailed && (
@@ -327,7 +327,7 @@ export function ProviderCard({
         </div>
 
         <div className="border-t border-[var(--line-light)] pt-3 mt-auto">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-wrap items-center justify-between gap-2">
             <div>
               {isSubscribed ? (
                 <div>
@@ -337,7 +337,7 @@ export function ProviderCard({
                   <span className="text-[11px] text-[var(--muted)]"> {provider.priceUnit}</span>
                 </div>
               ) : (
-                <div className="flex items-center gap-1 text-xs font-semibold text-[var(--locked)]">
+                <div className="flex items-center gap-1 whitespace-nowrap text-xs font-semibold text-[var(--locked)]">
                   <Icon name="lock" className="h-3.5 w-3.5" />
                   <span>Salary Protected</span>
                 </div>

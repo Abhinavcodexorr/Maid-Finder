@@ -24,6 +24,8 @@
   --faint: #94a3b8;
   --line: #e2e8f0;
   --line-light: #f1f5f9;
+  --surface-muted: #f4f7fb;
+  --ink-secondary: #475569;
 
   /* ---- Semantic ---- */
   --success: #059669;
@@ -32,6 +34,11 @@
   --warning-soft: #fffbeb;
   --error: #dc2626;
   --error-soft: #fef2f2;
+  --confirmed: #059669;
+  --confirmed-soft: #ecfdf5;
+  --cancel: #dc2626;
+  --cancel-soft: #fef2f2;
+  --accent-dark: #c2410c;
 
   /* ---- Locked / Protected (kept as its own semantic token, but mapped to
      the brand's royal blue rather than purple — see --primary above) ---- */

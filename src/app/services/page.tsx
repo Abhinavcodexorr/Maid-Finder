@@ -4,6 +4,7 @@ import { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
 import { getCategories, fetchLiveProviders } from "@/lib/services";
 import { Icon } from "@/components/ui/icon";
+import { PageHeader } from "@/components/layout/page-header";
 import { ScrollReveal, ScrollStagger, ScrollStaggerItem } from "@/components/ui/scroll-reveal";
 import type { Provider } from "@/types/marketplace";
 
@@ -97,26 +98,14 @@ export default function ServicesPage() {
 
   return (
     <div className="min-h-screen bg-[var(--surface-muted)] pb-20">
-      {/* Hero Header */}
-      <section className="border-b border-[var(--line)] bg-white py-14 sm:py-20">
-        <div className="container-page text-center">
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-[var(--primary-soft)] px-3 py-1 text-xs font-bold uppercase tracking-wider text-[var(--primary)]">
-            <Icon name="check-badge" className="h-3.5 w-3.5" /> Full Marketplace Directory
-          </span>
-          <h1
-            className="font-display text-3xl font-extrabold sm:text-5xl mt-3 tracking-tight"
-            style={{ color: "var(--ink)" }}
-          >
-            Verified Domestic Services <br className="hidden sm:inline" />
-            <span style={{ color: "var(--primary)" }}>Across India</span>
-          </h1>
-          <p className="mx-auto mt-4 max-w-2xl text-sm sm:text-base text-[var(--muted)] leading-relaxed">
-            Directly connect with 1,200+ background-screened maids, cooks, babysitters, drivers, and home professionals across all Indian cities. Zero agency commissions.
-          </p>
-
-          {/* Search bar */}
-          <div className="mx-auto mt-8 max-w-lg">
-            <div className="flex items-center rounded-2xl border border-[var(--line)] bg-[var(--surface-muted)] p-2 shadow-sm transition-all focus-within:border-[var(--primary)] focus-within:ring-2 focus-within:ring-[var(--primary-soft)] focus-within:bg-white">
+      <PageHeader
+        eyebrow="Service Directory"
+        title="Verified Domestic Services"
+        accent="Across India"
+        subtitle="Directly connect with background-screened maids, cooks, babysitters, drivers and home professionals across Indian cities. Zero agency commissions."
+      >
+        <div className="mx-auto max-w-lg">
+            <div className="flex items-center rounded-2xl border border-[var(--line)] bg-white p-2 shadow-lg transition-all focus-within:border-[var(--primary)] focus-within:ring-2 focus-within:ring-[var(--primary-soft)] focus-within:bg-white">
               <Icon name="search" className="h-5 w-5 text-[var(--muted)] ml-3 shrink-0" />
               <input
                 type="text"
@@ -136,8 +125,7 @@ export default function ServicesPage() {
               )}
             </div>
           </div>
-        </div>
-      </section>
+      </PageHeader>
 
       {/* Services Grid */}
       <section className="container-page py-12">

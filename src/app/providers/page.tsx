@@ -811,7 +811,7 @@ function ProvidersContent() {
   return (
     <div className="min-h-screen bg-[var(--surface-muted)] pb-16">
       {/* Hero Header with Search Bar */}
-      <section className="border-b border-[var(--line)] bg-white py-8">
+      <section className="border-b py-8" style={{ borderColor: "var(--line)", background: "var(--gradient-hero)" }}>
         <div className="container-page space-y-6">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div>
@@ -829,7 +829,7 @@ function ProvidersContent() {
             {/* Quick Live Search Bar */}
             <form
               onSubmit={handleSearchSubmit}
-              className="flex w-full md:w-auto md:min-w-[340px] items-center rounded-2xl border border-[var(--line)] bg-[var(--surface-muted)] p-1.5 shadow-sm transition-all focus-within:border-[var(--primary)] focus-within:ring-2 focus-within:ring-[var(--primary-soft)] focus-within:bg-white"
+              className="flex w-full md:w-auto md:min-w-[340px] items-center rounded-2xl border border-[var(--line)] bg-white p-1.5 shadow-md transition-all focus-within:border-[var(--primary)] focus-within:ring-2 focus-within:ring-[var(--primary-soft)]"
             >
               <div className="flex flex-1 items-center gap-2 px-3">
                 <Icon name="search" className="h-4 w-4 text-[var(--muted)] shrink-0" />

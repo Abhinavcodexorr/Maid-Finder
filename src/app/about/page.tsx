@@ -3,10 +3,10 @@ import { PageHeader } from "@/components/layout/page-header";
 import { Icon } from "@/components/ui/icon";
 
 const STATS = [
-  { label: "Verified Helpers", value: "40+" },
-  { label: "Service Categories", value: "9" },
+  { label: "ID Verified Helpers", value: "100%" },
+  { label: "Service Categories", value: "12+" },
   { label: "Commission Charged", value: "0%" },
-  { label: "Cities Covered", value: "8" },
+  { label: "To Browse Profiles", value: "Free" },
 ];
 
 const VALUES = [
@@ -42,12 +42,14 @@ export default function AboutPage() {
   return (
     <>
       <PageHeader
-        title="About Help Zone"
+        eyebrow="About Us"
+        title="About"
+        accent="Help Zone"
         subtitle="A direct-hire marketplace connecting Indian families with verified home-service professionals — no agencies, no commission."
       />
 
-      <section className="mx-auto mt-8 max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="card">
+      <section className="container-page py-12">
+        <div className="card p-6 sm:p-8">
           <h2 className="font-display text-xl font-bold" style={{ color: "var(--ink)" }}>Our mission</h2>
           <p className="mt-3 text-sm leading-relaxed" style={{ color: "var(--ink-light)" }}>
             Finding a trustworthy cook, maid, babysitter, or driver in India usually means going through an
@@ -63,7 +65,7 @@ export default function AboutPage() {
           {STATS.map((s) => (
             <div key={s.label} className="card py-5 text-center">
               <p className="font-display text-2xl font-bold sm:text-3xl" style={{ color: "var(--primary)" }}>{s.value}</p>
-              <p className="mt-1 text-xs" style={{ color: "var(--muted)" }}>{s.label}</p>
+              <p className="mt-1 text-xs font-medium" style={{ color: "var(--muted)" }}>{s.label}</p>
             </div>
           ))}
         </div>
