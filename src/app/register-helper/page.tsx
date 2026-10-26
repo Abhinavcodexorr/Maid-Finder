@@ -192,6 +192,7 @@ export default function RegisterHelperPage() {
         area: basic.city.trim(),
         city: basic.city.trim(),
         state: basic.state,
+        pincode: pincode || undefined,
         mobileNumber: basic.mobileNumber,
         whatsappNumber: basic.mobileNumber,
         email: basic.email.trim().toLowerCase(),
@@ -206,6 +207,7 @@ export default function RegisterHelperPage() {
         skills: selectedServices,
         panNumber: panNumber.trim().toUpperCase(),
         state: basic.state,
+        pincode: pincode || undefined,
         idProofs: [
           { idType: "Aadhaar Card", idNumber: aadhaarNumber.trim(), file: aadhaarFile },
           { idType: "PAN Card", idNumber: panNumber.trim().toUpperCase(), file: panFile },

@@ -11,6 +11,7 @@ export interface ProviderApplicationInput {
   area: string;
   city: string;
   state?: string;
+  pincode?: string;
   mobileNumber: string;
   whatsappNumber: string;
   email: string;
@@ -48,6 +49,7 @@ export async function submitProviderApplication(input: ProviderApplicationInput)
   formData.append("area", input.area);
   formData.append("city", input.city);
   if (input.state) formData.append("state", input.state);
+  if (input.pincode) formData.append("pincode", input.pincode);
   formData.append("mobileNumber", input.mobileNumber);
   formData.append("whatsappNumber", input.whatsappNumber);
   formData.append("email", input.email);
@@ -79,6 +81,7 @@ export interface CompleteProfileInput {
   skills?: string[];
   panNumber?: string;
   state?: string;
+  pincode?: string;
   idProofs: CompleteProfileIdProof[];
   videoFile?: File | null;
 }
@@ -97,6 +100,7 @@ export async function completeProviderProfile(input: CompleteProfileInput): Prom
     JSON.stringify({
       ...(input.panNumber && { panNumber: input.panNumber }),
       ...(input.state && { state: input.state }),
+      ...(input.pincode && { pincode: input.pincode }),
       idProofs: input.idProofs.map(({ idType, idNumber }) => ({ idType, idNumber })),
     })
   );
