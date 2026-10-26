@@ -1,12 +1,17 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { submitProviderApplication, completeProviderProfile } from "@/lib/services";
-import { ApiError } from "@/lib/api-client";
+import {
+  submitProviderApplication,
+  completeProviderProfile,
+  sendProviderOtp,
+  verifyProviderOtp,
+  uploadMedia,
+} from "@/lib/services";
 import { Icon } from "@/components/ui/icon";
 import { Logo } from "@/components/ui/logo";
 import { toast } from "@/components/ui/toaster";
@@ -47,17 +52,21 @@ const TALKING_POINTS = [
   { emoji: "❤️", text: "Tell families why they can trust you" },
 ];
 
-const STEP_LABELS = ["Basic", "Services", "KYC", "Video"];
+const STEP_LABELS = ["Mobile", "Details", "Services", "KYC", "Video"];
+
+type Step = 1 | 2 | 3 | 4 | 5;
+
+const OTP_LENGTH = 6;
+const OTP_RESEND_SECONDS = 60;
 
 /* ================================================================
-   SCHEMA — Step 1
+   SCHEMA — Step 2 (details)
    ================================================================ */
 const basicSchema = z
   .object({
     firstName: z.string().min(2, "Enter your first name"),
     lastName: z.string().min(1, "Enter your last name"),
     gender: z.enum(["Male", "Female"], { error: "Select your gender" }),
-    mobileNumber: z.string().regex(/^[0-9]{7,10}$/, "Enter a valid mobile number"),
     email: z.string().email("Enter a valid email address"),
     state: z.string().min(1, "Select your work state"),
     city: z.string().min(1, "Select your work city"),
@@ -83,18 +92,29 @@ function passwordStrength(pw: string): { score: number; label: string; color: st
    COMPONENT
    ================================================================ */
 export default function RegisterHelperPage() {
-  const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
+  const [step, setStep] = useState<Step>(1);
   const [submitted, setSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [basic, setBasic] = useState<BasicValues | null>(null);
 
-  // Step 2: Services
+  // Step 1: Mobile + OTP. Verifying the OTP gives us the provider's session
+  // token, which the later steps use.
+  const [mobile, setMobile] = useState("");
+  const [otp, setOtp] = useState("");
+  const [otpSent, setOtpSent] = useState(false);
+  const [otpBusy, setOtpBusy] = useState(false);
+  const [otpError, setOtpError] = useState("");
+  const [resendIn, setResendIn] = useState(0);
+  const [token, setToken] = useState("");
+  const [submitStage, setSubmitStage] = useState("");
+
+  // Step 3: Services
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
   const [experience, setExperience] = useState("");
   const [servicesError, setServicesError] = useState("");
 
-  // Step 3: KYC — both Aadhaar and PAN are collected (number + photo each),
+  // Step 4: KYC — both Aadhaar and PAN are collected (number + photo each),
   // not a choice between ID types, since the backend's complete-profile
   // step accepts a full list of ID proofs per provider.
   const [aadhaarNumber, setAadhaarNumber] = useState("");
@@ -105,7 +125,7 @@ export default function RegisterHelperPage() {
   const [consent, setConsent] = useState(false);
   const [kycError, setKycError] = useState("");
 
-  // Step 4: Video
+  // Step 5: Video
   const [videoFile, setVideoFile] = useState<File | null>(null);
 
   // Work state/city are resolved from a pincode via India Post's free,
@@ -148,9 +168,90 @@ export default function RegisterHelperPage() {
       .catch(() => setPincodeStatus("error"));
   };
 
-  const onStep1 = (values: BasicValues) => {
-    setBasic(values);
-    setStep(2);
+  useEffect(() => {
+    if (resendIn <= 0) return;
+    const timer = setTimeout(() => setResendIn((n) => n - 1), 1000);
+    return () => clearTimeout(timer);
+  }, [resendIn]);
+
+  const errorMessage = (err: unknown) => (err instanceof Error ? err.message : "Something went wrong. Please try again.");
+
+  const onSendOtp = async () => {
+    if (!/^[6-9][0-9]{9}$/.test(mobile)) return setOtpError("Enter a valid 10-digit mobile number.");
+    setOtpError("");
+    setOtpBusy(true);
+    try {
+      await sendProviderOtp(mobile);
+      setOtpSent(true);
+      setOtp("");
+      setResendIn(OTP_RESEND_SECONDS);
+    } catch (err) {
+      setOtpError(errorMessage(err));
+    } finally {
+      setOtpBusy(false);
+    }
+  };
+
+  const onVerifyOtp = async () => {
+    if (otp.length !== OTP_LENGTH) return setOtpError(`Enter the ${OTP_LENGTH}-digit OTP.`);
+    setOtpError("");
+    setOtpBusy(true);
+    try {
+      const result = await verifyProviderOtp(mobile, otp);
+      setToken(result.token);
+      // A returning helper who already filled in some details starts with them.
+      const { firstName, lastName, email, gender, state, city, pincode: savedPincode } = result.provider;
+      if (firstName) setValue("firstName", firstName);
+      if (lastName) setValue("lastName", lastName);
+      if (email) setValue("email", email);
+      if (gender === "Male" || gender === "Female") setValue("gender", gender);
+      if (state) setValue("state", state);
+      if (city) setValue("city", city);
+      if (savedPincode) setPincode(savedPincode);
+      setStep(2);
+    } catch (err) {
+      setOtpError(errorMessage(err));
+    } finally {
+      setOtpBusy(false);
+    }
+  };
+
+  const onChangeNumber = () => {
+    setOtpSent(false);
+    setOtp("");
+    setOtpError("");
+    setResendIn(0);
+  };
+
+  // Step 2 saves the account (name, email, password, work area) against the
+  // verified mobile number, so a duplicate email is caught here rather than
+  // at the very end.
+  const onDetails = async (values: BasicValues) => {
+    setIsSubmitting(true);
+    try {
+      await submitProviderApplication({
+        fullName: `${values.firstName.trim()} ${values.lastName.trim()}`,
+        firstName: values.firstName.trim(),
+        lastName: values.lastName.trim(),
+        gender: values.gender,
+        nationality: "Indian",
+        categoryId: "cat-maid",
+        area: values.city.trim(),
+        city: values.city.trim(),
+        state: values.state,
+        pincode: pincode || undefined,
+        mobileNumber: mobile,
+        whatsappNumber: mobile,
+        email: values.email.trim().toLowerCase(),
+        password: values.password,
+      });
+      setBasic(values);
+      setStep(3);
+    } catch (err) {
+      toast({ title: "Couldn't save your details", description: errorMessage(err), variant: "error" });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const toggleService = (id: string) => {
@@ -161,7 +262,7 @@ export default function RegisterHelperPage() {
     if (selectedServices.length === 0) return setServicesError("Pick at least one service.");
     if (!experience) return setServicesError("Select your years of experience.");
     setServicesError("");
-    setStep(3);
+    setStep(4);
   };
 
   const onStep3 = () => {
@@ -172,56 +273,48 @@ export default function RegisterHelperPage() {
     if (!selfieFile) return setKycError("Take a clear selfie.");
     if (!consent) return setKycError("Please confirm the consent checkbox.");
     setKycError("");
-    setStep(4);
+    setStep(5);
   };
 
   const onFinalSubmit = async () => {
-    if (!basic || !aadhaarFile || !panFile || !selfieFile || isSubmitting) return;
+    if (!basic || !token || !aadhaarFile || !panFile || !selfieFile || isSubmitting) return;
     setIsSubmitting(true);
     try {
       const categoryIds = Array.from(
         new Set(selectedServices.map((id) => SERVICES.find((s) => s.id === id)?.categoryId).filter((c): c is string => Boolean(c)))
       );
-      const primaryCategoryId = categoryIds[0] ?? "cat-maid";
 
-      const { token } = await submitProviderApplication({
-        fullName: `${basic.firstName.trim()} ${basic.lastName.trim()}`,
-        gender: basic.gender,
-        nationality: "Indian",
-        categoryId: primaryCategoryId,
-        area: basic.city.trim(),
-        city: basic.city.trim(),
-        state: basic.state,
-        pincode: pincode || undefined,
-        mobileNumber: basic.mobileNumber,
-        whatsappNumber: basic.mobileNumber,
-        email: basic.email.trim().toLowerCase(),
-        password: basic.password,
-        photoFile: selfieFile,
-      });
+      let introVideoUrl: string | undefined;
+      if (videoFile) {
+        setSubmitStage("Uploading video…");
+        introVideoUrl = await uploadMedia(videoFile, token);
+      }
 
+      setSubmitStage("Saving your profile…");
       await completeProviderProfile({
         token,
         categoryIds,
         experienceYears: EXPERIENCE_YEARS[experience],
         skills: selectedServices,
         panNumber: panNumber.trim().toUpperCase(),
+        aadhaarNumber: aadhaarNumber.replace(/\s/g, ""),
         state: basic.state,
         pincode: pincode || undefined,
         idProofs: [
           { idType: "Aadhaar Card", idNumber: aadhaarNumber.trim(), file: aadhaarFile },
           { idType: "PAN Card", idNumber: panNumber.trim().toUpperCase(), file: panFile },
         ],
-        videoFile,
+        selfieFile,
+        introVideoUrl,
       });
 
       setSubmitted(true);
       toast({ title: "Profile submitted!", description: "We'll verify your documents and notify you once you're live.", variant: "success" });
     } catch (err) {
-      const description = err instanceof ApiError ? err.message : err instanceof Error ? err.message : undefined;
-      toast({ title: "Couldn't submit profile", description, variant: "error" });
+      toast({ title: "Couldn't submit profile", description: errorMessage(err), variant: "error" });
     } finally {
       setIsSubmitting(false);
+      setSubmitStage("");
     }
   };
 
@@ -279,15 +372,84 @@ export default function RegisterHelperPage() {
           })}
         </div>
 
-        {/* ===== Step 1: Basic ===== */}
+        {/* ===== Step 1: Mobile + OTP ===== */}
         {step === 1 && (
+          <>
+            <h1 className="font-display text-h2">Verify your mobile number</h1>
+            <p className="mt-1 text-sm" style={{ color: "var(--muted)" }}>
+              We&apos;ll text you a one-time password to confirm it&apos;s really you.
+            </p>
+
+            <div className="mt-6">
+              <label className="mb-1.5 block text-sm font-semibold" htmlFor="mobile">Mobile number</label>
+              <div className="flex gap-2">
+                <span className="field flex !w-16 shrink-0 items-center justify-center font-semibold">+91</span>
+                <input
+                  id="mobile"
+                  placeholder="10-digit mobile number"
+                  inputMode="numeric"
+                  autoComplete="tel-national"
+                  maxLength={10}
+                  value={mobile}
+                  disabled={otpSent}
+                  onChange={(e) => setMobile(e.target.value.replace(/\D/g, "").slice(0, 10))}
+                  className="field min-w-0 flex-1"
+                />
+              </div>
+            </div>
+
+            {otpSent && (
+              <div className="mt-4">
+                <label className="mb-1.5 block text-sm font-semibold" htmlFor="otp">Enter OTP</label>
+                <input
+                  id="otp"
+                  placeholder={`${OTP_LENGTH}-digit OTP`}
+                  inputMode="numeric"
+                  autoComplete="one-time-code"
+                  maxLength={OTP_LENGTH}
+                  value={otp}
+                  autoFocus
+                  onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, OTP_LENGTH))}
+                  onKeyDown={(e) => e.key === "Enter" && onVerifyOtp()}
+                  className="field text-center text-lg font-semibold tracking-[0.5em]"
+                />
+                <div className="mt-2 flex items-center justify-between text-xs" style={{ color: "var(--muted)" }}>
+                  <button type="button" onClick={onChangeNumber} className="font-semibold" style={{ color: "var(--primary)" }}>
+                    Change number
+                  </button>
+                  {resendIn > 0 ? (
+                    <span>Resend OTP in {resendIn}s</span>
+                  ) : (
+                    <button type="button" onClick={onSendOtp} disabled={otpBusy} className="font-semibold" style={{ color: "var(--primary)" }}>
+                      Resend OTP
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {otpError && <p className="mt-3 text-xs" style={{ color: "var(--error)" }}>{otpError}</p>}
+
+            <button
+              type="button"
+              onClick={otpSent ? onVerifyOtp : onSendOtp}
+              disabled={otpBusy}
+              className="btn btn-primary btn-lg mt-6 w-full"
+            >
+              {otpBusy ? "Please wait…" : otpSent ? "Verify & Continue" : "Send OTP"}
+            </button>
+          </>
+        )}
+
+        {/* ===== Step 2: Details ===== */}
+        {step === 2 && (
           <>
             <h1 className="font-display text-h2">Tell us about you</h1>
             <p className="mt-1 text-sm" style={{ color: "var(--muted)" }}>
               Families will see your name and city on your profile.
             </p>
 
-            <form className="mt-6 flex flex-col gap-4" onSubmit={handleSubmit(onStep1)}>
+            <form className="mt-6 flex flex-col gap-4" onSubmit={handleSubmit(onDetails)}>
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <input placeholder="First name" className={`field ${errors.firstName ? "field-error" : ""}`} {...register("firstName")} />
@@ -306,11 +468,6 @@ export default function RegisterHelperPage() {
                   <option value="Male">Male</option>
                 </select>
                 {errors.gender && <p className="mt-1 text-xs" style={{ color: "var(--error)" }}>{errors.gender.message}</p>}
-              </div>
-
-              <div>
-                <input placeholder="Mobile number" inputMode="numeric" className={`field ${errors.mobileNumber ? "field-error" : ""}`} {...register("mobileNumber")} />
-                {errors.mobileNumber && <p className="mt-1 text-xs" style={{ color: "var(--error)" }}>{errors.mobileNumber.message}</p>}
               </div>
 
               <div>
@@ -406,8 +563,8 @@ export default function RegisterHelperPage() {
           </>
         )}
 
-        {/* ===== Step 2: Services ===== */}
-        {step === 2 && (
+        {/* ===== Step 3: Services ===== */}
+        {step === 3 && (
           <>
             <h1 className="font-display text-h2">What can you do?</h1>
             <p className="mt-1 text-sm" style={{ color: "var(--muted)" }}>
@@ -469,8 +626,8 @@ export default function RegisterHelperPage() {
           </>
         )}
 
-        {/* ===== Step 3: KYC ===== */}
-        {step === 3 && (
+        {/* ===== Step 4: KYC ===== */}
+        {step === 4 && (
           <>
             <h1 className="font-display text-h2">Verify your identity</h1>
             <p className="mt-1 text-sm" style={{ color: "var(--muted)" }}>
@@ -571,8 +728,8 @@ export default function RegisterHelperPage() {
           </>
         )}
 
-        {/* ===== Step 4: Video ===== */}
-        {step === 4 && (
+        {/* ===== Step 5: Video ===== */}
+        {step === 5 && (
           <>
             <h1 className="font-display text-h2">Introduce yourself</h1>
             <p className="mt-1 text-sm" style={{ color: "var(--muted)" }}>
@@ -620,36 +777,38 @@ export default function RegisterHelperPage() {
           </>
         )}
 
-        {/* Footer actions */}
-        <div className="mt-6 grid grid-cols-2 gap-3">
-          {step > 1 ? (
-            <button type="button" onClick={() => setStep((s) => (s - 1) as 1 | 2 | 3 | 4)} className="btn btn-outline">
-              ← Back
-            </button>
-          ) : (
-            <span />
-          )}
-          {step === 1 && (
-            <button type="button" onClick={handleSubmit(onStep1)} className="btn btn-primary">
-              Continue
-            </button>
-          )}
-          {step === 2 && (
-            <button type="button" onClick={onStep2} className="btn btn-primary">
-              Continue
-            </button>
-          )}
-          {step === 3 && (
-            <button type="button" onClick={onStep3} className="btn btn-primary">
-              Continue
-            </button>
-          )}
-          {step === 4 && (
-            <button type="button" onClick={onFinalSubmit} disabled={isSubmitting} className="btn btn-primary">
-              {isSubmitting ? "Submitting…" : "Submit Profile"}
-            </button>
-          )}
-        </div>
+        {/* Footer actions (step 1 has its own buttons) */}
+        {step > 1 && (
+          <div className="mt-6 grid grid-cols-2 gap-3">
+            {step > 2 ? (
+              <button type="button" onClick={() => setStep((s) => (s - 1) as Step)} disabled={isSubmitting} className="btn btn-outline">
+                ← Back
+              </button>
+            ) : (
+              <span />
+            )}
+            {step === 2 && (
+              <button type="button" onClick={handleSubmit(onDetails)} disabled={isSubmitting} className="btn btn-primary">
+                {isSubmitting ? "Saving…" : "Continue"}
+              </button>
+            )}
+            {step === 3 && (
+              <button type="button" onClick={onStep2} className="btn btn-primary">
+                Continue
+              </button>
+            )}
+            {step === 4 && (
+              <button type="button" onClick={onStep3} className="btn btn-primary">
+                Continue
+              </button>
+            )}
+            {step === 5 && (
+              <button type="button" onClick={onFinalSubmit} disabled={isSubmitting} className="btn btn-primary">
+                {isSubmitting ? submitStage || "Submitting…" : "Submit Profile"}
+              </button>
+            )}
+          </div>
+        )}
       </div>
 
     </section>
