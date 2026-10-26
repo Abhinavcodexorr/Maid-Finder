@@ -8,7 +8,6 @@ import { z } from "zod";
 import {
   completeProviderProfile,
   fetchCatalogServices,
-  getCategories,
   sendProviderOtp,
   uploadMedia,
   verifyProviderOtp,
@@ -180,6 +179,7 @@ export default function RegisterHelperPage() {
 
   // Step 1: details
   const [services, setServices] = useState<CatalogService[]>([]);
+  const [servicesStatus, setServicesStatus] = useState<"loading" | "ready" | "error">("loading");
   const [states, setStates] = useState<string[]>([]);
   const [cities, setCities] = useState<string[]>([]);
   const [citiesLoading, setCitiesLoading] = useState(false);
@@ -211,11 +211,18 @@ export default function RegisterHelperPage() {
   const videoPreview = useMemo(() => (videoFile ? URL.createObjectURL(videoFile) : null), [videoFile]);
   useEffect(() => () => { if (videoPreview) URL.revokeObjectURL(videoPreview); }, [videoPreview]);
 
-  useEffect(() => {
+  const loadServices = () => {
+    setServicesStatus("loading");
     fetchCatalogServices()
-      .then(setServices)
-      // The static list uses the same category keys, so it works as a fallback.
-      .catch(() => setServices(getCategories().map((c) => ({ id: c.id, key: c.id, name: c.name }))));
+      .then((list) => {
+        setServices(list);
+        setServicesStatus("ready");
+      })
+      .catch(() => setServicesStatus("error"));
+  };
+
+  useEffect(() => {
+    loadServices();
     fetch("/api/geo/states")
       .then((res) => res.json())
       .then((data) => { if (data?.success) setStates(data.data); })
@@ -475,12 +482,18 @@ export default function RegisterHelperPage() {
                   <div>
                     <label className="mb-1.5 block text-sm font-semibold" htmlFor="categoryId">What work do you do? <span style={{ color: "var(--error)" }}>*</span></label>
                     <select id="categoryId" className={`field ${errors.categoryId ? "field-error" : ""}`} {...register("categoryId")}>
-                      <option value="">Select</option>
+                      <option value="">{servicesStatus === "loading" ? "Loading services…" : "Select"}</option>
                       {services.map((svc) => (
                         <option key={svc.key} value={svc.key}>{svc.name}</option>
                       ))}
                     </select>
                     <FieldError message={errors.categoryId?.message} />
+                    {servicesStatus === "error" && (
+                      <p className="mt-1 text-xs" style={{ color: "var(--error)" }}>
+                        Couldn&apos;t load services.{" "}
+                        <button type="button" onClick={loadServices} className="font-semibold underline">Try again</button>
+                      </p>
+                    )}
                   </div>
                   <div>
                     <label className="mb-1.5 block text-sm font-semibold" htmlFor="state">State <span style={{ color: "var(--error)" }}>*</span></label>
