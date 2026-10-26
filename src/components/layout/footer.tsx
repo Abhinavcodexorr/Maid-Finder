@@ -49,24 +49,6 @@ const COLUMNS = [
 export function Footer() {
   return (
     <footer style={{ background: "var(--gradient-dark)" }} className="text-white">
-      {/* Register as Helper Band */}
-      <div className="border-b border-white/10 bg-white/5">
-        <div className="container-page flex flex-col items-center justify-between gap-4 py-8 sm:flex-row">
-          <div className="flex items-center gap-3">
-            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/10 text-white">
-              <Icon name="briefcase" className="h-5 w-5" />
-            </span>
-            <div>
-              <h3 className="font-display text-base font-semibold">Are you a helper looking for work?</h3>
-              <p className="mt-0.5 text-sm text-white/55">List your profile free and start getting job requests from families.</p>
-            </div>
-          </div>
-          <Link href="/register-helper" className="btn btn-lg shrink-0" style={{ background: "white", color: "var(--ink)" }}>
-            Register as Helper
-          </Link>
-        </div>
-      </div>
-
       {/* Main Footer */}
       <div className="container-page grid gap-10 py-12 sm:grid-cols-2 lg:grid-cols-6">
         {/* Brand Column */}

@@ -38,13 +38,20 @@ const STEPS = [
   { n: "03", title: "Unlock & connect", icon: "unlock", body: "Get a membership once, then call or WhatsApp any professional directly." },
 ];
 
-const TRUST_ITEMS = [
-  { icon: "shield", title: "Verified" },
-  { icon: "eye", title: "Transparent" },
-  { icon: "lock", title: "Secure" },
-  { icon: "search", title: "Easy to find" },
-  { icon: "layers", title: "All-in-one" },
+const FEATURES = [
+  { icon: "shield", title: "Identity verified", body: "Every professional submits Aadhaar and PAN, plus an intro video, before they go live." },
+  { icon: "eye", title: "Transparent profiles", body: "See experience, skills and languages up front — no surprises after you connect." },
+  { icon: "phone", title: "Direct contact, 0% commission", body: "Call or WhatsApp the professional yourself. No agency, no middleman, no booking fee." },
+  { icon: "lock", title: "Free to browse, pay once", body: "Explore every profile for free. One membership unlocks contact details for all of them." },
 ];
+
+const HELPER_PERKS = [
+  { icon: "check-circle", title: "Free to list", body: "Create your profile at no cost." },
+  { icon: "phone", title: "Get calls directly", body: "Families contact you, not an agency." },
+  { icon: "trending-up", title: "Keep 100% of your earnings", body: "We never take a commission." },
+];
+
+const HERO_SERVICE_COUNT = 8;
 
 const fadeUp = (delay = 0) => ({
   initial: { opacity: 0, y: 20 },
@@ -179,7 +186,7 @@ export default function HomePage() {
               {[
                 { v: "100%", l: "ID verified" },
                 { v: "0%", l: "Commission" },
-                { v: "9", l: "Service categories" },
+                { v: "12+", l: "Service categories" },
               ].map((t) => (
                 <div key={t.l}>
                   <p className="font-display text-2xl font-bold" style={{ color: "var(--primary)" }}>{t.v}</p>
@@ -224,49 +231,40 @@ export default function HomePage() {
 
       {/* ====== POPULAR SERVICES ====== */}
       <section className="container-page py-16">
-        <motion.div {...fadeUp()} className="mb-8 flex items-end justify-between">
+        <motion.div {...fadeUp()} className="mb-8 flex items-end justify-between gap-4">
           <div>
-            <h2 className="font-display text-h2">What can we help you with?</h2>
-            <p className="mt-1 text-sm" style={{ color: "var(--muted)" }}>
-              Browse popular service categories
-            </p>
+            <p className="eyebrow">Services</p>
+            <h2 className="font-display text-h2 mt-2">What can we help you with?</h2>
           </div>
-          <Link href="/services" className="hidden text-sm font-semibold sm:block" style={{ color: "var(--primary)" }}>
+          <Link href="/services" className="shrink-0 text-sm font-semibold" style={{ color: "var(--primary)" }}>
             All services →
           </Link>
         </motion.div>
 
-        <ScrollStagger
-          className="no-scrollbar -mx-4 flex gap-3 overflow-x-auto px-4 pb-2 sm:mx-0 sm:grid sm:grid-cols-3 sm:gap-4 sm:overflow-visible sm:px-0 lg:grid-cols-6"
-        >
-          {POPULAR_SERVICES.map((svc, i) => {
+        <ScrollStagger className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
+          {POPULAR_SERVICES.slice(0, HERO_SERVICE_COUNT).map((svc, i) => {
             const swatch = svc.slug ? colorForCategory(svc.slug) : colorForIndex(i);
             return (
               <ScrollStaggerItem key={svc.label}>
-                <TiltCard maxTilt={14} scale={1.04} className="min-w-[130px] sm:min-w-0 h-full">
-                <Link
-                  href={svc.slug ? `/providers?category=${svc.slug}` : "/providers"}
-                  className="card card-hover flex flex-col items-center gap-3 px-4 py-5 text-center h-full"
-                >
-                  <motion.span
-                    whileHover={{ scale: 1.08, rotate: -3 }}
-                    whileTap={{ scale: 0.94 }}
-                    className="flex h-14 w-14 items-center justify-center rounded-2xl text-2xl"
-                    style={{ background: swatch.soft }}
+                <TiltCard maxTilt={8} scale={1.03} className="h-full">
+                  <Link
+                    href={svc.slug ? `/providers?category=${svc.slug}` : "/providers"}
+                    className="card card-hover flex h-full items-center gap-4 p-4"
                   >
-                    {svc.emoji}
-                  </motion.span>
-                  <span className="text-sm font-semibold">{svc.label}</span>
-                </Link>
+                    <span
+                      className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl text-2xl"
+                      style={{ background: swatch.soft }}
+                    >
+                      {svc.emoji}
+                    </span>
+                    <span className="flex-1 text-sm font-semibold">{svc.label}</span>
+                    <Icon name="arrow-right" className="h-4 w-4 shrink-0" style={{ color: "var(--faint)" }} />
+                  </Link>
                 </TiltCard>
               </ScrollStaggerItem>
             );
           })}
         </ScrollStagger>
-
-        <Link href="/services" className="mt-4 block text-center text-sm font-semibold sm:hidden" style={{ color: "var(--primary)" }}>
-          View all services →
-        </Link>
       </section>
 
       {/* ====== HOW IT WORKS ====== */}
@@ -277,62 +275,71 @@ export default function HomePage() {
             <h2 className="font-display text-h2 mt-3">Three simple steps</h2>
           </motion.div>
 
-          <ScrollStagger className="mt-10 grid gap-6 md:grid-cols-3">
-            {STEPS.map((step) => (
-              <ScrollStaggerItem key={step.n}>
-                <motion.div
-                  whileHover={{ y: -4 }}
-                  className="card relative flex flex-col gap-4 overflow-hidden h-full py-7 shadow-sm hover:shadow-lg"
-                >
+          <div className="relative mt-12">
+            <div
+              aria-hidden
+              className="absolute left-[16.7%] right-[16.7%] top-8 hidden border-t-2 border-dashed md:block"
+              style={{ borderColor: "var(--primary)", opacity: 0.25 }}
+            />
+            <ScrollStagger className="grid gap-10 md:grid-cols-3 md:gap-6">
+              {STEPS.map((step) => (
+                <ScrollStaggerItem key={step.n}>
+                  <div className="relative flex flex-col items-center text-center">
+                    <span
+                      className="relative flex h-16 w-16 items-center justify-center rounded-2xl text-white shadow-lg ring-8 ring-[var(--primary-soft)]"
+                      style={{ background: "var(--gradient-primary)" }}
+                    >
+                      <Icon name={step.icon} className="h-7 w-7" />
+                      <span
+                        className="absolute -right-2 -top-2 flex h-6 w-6 items-center justify-center rounded-full bg-white text-xs font-bold shadow"
+                        style={{ color: "var(--primary)" }}
+                      >
+                        {step.n.replace(/^0/, "")}
+                      </span>
+                    </span>
+                    <h3 className="font-display mt-5 text-lg font-bold leading-snug">{step.title}</h3>
+                    <p className="mt-2 max-w-xs text-sm leading-relaxed" style={{ color: "var(--muted)" }}>{step.body}</p>
+                  </div>
+                </ScrollStaggerItem>
+              ))}
+            </ScrollStagger>
+          </div>
+        </div>
+      </section>
+
+      {/* ====== WHY HELP ZONE ====== */}
+      <section className="container-page py-16 lg:py-20">
+        <div className="grid items-center gap-10 lg:grid-cols-[0.85fr_1.15fr] lg:gap-14">
+          <motion.div {...fadeUp()}>
+            <p className="eyebrow">Why Help Zone</p>
+            <h2 className="font-display text-h1 mt-3">Built for trust and transparency</h2>
+            <p className="mt-4 text-base leading-relaxed" style={{ color: "var(--muted)" }}>
+              Hiring someone for your home should feel safe. We check every professional, show you everything up front and
+              stay out of the way when you connect.
+            </p>
+            <Link href="/how-it-works" className="btn btn-outline mt-6">
+              See how it works
+              <Icon name="arrow-right" className="h-4 w-4" />
+            </Link>
+          </motion.div>
+
+          <ScrollStagger className="grid gap-4 sm:grid-cols-2">
+            {FEATURES.map((f) => (
+              <ScrollStaggerItem key={f.title}>
+                <div className="card card-hover h-full">
                   <span
-                    className="absolute -right-3 -top-4 font-display text-[5rem] font-extrabold leading-none pointer-events-none"
-                    style={{ color: "var(--primary)", opacity: 0.07 }}
-                  >
-                    {step.n}
-                  </span>
-                  <span
-                    className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl"
+                    className="flex h-11 w-11 items-center justify-center rounded-xl"
                     style={{ background: "var(--primary-soft)", color: "var(--primary)" }}
                   >
-                    <Icon name={step.icon} className="h-7 w-7" />
+                    <Icon name={f.icon} className="h-5 w-5" />
                   </span>
-                  <div>
-                    <h3 className="font-display text-lg font-bold leading-snug">{step.title}</h3>
-                    <p className="mt-1.5 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>{step.body}</p>
-                  </div>
-                </motion.div>
+                  <h3 className="font-display mt-4 text-base font-bold">{f.title}</h3>
+                  <p className="mt-1.5 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>{f.body}</p>
+                </div>
               </ScrollStaggerItem>
             ))}
           </ScrollStagger>
         </div>
-      </section>
-
-      {/* ====== TRUST SECTION ====== */}
-      <section className="container-page py-16">
-        <motion.div {...fadeUp()} className="text-center">
-          <p className="eyebrow">Why Help Zone</p>
-          <h2 className="font-display text-h2 mt-3">Built for trust and transparency</h2>
-        </motion.div>
-
-        <ScrollStagger className="mt-8 flex flex-wrap justify-center gap-3">
-          {TRUST_ITEMS.map((item) => (
-            <ScrollStaggerItem key={item.title}>
-              <motion.div
-                whileHover={{ scale: 1.05 }}
-                className="flex items-center gap-2.5 rounded-full py-2.5 pl-2.5 pr-4"
-                style={{ background: "var(--line-light)" }}
-              >
-                <span
-                  className="flex h-8 w-8 items-center justify-center rounded-full"
-                  style={{ background: "var(--surface)", color: "var(--primary)" }}
-                >
-                  <Icon name={item.icon} className="h-4 w-4" />
-                </span>
-                <span className="text-sm font-bold">{item.title}</span>
-              </motion.div>
-            </ScrollStaggerItem>
-          ))}
-        </ScrollStagger>
       </section>
 
       {/* ====== FEATURED PROFESSIONALS ====== */}
@@ -459,22 +466,51 @@ export default function HomePage() {
         </ScrollStagger>
       </section>
 
-      {/* ====== FINAL CTA ====== */}
-      <section style={{ background: "var(--gradient-dark)" }}>
-        <ScrollReveal direction="zoom" distance={20}>
-          <div className="container-page py-16 text-center text-white">
-            <h2 className="font-display text-h1">Ready to find help?</h2>
-            <p className="mx-auto mt-3 max-w-md text-sm text-white/60">
-              Browse professionals for free. Purchase a membership when you&apos;re ready to connect.
-            </p>
-            <div className="mt-6 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
-              <Link href="/providers" className="btn btn-primary btn-lg">
-                <Icon name="search" className="h-4 w-4" />
-                Find Professionals
-              </Link>
-              <Link href="/membership" className="btn btn-lg" style={{ background: "rgba(255,255,255,0.1)", color: "white", border: "1px solid rgba(255,255,255,0.2)" }}>
-                View Membership Plans
-              </Link>
+      {/* ====== HELPER CTA ====== */}
+      <section className="container-page pb-16 lg:pb-20">
+        <ScrollReveal direction="up">
+          <div
+            className="relative overflow-hidden rounded-3xl p-8 text-white sm:p-12"
+            style={{ background: "var(--gradient-primary)" }}
+          >
+            <div
+              aria-hidden
+              className="pointer-events-none absolute -right-20 -top-20 h-72 w-72 rounded-full bg-white/10 blur-2xl"
+            />
+            <div className="relative grid items-center gap-8 lg:grid-cols-[1fr_1fr] lg:gap-12">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-widest text-white/70">For helpers</p>
+                <h2 className="font-display text-h1 mt-3">Are you a maid, cook or skilled professional?</h2>
+                <p className="mt-3 max-w-md text-sm leading-relaxed text-white/80">
+                  Join Help Zone and get found by families looking for trusted help in your city.
+                </p>
+                <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+                  <Link href="/register-helper" className="btn btn-lg" style={{ background: "white", color: "var(--primary-dark)" }}>
+                    Register as Helper
+                  </Link>
+                  <Link
+                    href="/providers"
+                    className="btn btn-lg"
+                    style={{ background: "rgba(255,255,255,0.12)", color: "white", border: "1px solid rgba(255,255,255,0.25)" }}
+                  >
+                    <Icon name="search" className="h-4 w-4" />
+                    Find Professionals
+                  </Link>
+                </div>
+              </div>
+              <ul className="grid gap-3">
+                {HELPER_PERKS.map((perk) => (
+                  <li key={perk.title} className="flex items-center gap-4 rounded-2xl bg-white/10 p-4 backdrop-blur">
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/15">
+                      <Icon name={perk.icon} className="h-5 w-5" />
+                    </span>
+                    <div>
+                      <p className="text-sm font-bold">{perk.title}</p>
+                      <p className="text-xs text-white/70">{perk.body}</p>
+                    </div>
+                  </li>
+                ))}
+              </ul>
             </div>
           </div>
         </ScrollReveal>
