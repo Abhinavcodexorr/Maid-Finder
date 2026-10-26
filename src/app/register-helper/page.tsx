@@ -1,172 +1,243 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import {
-  submitProviderApplication,
   completeProviderProfile,
+  fetchCatalogServices,
+  getCategories,
   sendProviderOtp,
-  verifyProviderOtp,
   uploadMedia,
+  verifyProviderOtp,
 } from "@/lib/services";
+import type { CatalogService } from "@/lib/services";
 import { Icon } from "@/components/ui/icon";
 import { Logo } from "@/components/ui/logo";
 import { toast } from "@/components/ui/toaster";
-import { colorForIndex } from "@/lib/category-colors";
 
 /* ================================================================
-   OPTIONS
+   CONSTANTS
    ================================================================ */
-const SERVICES = [
-  { id: "Cooking", emoji: "🍲", categoryId: "cat-cook" },
-  { id: "House Cleaning", emoji: "🧹", categoryId: "cat-maid" },
-  { id: "Baby Sitting", emoji: "👶", categoryId: "cat-babysitter" },
-  { id: "Elderly Care", emoji: "🧓", categoryId: "cat-elderly-care" },
-  { id: "Laundry", emoji: "🧺", categoryId: "cat-maid" },
-  { id: "Dish Washing", emoji: "🍽️", categoryId: "cat-maid" },
-  { id: "Ironing", emoji: "👕", categoryId: "cat-maid" },
-  { id: "Deep Cleaning", emoji: "✨", categoryId: "cat-maid" },
-  { id: "Patient Care", emoji: "🏥", categoryId: "cat-elderly-care" },
-  { id: "Pet Care", emoji: "🐾", categoryId: "cat-maid" },
-  { id: "Gardening", emoji: "🌱", categoryId: "cat-carpenter" },
-  { id: "Grocery Runs", emoji: "🛒", categoryId: "cat-driver" },
-];
-
-const EXPERIENCE_OPTIONS = ["< 1 year", "1–3 years", "3–5 years", "5–10 years", "10+ years"];
-
-const EXPERIENCE_YEARS: Record<string, number> = {
-  "< 1 year": 0,
-  "1–3 years": 2,
-  "3–5 years": 4,
-  "5–10 years": 7,
-  "10+ years": 12,
-};
-
-const TALKING_POINTS = [
-  { emoji: "👋", text: "Say your name and where you live" },
-  { emoji: "💼", text: "Share your work experience and past homes" },
-  { emoji: "🛠️", text: "Talk about the services you are best at" },
-  { emoji: "❤️", text: "Tell families why they can trust you" },
-];
-
-const STEP_LABELS = ["Mobile", "Details", "Services", "KYC", "Video"];
-
-type Step = 1 | 2 | 3 | 4 | 5;
-
 const OTP_LENGTH = 6;
 const OTP_RESEND_SECONDS = 60;
+const MOBILE_PATTERN = /^[6-9][0-9]{9}$/;
+
+type Phase = "mobile" | "otp" | "steps";
+type Step = 1 | 2 | 3;
+
+const detailsSchema = z.object({
+  firstName: z.string().trim().min(1, "Enter your first name"),
+  lastName: z.string().trim().min(1, "Enter your last name"),
+  categoryId: z.string().min(1, "Select the work you do"),
+  state: z.string().min(1, "Select your state"),
+  city: z.string().min(1, "Select your city"),
+  area: z.string().trim().optional(),
+  pincode: z.string().optional(),
+});
+
+type DetailsValues = z.infer<typeof detailsSchema>;
+
+function formatCountdown(seconds: number) {
+  const mm = String(Math.floor(seconds / 60)).padStart(2, "0");
+  const ss = String(seconds % 60).padStart(2, "0");
+  return `${mm}:${ss}`;
+}
+
+const errorMessage = (err: unknown) => (err instanceof Error ? err.message : "Something went wrong. Please try again.");
 
 /* ================================================================
-   SCHEMA — Step 2 (details)
+   SMALL PIECES
    ================================================================ */
-const basicSchema = z
-  .object({
-    firstName: z.string().min(2, "Enter your first name"),
-    lastName: z.string().min(1, "Enter your last name"),
-    gender: z.enum(["Male", "Female"], { error: "Select your gender" }),
-    email: z.string().email("Enter a valid email address"),
-    state: z.string().min(1, "Select your work state"),
-    city: z.string().min(1, "Select your work city"),
-    password: z.string().min(8, "At least 8 characters").regex(/[A-Za-z]/, "Must include a letter").regex(/\d/, "Must include a number"),
-    confirmPassword: z.string(),
-  })
-  .refine((v) => v.password === v.confirmPassword, { message: "Passwords do not match", path: ["confirmPassword"] });
+function FieldError({ message }: { message?: string }) {
+  return message ? <p className="mt-1 text-xs" style={{ color: "var(--error)" }}>{message}</p> : null;
+}
 
-type BasicValues = z.infer<typeof basicSchema>;
+function StepHeader({ step, onBack }: { step: Step; onBack: () => void }) {
+  return (
+    <div className="mb-8 flex items-center gap-4">
+      <button type="button" onClick={onBack} aria-label="Go back" className="-ml-1 rounded-full p-1.5 hover:bg-[var(--line-light)]">
+        <Icon name="arrow-left" className="h-5 w-5" />
+      </button>
+      <div className="flex flex-1 items-center justify-center" role="progressbar" aria-valuemin={1} aria-valuemax={3} aria-valuenow={step}>
+        {[1, 2, 3].map((s) => (
+          <div key={s} className="flex items-center">
+            <span className="h-3.5 w-3.5 rounded-full" style={{ background: step >= s ? "var(--primary)" : "var(--line)" }} />
+            {s < 3 && <span className="h-0.5 w-12 sm:w-16" style={{ background: step > s ? "var(--primary)" : "var(--line)" }} />}
+          </div>
+        ))}
+      </div>
+      <span className="w-8" />
+    </div>
+  );
+}
 
-function passwordStrength(pw: string): { score: number; label: string; color: string } {
-  let score = 0;
-  if (pw.length >= 8) score++;
-  if (/[A-Z]/.test(pw) && /[a-z]/.test(pw)) score++;
-  if (/\d/.test(pw)) score++;
-  if (/[^A-Za-z0-9]/.test(pw)) score++;
-  const labels = ["Too weak", "Weak", "Good", "Strong", "Strong"];
-  const colors = ["var(--error)", "var(--warning)", "var(--primary)", "var(--success)", "var(--success)"];
-  return { score, label: pw ? labels[score] : "", color: colors[score] };
+function UploadTile({
+  id,
+  label,
+  file,
+  disabled,
+  onChange,
+}: {
+  id: string;
+  label: string;
+  file: File | null;
+  disabled?: boolean;
+  onChange: (file: File | null) => void;
+}) {
+  const preview = useMemo(() => (file?.type.startsWith("image/") ? URL.createObjectURL(file) : null), [file]);
+  useEffect(() => () => { if (preview) URL.revokeObjectURL(preview); }, [preview]);
+
+  return (
+    <label
+      htmlFor={id}
+      className={`relative flex aspect-[4/3] cursor-pointer flex-col items-center justify-center gap-2 overflow-hidden rounded-2xl border p-3 text-center transition-colors hover:border-[var(--primary)] ${disabled ? "pointer-events-none opacity-50" : ""}`}
+      style={{ borderColor: file ? "var(--primary)" : "var(--line)", background: "var(--primary-soft)" }}
+    >
+      {preview ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={preview} alt={label} className="absolute inset-0 h-full w-full object-cover" />
+      ) : (
+        <>
+          <Icon name={file ? "check-circle" : "upload"} className="h-7 w-7" style={{ color: "var(--primary)" }} />
+          <span className="text-sm font-semibold leading-tight">{file ? file.name : label}</span>
+        </>
+      )}
+      {preview && (
+        <span className="absolute bottom-2 left-2 rounded-md bg-black/60 px-2 py-0.5 text-[11px] font-semibold text-white">{label}</span>
+      )}
+      <input
+        id={id}
+        type="file"
+        accept="image/*,.pdf"
+        className="hidden"
+        disabled={disabled}
+        onChange={(e) => onChange(e.target.files?.[0] ?? null)}
+      />
+    </label>
+  );
+}
+
+function OtpInput({ value, onChange, onComplete }: { value: string; onChange: (v: string) => void; onComplete: () => void }) {
+  const refs = useRef<Array<HTMLInputElement | null>>([]);
+  const digits = Array.from({ length: OTP_LENGTH }, (_, i) => value[i] ?? "");
+
+  const onInput = (index: number, raw: string) => {
+    const typed = raw.replace(/\D/g, "");
+    if (!typed) {
+      const next = digits.slice();
+      next[index] = "";
+      return onChange(next.join(""));
+    }
+    // Pasting (or the keyboard's one-time-code suggestion) delivers several digits at once.
+    const merged = (value.slice(0, index) + typed).slice(0, OTP_LENGTH);
+    onChange(merged);
+    refs.current[Math.min(merged.length, OTP_LENGTH - 1)]?.focus();
+  };
+
+  const onKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Backspace" && !digits[index] && index > 0) refs.current[index - 1]?.focus();
+    if (e.key === "Enter") onComplete();
+  };
+
+  return (
+    <div className="flex justify-between gap-2">
+      {digits.map((digit, i) => (
+        <input
+          key={i}
+          ref={(el) => { refs.current[i] = el; }}
+          value={digit}
+          inputMode="numeric"
+          autoComplete={i === 0 ? "one-time-code" : "off"}
+          aria-label={`Digit ${i + 1}`}
+          autoFocus={i === 0}
+          onChange={(e) => onInput(i, e.target.value)}
+          onKeyDown={(e) => onKeyDown(i, e)}
+          className="field h-14 min-w-0 flex-1 px-0 text-center text-xl font-semibold"
+        />
+      ))}
+    </div>
+  );
 }
 
 /* ================================================================
-   COMPONENT
+   PAGE
    ================================================================ */
 export default function RegisterHelperPage() {
+  const [phase, setPhase] = useState<Phase>("mobile");
   const [step, setStep] = useState<Step>(1);
   const [submitted, setSubmitted] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  const [basic, setBasic] = useState<BasicValues | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [token, setToken] = useState("");
 
-  // Step 1: Mobile + OTP. Verifying the OTP gives us the provider's session
-  // token, which the later steps use.
+  // Mobile + OTP
   const [mobile, setMobile] = useState("");
   const [otp, setOtp] = useState("");
-  const [otpSent, setOtpSent] = useState(false);
-  const [otpBusy, setOtpBusy] = useState(false);
   const [otpError, setOtpError] = useState("");
   const [resendIn, setResendIn] = useState(0);
-  const [token, setToken] = useState("");
-  const [submitStage, setSubmitStage] = useState("");
 
-  // Step 3: Services
-  const [selectedServices, setSelectedServices] = useState<string[]>([]);
-  const [experience, setExperience] = useState("");
-  const [servicesError, setServicesError] = useState("");
+  // Step 1: details
+  const [services, setServices] = useState<CatalogService[]>([]);
+  const [states, setStates] = useState<string[]>([]);
+  const [cities, setCities] = useState<string[]>([]);
+  const [citiesLoading, setCitiesLoading] = useState(false);
 
-  // Step 4: KYC — both Aadhaar and PAN are collected (number + photo each),
-  // not a choice between ID types, since the backend's complete-profile
-  // step accepts a full list of ID proofs per provider.
-  const [aadhaarNumber, setAadhaarNumber] = useState("");
-  const [aadhaarFile, setAadhaarFile] = useState<File | null>(null);
-  const [panNumber, setPanNumber] = useState("");
-  const [panFile, setPanFile] = useState<File | null>(null);
-  const [selfieFile, setSelfieFile] = useState<File | null>(null);
-  const [consent, setConsent] = useState(false);
-  const [kycError, setKycError] = useState("");
+  // Step 2: documents
+  const [aadhaarFront, setAadhaarFront] = useState<File | null>(null);
+  const [aadhaarBack, setAadhaarBack] = useState<File | null>(null);
+  const [panFront, setPanFront] = useState<File | null>(null);
+  const [noPan, setNoPan] = useState(false);
+  const [docsError, setDocsError] = useState("");
 
-  // Step 5: Video
+  // Step 3: video KYC
   const [videoFile, setVideoFile] = useState<File | null>(null);
-
-  // Work state/city are resolved from a pincode via India Post's free,
-  // no-key lookup (api.postalpincode.in) instead of a hardcoded state/city
-  // list — the resolved names are plain text, editable in case the lookup
-  // is wrong or down, and that's what gets saved either way.
-  const [pincode, setPincode] = useState("");
-  const [pincodeStatus, setPincodeStatus] = useState<"idle" | "loading" | "found" | "not-found" | "error">("idle");
+  const [videoStage, setVideoStage] = useState("");
 
   const {
     register,
     handleSubmit,
     watch,
     setValue,
+    getValues,
     formState: { errors },
-  } = useForm<BasicValues>({ resolver: zodResolver(basicSchema), defaultValues: { state: "", city: "" } });
+  } = useForm<DetailsValues>({
+    resolver: zodResolver(detailsSchema),
+    defaultValues: { firstName: "", lastName: "", categoryId: "", state: "", city: "", area: "", pincode: "" },
+  });
+  const selectedState = watch("state");
 
-  const pw = watch("password") || "";
-  const strength = useMemo(() => passwordStrength(pw), [pw]);
+  const videoPreview = useMemo(() => (videoFile ? URL.createObjectURL(videoFile) : null), [videoFile]);
+  useEffect(() => () => { if (videoPreview) URL.revokeObjectURL(videoPreview); }, [videoPreview]);
 
-  const onPincodeChange = (value: string) => {
-    const digits = value.replace(/\D/g, "").slice(0, 6);
-    setPincode(digits);
-    if (digits.length !== 6) {
-      setPincodeStatus("idle");
-      return;
-    }
-    setPincodeStatus("loading");
-    fetch(`/api/geo/pincode/${digits}`)
+  useEffect(() => {
+    fetchCatalogServices()
+      .then(setServices)
+      // The static list uses the same category keys, so it works as a fallback.
+      .catch(() => setServices(getCategories().map((c) => ({ id: c.id, key: c.id, name: c.name }))));
+    fetch("/api/geo/states")
       .then((res) => res.json())
-      .then((data) => {
-        if (data?.success) {
-          setValue("state", data.state, { shouldValidate: true });
-          setValue("city", data.city, { shouldValidate: true });
-          setPincodeStatus("found");
-        } else {
-          setPincodeStatus("not-found");
-        }
-      })
-      .catch(() => setPincodeStatus("error"));
-  };
+      .then((data) => { if (data?.success) setStates(data.data); })
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    if (!selectedState) return;
+    // Marks the fetch as in-flight — not state derivable from render.
+    setCitiesLoading(true);
+    fetch(`/api/geo/cities?state=${encodeURIComponent(selectedState)}`)
+      .then((res) => res.json())
+      .then((data) => setCities(data?.success ? data.data : []))
+      .catch(() => setCities([]))
+      .finally(() => setCitiesLoading(false));
+  }, [selectedState]);
+
+  // A prefilled city can only be selected once its options have rendered.
+  useEffect(() => {
+    const city = getValues("city");
+    if (city && cities.includes(city)) setValue("city", city);
+  }, [cities, getValues, setValue]);
 
   useEffect(() => {
     if (resendIn <= 0) return;
@@ -174,153 +245,120 @@ export default function RegisterHelperPage() {
     return () => clearTimeout(timer);
   }, [resendIn]);
 
-  const errorMessage = (err: unknown) => (err instanceof Error ? err.message : "Something went wrong. Please try again.");
-
+  /* ---------- Mobile + OTP ---------- */
   const onSendOtp = async () => {
-    if (!/^[6-9][0-9]{9}$/.test(mobile)) return setOtpError("Enter a valid 10-digit mobile number.");
+    if (!MOBILE_PATTERN.test(mobile)) return setOtpError("Enter a valid 10-digit mobile number.");
     setOtpError("");
-    setOtpBusy(true);
+    setBusy(true);
     try {
       await sendProviderOtp(mobile);
-      setOtpSent(true);
       setOtp("");
       setResendIn(OTP_RESEND_SECONDS);
+      setPhase("otp");
     } catch (err) {
       setOtpError(errorMessage(err));
     } finally {
-      setOtpBusy(false);
+      setBusy(false);
     }
   };
 
   const onVerifyOtp = async () => {
-    if (otp.length !== OTP_LENGTH) return setOtpError(`Enter the ${OTP_LENGTH}-digit OTP.`);
+    if (otp.length !== OTP_LENGTH || busy) return;
     setOtpError("");
-    setOtpBusy(true);
+    setBusy(true);
     try {
-      const result = await verifyProviderOtp(mobile, otp);
-      setToken(result.token);
-      // A returning helper who already filled in some details starts with them.
-      const { firstName, lastName, email, gender, state, city, pincode: savedPincode } = result.provider;
-      if (firstName) setValue("firstName", firstName);
-      if (lastName) setValue("lastName", lastName);
-      if (email) setValue("email", email);
-      if (gender === "Male" || gender === "Female") setValue("gender", gender);
-      if (state) setValue("state", state);
-      if (city) setValue("city", city);
-      if (savedPincode) setPincode(savedPincode);
-      setStep(2);
+      const { token: sessionToken, provider } = await verifyProviderOtp(mobile, otp);
+      setToken(sessionToken);
+      // A returning helper who already saved some details starts with them filled in.
+      const [fallbackFirst, ...fallbackRest] = (provider.fullName ?? "").split(" ").filter(Boolean);
+      const savedFirst = provider.firstName || fallbackFirst;
+      const savedLast = provider.lastName || fallbackRest.join(" ");
+      if (savedFirst) setValue("firstName", savedFirst);
+      if (savedLast) setValue("lastName", savedLast);
+      if (provider.categoryIds?.[0]) setValue("categoryId", provider.categoryIds[0]);
+      if (provider.state) setValue("state", provider.state);
+      if (provider.city) setValue("city", provider.city);
+      if (provider.area) setValue("area", provider.area);
+      if (provider.pincode) setValue("pincode", provider.pincode);
+      setPhase("steps");
     } catch (err) {
       setOtpError(errorMessage(err));
     } finally {
-      setOtpBusy(false);
+      setBusy(false);
     }
   };
 
   const onChangeNumber = () => {
-    setOtpSent(false);
+    setPhase("mobile");
     setOtp("");
     setOtpError("");
-    setResendIn(0);
   };
 
-  // Step 2 saves the account (name, email, password, work area) against the
-  // verified mobile number, so a duplicate email is caught here rather than
-  // at the very end.
-  const onDetails = async (values: BasicValues) => {
-    setIsSubmitting(true);
+  /* ---------- Steps ---------- */
+  const onDetails = async (values: DetailsValues) => {
+    setBusy(true);
     try {
-      await submitProviderApplication({
-        fullName: `${values.firstName.trim()} ${values.lastName.trim()}`,
-        firstName: values.firstName.trim(),
-        lastName: values.lastName.trim(),
-        gender: values.gender,
-        nationality: "Indian",
-        categoryId: "cat-maid",
-        area: values.city.trim(),
-        city: values.city.trim(),
+      await completeProviderProfile({
+        token,
+        firstName: values.firstName,
+        lastName: values.lastName,
+        categoryIds: [values.categoryId],
         state: values.state,
-        pincode: pincode || undefined,
-        mobileNumber: mobile,
-        whatsappNumber: mobile,
-        email: values.email.trim().toLowerCase(),
-        password: values.password,
+        city: values.city,
+        area: values.area || values.city,
+        pincode: values.pincode,
       });
-      setBasic(values);
-      setStep(3);
+      setStep(2);
     } catch (err) {
       toast({ title: "Couldn't save your details", description: errorMessage(err), variant: "error" });
     } finally {
-      setIsSubmitting(false);
+      setBusy(false);
     }
   };
 
-  const toggleService = (id: string) => {
-    setSelectedServices((prev) => (prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id]));
-  };
-
-  const onStep2 = () => {
-    if (selectedServices.length === 0) return setServicesError("Pick at least one service.");
-    if (!experience) return setServicesError("Select your years of experience.");
-    setServicesError("");
-    setStep(4);
-  };
-
-  const onStep3 = () => {
-    if (aadhaarNumber.replace(/\s/g, "").length !== 12) return setKycError("Aadhaar number must be 12 digits.");
-    if (!aadhaarFile) return setKycError("Upload a photo of your Aadhaar Card.");
-    if (panNumber.trim().length !== 10) return setKycError("PAN number must be 10 characters.");
-    if (!panFile) return setKycError("Upload a photo of your PAN Card.");
-    if (!selfieFile) return setKycError("Take a clear selfie.");
-    if (!consent) return setKycError("Please confirm the consent checkbox.");
-    setKycError("");
-    setStep(5);
-  };
-
-  const onFinalSubmit = async () => {
-    if (!basic || !token || !aadhaarFile || !panFile || !selfieFile || isSubmitting) return;
-    setIsSubmitting(true);
+  const onDocuments = async () => {
+    if (!aadhaarFront || !aadhaarBack) return setDocsError("Upload both sides of your Aadhaar Card.");
+    if (!noPan && !panFront) return setDocsError("Upload your PAN Card, or tick \"I don't have a PAN Card\".");
+    setDocsError("");
+    setBusy(true);
     try {
-      const categoryIds = Array.from(
-        new Set(selectedServices.map((id) => SERVICES.find((s) => s.id === id)?.categoryId).filter((c): c is string => Boolean(c)))
-      );
-
-      let introVideoUrl: string | undefined;
-      if (videoFile) {
-        setSubmitStage("Uploading video…");
-        introVideoUrl = await uploadMedia(videoFile, token);
-      }
-
-      setSubmitStage("Saving your profile…");
       await completeProviderProfile({
         token,
-        categoryIds,
-        experienceYears: EXPERIENCE_YEARS[experience],
-        skills: selectedServices,
-        panNumber: panNumber.trim().toUpperCase(),
-        aadhaarNumber: aadhaarNumber.replace(/\s/g, ""),
-        state: basic.state,
-        pincode: pincode || undefined,
-        idProofs: [
-          { idType: "Aadhaar Card", idNumber: aadhaarNumber.trim(), file: aadhaarFile },
-          { idType: "PAN Card", idNumber: panNumber.trim().toUpperCase(), file: panFile },
-        ],
-        selfieFile,
-        introVideoUrl,
+        aadhaarFront,
+        aadhaarBack,
+        panCard: noPan ? undefined : (panFront ?? undefined),
       });
-
-      setSubmitted(true);
-      toast({ title: "Profile submitted!", description: "We'll verify your documents and notify you once you're live.", variant: "success" });
+      setStep(3);
     } catch (err) {
-      toast({ title: "Couldn't submit profile", description: errorMessage(err), variant: "error" });
+      toast({ title: "Couldn't upload your documents", description: errorMessage(err), variant: "error" });
     } finally {
-      setIsSubmitting(false);
-      setSubmitStage("");
+      setBusy(false);
     }
   };
 
+  const onSubmitVideo = async () => {
+    if (!videoFile) return;
+    setBusy(true);
+    try {
+      setVideoStage("Uploading video…");
+      const introVideoUrl = await uploadMedia(videoFile, token);
+      setVideoStage("Saving…");
+      await completeProviderProfile({ token, introVideoUrl });
+      setSubmitted(true);
+    } catch (err) {
+      toast({ title: "Couldn't upload your video", description: errorMessage(err), variant: "error" });
+    } finally {
+      setBusy(false);
+      setVideoStage("");
+    }
+  };
+
+  const goBack = () => setStep((s) => (s > 1 ? ((s - 1) as Step) : s));
+
+  /* ---------- Success ---------- */
   if (submitted) {
     return (
-      <section className="mx-auto max-w-xl px-4 py-16 text-center sm:px-6">
+      <section className="mx-auto max-w-md px-4 py-16 text-center sm:px-6">
         <div className="card">
           <span
             className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl"
@@ -328,9 +366,9 @@ export default function RegisterHelperPage() {
           >
             <Icon name="check-circle" className="h-8 w-8" />
           </span>
-          <h1 className="font-display text-h2">Profile submitted!</h1>
+          <h1 className="font-display text-h2">You&apos;re all set!</h1>
           <p className="mx-auto mt-2 max-w-sm text-sm" style={{ color: "var(--muted)" }}>
-            Thanks for joining Help Zone. We&apos;ll verify your documents and let you know on WhatsApp once you&apos;re approved to start getting job requests.
+            Thanks for joining Help Zone. We&apos;ll verify your documents and let you know once you&apos;re approved to start getting job requests.
           </p>
           <Link href="/" className="btn btn-primary btn-lg mt-6">
             Back to Home
@@ -341,476 +379,250 @@ export default function RegisterHelperPage() {
   }
 
   return (
-    <section className="mx-auto max-w-xl px-4 py-12 sm:px-6">
-      <div className="mb-6 flex items-center justify-center gap-2.5">
-        <Logo size={32} />
-        <span className="pill pill-primary">Helper</span>
-      </div>
-
-      <div className="card">
-        {/* Step indicator */}
-        <div className="mb-6 flex items-center gap-2">
-          {STEP_LABELS.map((label, i) => {
-            const s = i + 1;
-            const active = step >= s;
-            return (
-              <div key={label} className="flex flex-1 items-center gap-2">
-                <span
-                  className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-bold"
-                  style={{ background: active ? "var(--primary)" : "var(--line)", color: active ? "white" : "var(--muted)" }}
-                >
-                  {step > s ? <Icon name="check" className="h-3.5 w-3.5" /> : s}
-                </span>
-                <span className="hidden text-xs font-medium sm:block" style={{ color: active ? "var(--ink)" : "var(--muted)" }}>
-                  {label}
-                </span>
-                {i < STEP_LABELS.length - 1 && (
-                  <div className="h-px flex-1" style={{ background: step > s ? "var(--primary)" : "var(--line)" }} />
-                )}
-              </div>
-            );
-          })}
+    <section className="mx-auto max-w-md px-4 py-10 sm:px-6">
+      <div className="card p-6 sm:p-8">
+        <div className="mb-6 flex justify-center">
+          <Logo size={34} />
         </div>
 
-        {/* ===== Step 1: Mobile + OTP ===== */}
-        {step === 1 && (
+        {/* ===== Mobile number ===== */}
+        {phase === "mobile" && (
           <>
-            <h1 className="font-display text-h2">Verify your mobile number</h1>
-            <p className="mt-1 text-sm" style={{ color: "var(--muted)" }}>
-              We&apos;ll text you a one-time password to confirm it&apos;s really you.
+            <h1 className="font-display text-h1">Start earning with us.</h1>
+            <p className="mt-2 text-sm" style={{ color: "var(--muted)" }}>
+              Register as a service provider and connect with customers near you.
+            </p>
+
+            <label className="mb-1.5 mt-8 block text-sm font-semibold" htmlFor="mobile">Mobile number</label>
+            <div className="flex items-center rounded-xl border bg-white pl-4 focus-within:border-[var(--primary)] focus-within:ring-2 focus-within:ring-[var(--primary-soft)]" style={{ borderColor: "var(--line)" }}>
+              <span className="pr-3 text-sm font-semibold">+91</span>
+              <input
+                id="mobile"
+                placeholder="98765 XXXXX"
+                inputMode="numeric"
+                autoComplete="tel-national"
+                maxLength={10}
+                value={mobile}
+                onChange={(e) => setMobile(e.target.value.replace(/\D/g, "").slice(0, 10))}
+                onKeyDown={(e) => e.key === "Enter" && onSendOtp()}
+                className="min-w-0 flex-1 border-0 bg-transparent py-3.5 pr-4 text-sm outline-none focus:ring-0"
+              />
+            </div>
+            <FieldError message={otpError} />
+
+            <button type="button" onClick={onSendOtp} disabled={busy || !MOBILE_PATTERN.test(mobile)} className="btn btn-primary btn-lg mt-5 w-full">
+              {busy ? "Sending…" : (<>Continue <Icon name="arrow-right" className="h-4 w-4" /></>)}
+            </button>
+            <p className="mt-3 text-center text-xs" style={{ color: "var(--muted)" }}>A verification code will be sent to your mobile number.</p>
+            <p className="mt-6 text-center text-xs" style={{ color: "var(--muted)" }}>
+              By continuing you agree to our{" "}
+              <Link href="/faqs" className="font-semibold" style={{ color: "var(--primary)" }}>Terms of use</Link> and{" "}
+              <Link href="/faqs" className="font-semibold" style={{ color: "var(--primary)" }}>Privacy Policy</Link>.
+            </p>
+          </>
+        )}
+
+        {/* ===== OTP ===== */}
+        {phase === "otp" && (
+          <>
+            <h1 className="font-display text-h1">Enter verification code</h1>
+            <p className="mt-3 flex items-center gap-3 text-sm" style={{ color: "var(--muted)" }}>
+              Sent to +91 {mobile.slice(0, 5)} {mobile.slice(5)}
+              <button type="button" onClick={onChangeNumber} className="font-semibold" style={{ color: "var(--primary)" }}>Change</button>
             </p>
 
             <div className="mt-6">
-              <label className="mb-1.5 block text-sm font-semibold" htmlFor="mobile">Mobile number</label>
-              <div className="flex gap-2">
-                <span className="field flex !w-16 shrink-0 items-center justify-center font-semibold">+91</span>
-                <input
-                  id="mobile"
-                  placeholder="10-digit mobile number"
-                  inputMode="numeric"
-                  autoComplete="tel-national"
-                  maxLength={10}
-                  value={mobile}
-                  disabled={otpSent}
-                  onChange={(e) => setMobile(e.target.value.replace(/\D/g, "").slice(0, 10))}
-                  className="field min-w-0 flex-1"
-                />
-              </div>
+              <OtpInput value={otp} onChange={setOtp} onComplete={onVerifyOtp} />
             </div>
+            <FieldError message={otpError} />
 
-            {otpSent && (
-              <div className="mt-4">
-                <label className="mb-1.5 block text-sm font-semibold" htmlFor="otp">Enter OTP</label>
-                <input
-                  id="otp"
-                  placeholder={`${OTP_LENGTH}-digit OTP`}
-                  inputMode="numeric"
-                  autoComplete="one-time-code"
-                  maxLength={OTP_LENGTH}
-                  value={otp}
-                  autoFocus
-                  onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, OTP_LENGTH))}
-                  onKeyDown={(e) => e.key === "Enter" && onVerifyOtp()}
-                  className="field text-center text-lg font-semibold tracking-[0.5em]"
-                />
-                <div className="mt-2 flex items-center justify-between text-xs" style={{ color: "var(--muted)" }}>
-                  <button type="button" onClick={onChangeNumber} className="font-semibold" style={{ color: "var(--primary)" }}>
-                    Change number
-                  </button>
-                  {resendIn > 0 ? (
-                    <span>Resend OTP in {resendIn}s</span>
-                  ) : (
-                    <button type="button" onClick={onSendOtp} disabled={otpBusy} className="font-semibold" style={{ color: "var(--primary)" }}>
-                      Resend OTP
-                    </button>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {otpError && <p className="mt-3 text-xs" style={{ color: "var(--error)" }}>{otpError}</p>}
-
-            <button
-              type="button"
-              onClick={otpSent ? onVerifyOtp : onSendOtp}
-              disabled={otpBusy}
-              className="btn btn-primary btn-lg mt-6 w-full"
-            >
-              {otpBusy ? "Please wait…" : otpSent ? "Verify & Continue" : "Send OTP"}
+            <button type="button" onClick={onVerifyOtp} disabled={busy || otp.length !== OTP_LENGTH} className="btn btn-primary btn-lg mt-6 w-full">
+              {busy ? "Verifying…" : "Verify"}
             </button>
+            <p className="mt-4 text-center text-sm" style={{ color: "var(--muted)" }}>
+              {resendIn > 0 ? (
+                <>Resend OTP in {formatCountdown(resendIn)}</>
+              ) : (
+                <button type="button" onClick={onSendOtp} disabled={busy} className="font-semibold" style={{ color: "var(--primary)" }}>
+                  Resend OTP
+                </button>
+              )}
+            </p>
           </>
         )}
 
-        {/* ===== Step 2: Details ===== */}
-        {step === 2 && (
+        {phase === "steps" && (
           <>
-            <h1 className="font-display text-h2">Tell us about you</h1>
-            <p className="mt-1 text-sm" style={{ color: "var(--muted)" }}>
-              Families will see your name and city on your profile.
-            </p>
+            <StepHeader step={step} onBack={goBack} />
 
-            <form className="mt-6 flex flex-col gap-4" onSubmit={handleSubmit(onDetails)}>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <input placeholder="First name" className={`field ${errors.firstName ? "field-error" : ""}`} {...register("firstName")} />
-                  {errors.firstName && <p className="mt-1 text-xs" style={{ color: "var(--error)" }}>{errors.firstName.message}</p>}
+            {/* ===== Step 1: Tell us about yourself ===== */}
+            {step === 1 && (
+              <form onSubmit={handleSubmit(onDetails)} noValidate>
+                <h1 className="font-display text-h1">Tell us about yourself</h1>
+                <p className="mt-2 text-sm" style={{ color: "var(--muted)" }}>Please provide your basic information to create your account.</p>
+
+                <div className="mt-6 flex flex-col gap-4">
+                  <div>
+                    <label className="mb-1.5 block text-sm font-semibold" htmlFor="firstName">First name <span style={{ color: "var(--error)" }}>*</span></label>
+                    <input id="firstName" className={`field ${errors.firstName ? "field-error" : ""}`} {...register("firstName")} />
+                    <FieldError message={errors.firstName?.message} />
+                  </div>
+                  <div>
+                    <label className="mb-1.5 block text-sm font-semibold" htmlFor="lastName">Last name <span style={{ color: "var(--error)" }}>*</span></label>
+                    <input id="lastName" className={`field ${errors.lastName ? "field-error" : ""}`} {...register("lastName")} />
+                    <FieldError message={errors.lastName?.message} />
+                  </div>
+                  <div>
+                    <label className="mb-1.5 block text-sm font-semibold" htmlFor="categoryId">What work do you do? <span style={{ color: "var(--error)" }}>*</span></label>
+                    <select id="categoryId" className={`field ${errors.categoryId ? "field-error" : ""}`} {...register("categoryId")}>
+                      <option value="">Select</option>
+                      {services.map((svc) => (
+                        <option key={svc.key} value={svc.key}>{svc.name}</option>
+                      ))}
+                    </select>
+                    <FieldError message={errors.categoryId?.message} />
+                  </div>
+                  <div>
+                    <label className="mb-1.5 block text-sm font-semibold" htmlFor="state">State <span style={{ color: "var(--error)" }}>*</span></label>
+                    <select
+                      id="state"
+                      className={`field ${errors.state ? "field-error" : ""}`}
+                      {...register("state", { onChange: () => { setCities([]); setValue("city", ""); } })}
+                    >
+                      <option value="">Select</option>
+                      {states.map((s) => (
+                        <option key={s} value={s}>{s}</option>
+                      ))}
+                    </select>
+                    <FieldError message={errors.state?.message} />
+                  </div>
+                  <div>
+                    <label className="mb-1.5 block text-sm font-semibold" htmlFor="city">City <span style={{ color: "var(--error)" }}>*</span></label>
+                    <select id="city" disabled={!selectedState || citiesLoading} className={`field ${errors.city ? "field-error" : ""}`} {...register("city")}>
+                      <option value="">{citiesLoading ? "Loading cities…" : "Select"}</option>
+                      {cities.map((c) => (
+                        <option key={c} value={c}>{c}</option>
+                      ))}
+                    </select>
+                    <FieldError message={errors.city?.message} />
+                  </div>
+                  <div>
+                    <label className="mb-1.5 block text-sm font-semibold" htmlFor="area">Area</label>
+                    <input id="area" className="field" {...register("area")} />
+                  </div>
+                  <div>
+                    <label className="mb-1.5 block text-sm font-semibold" htmlFor="pincode">Pincode</label>
+                    <input id="pincode" inputMode="numeric" maxLength={6} className="field" {...register("pincode")} />
+                  </div>
                 </div>
-                <div>
-                  <input placeholder="Last name" className={`field ${errors.lastName ? "field-error" : ""}`} {...register("lastName")} />
-                  {errors.lastName && <p className="mt-1 text-xs" style={{ color: "var(--error)" }}>{errors.lastName.message}</p>}
-                </div>
-              </div>
 
-              <div>
-                <select defaultValue="" className={`field ${errors.gender ? "field-error" : ""}`} {...register("gender")}>
-                  <option value="" disabled>Gender</option>
-                  <option value="Female">Female</option>
-                  <option value="Male">Male</option>
-                </select>
-                {errors.gender && <p className="mt-1 text-xs" style={{ color: "var(--error)" }}>{errors.gender.message}</p>}
-              </div>
-
-              <div>
-                <input placeholder="Email address" type="email" className={`field ${errors.email ? "field-error" : ""}`} {...register("email")} />
-                {errors.email && <p className="mt-1 text-xs" style={{ color: "var(--error)" }}>{errors.email.message}</p>}
-              </div>
-
-              <div>
-                <label className="mb-1.5 block text-sm font-semibold" htmlFor="pincode">Work area pincode</label>
-                <div className="relative">
-                  <input
-                    id="pincode"
-                    placeholder="e.g. 400001"
-                    inputMode="numeric"
-                    maxLength={6}
-                    value={pincode}
-                    onChange={(e) => onPincodeChange(e.target.value)}
-                    className="field"
-                  />
-                  {pincodeStatus === "loading" && (
-                    <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs" style={{ color: "var(--muted)" }}>
-                      Looking up…
-                    </span>
-                  )}
-                  {pincodeStatus === "found" && (
-                    <Icon name="check-circle" className="absolute right-3.5 top-1/2 h-4 w-4 -translate-y-1/2" style={{ color: "var(--success)" }} />
-                  )}
-                </div>
-                {pincodeStatus === "not-found" && (
-                  <p className="mt-1 text-xs" style={{ color: "var(--warning)" }}>
-                    No match for that pincode — enter your state and city below manually.
-                  </p>
-                )}
-                {pincodeStatus === "error" && (
-                  <p className="mt-1 text-xs" style={{ color: "var(--warning)" }}>
-                    Couldn&apos;t look that up right now — enter your state and city below manually.
-                  </p>
-                )}
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <input placeholder="Work state" className={`field ${errors.state ? "field-error" : ""}`} {...register("state")} />
-                  {errors.state && <p className="mt-1 text-xs" style={{ color: "var(--error)" }}>{errors.state.message}</p>}
-                </div>
-                <div>
-                  <input placeholder="Work city" className={`field ${errors.city ? "field-error" : ""}`} {...register("city")} />
-                  {errors.city && <p className="mt-1 text-xs" style={{ color: "var(--error)" }}>{errors.city.message}</p>}
-                </div>
-              </div>
-
-              <p className="mt-2 text-sm font-semibold">Create login password</p>
-
-              <div>
-                <div className="relative">
-                  <input
-                    placeholder="Password"
-                    className={`field pr-11 ${errors.password ? "field-error" : ""}`}
-                    type={showPassword ? "text" : "password"}
-                    {...register("password")}
-                  />
-                  <button type="button" onClick={() => setShowPassword((s) => !s)} className="absolute right-3.5 top-1/2 -translate-y-1/2">
-                    <Icon name={showPassword ? "eye-off" : "eye"} className="h-4 w-4" style={{ color: "var(--muted)" }} />
+                <div className="sticky bottom-0 -mx-6 mt-6 bg-white px-6 pb-1 pt-3 sm:-mx-8 sm:px-8">
+                  <button type="submit" disabled={busy} className="btn btn-primary btn-lg w-full">
+                    {busy ? "Saving…" : "Continue"}
                   </button>
                 </div>
-                {pw && (
-                  <div className="mt-2 flex items-center gap-2">
-                    <div className="flex flex-1 gap-1">
-                      {[0, 1, 2, 3].map((i) => (
-                        <span
-                          key={i}
-                          className="h-1 flex-1 rounded-full"
-                          style={{ background: i < strength.score ? strength.color : "var(--line)" }}
-                        />
-                      ))}
+              </form>
+            )}
+
+            {/* ===== Step 2: Upload your documents ===== */}
+            {step === 2 && (
+              <>
+                <h1 className="font-display text-h1">Upload your documents</h1>
+                <p className="mt-2 text-sm" style={{ color: "var(--muted)" }}>Please upload clear and valid documents.</p>
+
+                <p className="mb-3 mt-6 text-sm font-semibold">Aadhaar Card <span style={{ color: "var(--error)" }}>*</span></p>
+                <div className="grid grid-cols-2 gap-3">
+                  <UploadTile id="aadhaarFront" label="Upload Aadhaar Front" file={aadhaarFront} disabled={busy} onChange={setAadhaarFront} />
+                  <UploadTile id="aadhaarBack" label="Upload Aadhaar Back" file={aadhaarBack} disabled={busy} onChange={setAadhaarBack} />
+                </div>
+
+                <hr className="my-6" style={{ borderColor: "var(--line)" }} />
+
+                <p className="mb-3 text-sm font-semibold">PAN Card <span style={{ color: "var(--error)" }}>*</span></p>
+                <div className="grid grid-cols-2 gap-3">
+                  <UploadTile id="panFront" label="Upload PAN Front" file={noPan ? null : panFront} disabled={busy || noPan} onChange={setPanFront} />
+                </div>
+                <label className="mt-4 flex items-center gap-2.5 text-sm">
+                  <input type="checkbox" checked={noPan} onChange={(e) => setNoPan(e.target.checked)} />
+                  I don&apos;t have a PAN Card
+                </label>
+
+                <FieldError message={docsError} />
+
+                <div className="sticky bottom-0 -mx-6 mt-6 bg-white px-6 pb-1 pt-3 sm:-mx-8 sm:px-8">
+                  <button type="button" onClick={onDocuments} disabled={busy} className="btn btn-primary btn-lg w-full">
+                    {busy ? "Uploading…" : "Continue"}
+                  </button>
+                </div>
+              </>
+            )}
+
+            {/* ===== Step 3: Video KYC ===== */}
+            {step === 3 && (
+              <>
+                <h1 className="font-display text-h1">Complete Video KYC</h1>
+                <p className="mt-2 text-sm" style={{ color: "var(--muted)" }}>
+                  Verify your identity with a quick video KYC. This helps us build a trusted community.
+                </p>
+
+                {videoPreview ? (
+                  <video src={videoPreview} controls playsInline className="mt-6 aspect-video w-full rounded-2xl bg-black object-cover" />
+                ) : (
+                  <div className="mt-8 flex justify-center">
+                    <div className="relative flex h-48 w-48 items-center justify-center rounded-full" style={{ background: "var(--primary-soft)" }}>
+                      <Icon name="user" className="h-24 w-24" style={{ color: "var(--primary)" }} />
+                      <span className="absolute bottom-3 right-1 flex h-14 w-14 items-center justify-center rounded-full border-4 border-white text-white" style={{ background: "var(--error)" }}>
+                        <Icon name="video" className="h-6 w-6" />
+                      </span>
                     </div>
-                    <span className="text-xs font-semibold" style={{ color: strength.color }}>{strength.label}</span>
                   </div>
                 )}
-                {errors.password && <p className="mt-1 text-xs" style={{ color: "var(--error)" }}>{errors.password.message}</p>}
-              </div>
 
-              <div>
-                <input
-                  placeholder="Confirm password"
-                  className={`field ${errors.confirmPassword ? "field-error" : ""}`}
-                  type={showPassword ? "text" : "password"}
-                  {...register("confirmPassword")}
-                />
-                {errors.confirmPassword && <p className="mt-1 text-xs" style={{ color: "var(--error)" }}>{errors.confirmPassword.message}</p>}
-              </div>
-            </form>
-          </>
-        )}
-
-        {/* ===== Step 3: Services ===== */}
-        {step === 3 && (
-          <>
-            <h1 className="font-display text-h2">What can you do?</h1>
-            <p className="mt-1 text-sm" style={{ color: "var(--muted)" }}>
-              Pick every service you are comfortable with. More skills means more job requests.
-            </p>
-
-            <div className="mt-5 flex items-center justify-between">
-              <p className="text-sm font-semibold">Services</p>
-              <span className="pill pill-primary">{selectedServices.length} selected</span>
-            </div>
-
-            <div className="mt-3 grid grid-cols-3 gap-3">
-              {SERVICES.map((svc, i) => {
-                const active = selectedServices.includes(svc.id);
-                const swatch = colorForIndex(i);
-                return (
-                  <button
-                    key={svc.id}
-                    type="button"
-                    onClick={() => toggleService(svc.id)}
-                    className="flex flex-col items-center gap-2 rounded-xl border-2 p-3 text-center transition-all"
-                    style={{
-                      borderColor: active ? "var(--primary)" : "var(--line)",
-                      background: active ? "var(--primary-soft)" : "var(--surface)",
-                    }}
-                  >
-                    <span
-                      className="flex h-10 w-10 items-center justify-center rounded-full text-lg"
-                      style={{ background: active ? "white" : swatch.soft }}
-                    >
-                      {svc.emoji}
-                    </span>
-                    <span className="text-xs font-semibold leading-tight">{svc.id}</span>
-                  </button>
-                );
-              })}
-            </div>
-
-            <p className="mt-6 text-sm font-semibold">Years of experience</p>
-            <div className="mt-3 flex flex-wrap gap-2">
-              {EXPERIENCE_OPTIONS.map((opt) => (
-                <button
-                  key={opt}
-                  type="button"
-                  onClick={() => setExperience(opt)}
-                  className="rounded-full px-4 py-2 text-sm font-semibold transition-all"
-                  style={{
-                    background: experience === opt ? "var(--primary)" : "var(--surface)",
-                    color: experience === opt ? "white" : "var(--ink)",
-                    border: experience === opt ? "none" : "1.5px solid var(--line)",
-                  }}
-                >
-                  {opt}
-                </button>
-              ))}
-            </div>
-
-            {servicesError && <p className="mt-4 text-xs" style={{ color: "var(--error)" }}>{servicesError}</p>}
-          </>
-        )}
-
-        {/* ===== Step 4: KYC ===== */}
-        {step === 4 && (
-          <>
-            <h1 className="font-display text-h2">Verify your identity</h1>
-            <p className="mt-1 text-sm" style={{ color: "var(--muted)" }}>
-              Verified helpers get up to 3× more requests. Families trust a verified badge.
-            </p>
-
-            <div className="mt-4 flex items-start gap-2.5 rounded-xl p-3.5 text-sm" style={{ background: "var(--success-soft)", color: "var(--success)" }}>
-              <Icon name="shield" className="mt-0.5 h-4 w-4 shrink-0" />
-              Your documents are encrypted and only used for verification. They are never shown to families.
-            </div>
-
-            {/* Aadhaar */}
-            <p className="mt-5 text-sm font-semibold">🪪 Aadhaar Card</p>
-            <div className="mt-3">
-              <label className="mb-1.5 block text-sm font-semibold" htmlFor="aadhaarNumber">Aadhaar Number</label>
-              <input
-                id="aadhaarNumber"
-                placeholder="XXXX XXXX XXXX"
-                inputMode="numeric"
-                maxLength={14}
-                value={aadhaarNumber}
-                onChange={(e) => {
-                  const digits = e.target.value.replace(/\D/g, "").slice(0, 12);
-                  setAadhaarNumber(digits.replace(/(\d{4})(?=\d)/g, "$1 "));
-                }}
-                className="field"
-              />
-            </div>
-            <div className="mt-3">
-              <label
-                htmlFor="aadhaarDocument"
-                className="flex cursor-pointer items-center gap-3 rounded-xl border-2 border-dashed p-4 transition-colors hover:border-[var(--primary)]"
-                style={{ borderColor: "var(--line)" }}
-              >
-                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl" style={{ background: "var(--primary-soft)", color: "var(--primary)" }}>
-                  <Icon name="upload" className="h-5 w-5" />
-                </span>
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-semibold">{aadhaarFile ? aadhaarFile.name : "Upload your Aadhaar Card"}</p>
-                  <p className="text-xs" style={{ color: "var(--muted)" }}>JPG, PNG or PDF</p>
+                <div className="mt-8 grid grid-cols-2 gap-3 rounded-2xl p-5 text-center text-sm" style={{ background: "var(--primary-soft)", color: "var(--ink-light)" }}>
+                  <div className="flex flex-col items-center gap-2">
+                    <Icon name="clock" className="h-6 w-6" />
+                    Takes 2 to 5 minutes
+                  </div>
+                  <div className="flex flex-col items-center gap-2">
+                    <Icon name="shield" className="h-6 w-6" />
+                    Safe and secure
+                  </div>
                 </div>
-                <input id="aadhaarDocument" type="file" accept="image/*,.pdf" className="hidden" onChange={(e) => setAadhaarFile(e.target.files?.[0] ?? null)} />
-              </label>
-            </div>
 
-            {/* PAN */}
-            <p className="mt-5 text-sm font-semibold">💳 PAN Card</p>
-            <div className="mt-3">
-              <label className="mb-1.5 block text-sm font-semibold" htmlFor="panNumber">PAN Number</label>
-              <input
-                id="panNumber"
-                placeholder="ABCDE1234F"
-                maxLength={10}
-                value={panNumber}
-                onChange={(e) => setPanNumber(e.target.value.toUpperCase().slice(0, 10))}
-                className="field"
-              />
-            </div>
-            <div className="mt-3">
-              <label
-                htmlFor="panDocument"
-                className="flex cursor-pointer items-center gap-3 rounded-xl border-2 border-dashed p-4 transition-colors hover:border-[var(--primary)]"
-                style={{ borderColor: "var(--line)" }}
-              >
-                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl" style={{ background: "var(--primary-soft)", color: "var(--primary)" }}>
-                  <Icon name="upload" className="h-5 w-5" />
-                </span>
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-semibold">{panFile ? panFile.name : "Upload your PAN Card"}</p>
-                  <p className="text-xs" style={{ color: "var(--muted)" }}>JPG, PNG or PDF</p>
+                <div className="mt-6 flex flex-col gap-3">
+                  {videoFile ? (
+                    <>
+                      <button type="button" onClick={onSubmitVideo} disabled={busy} className="btn btn-primary btn-lg w-full">
+                        {busy ? videoStage || "Submitting…" : "Submit"}
+                      </button>
+                      <button type="button" onClick={() => setVideoFile(null)} disabled={busy} className="btn btn-outline w-full">
+                        Record again
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <label htmlFor="videoKyc" className="btn btn-primary btn-lg w-full cursor-pointer">
+                        Start Video KYC
+                        <input
+                          id="videoKyc"
+                          type="file"
+                          accept="video/*"
+                          capture="user"
+                          className="hidden"
+                          onChange={(e) => setVideoFile(e.target.files?.[0] ?? null)}
+                        />
+                      </label>
+                      <button type="button" onClick={() => setSubmitted(true)} className="text-sm font-semibold" style={{ color: "var(--muted)" }}>
+                        Skip for now
+                      </button>
+                    </>
+                  )}
                 </div>
-                <input id="panDocument" type="file" accept="image/*,.pdf" className="hidden" onChange={(e) => setPanFile(e.target.files?.[0] ?? null)} />
-              </label>
-            </div>
-
-            <p className="mt-5 text-sm font-semibold">Live selfie</p>
-            <label
-              htmlFor="selfie"
-              className="mt-3 flex cursor-pointer items-center gap-3 rounded-xl p-4 transition-colors"
-              style={{ background: "var(--surface)", border: "1.5px solid var(--line)" }}
-            >
-              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full" style={{ background: "var(--primary-soft)", color: "var(--primary)" }}>
-                <Icon name="user" className="h-5 w-5" />
-              </span>
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-semibold">{selfieFile ? selfieFile.name : "Take a clear selfie"}</p>
-                <p className="text-xs" style={{ color: "var(--muted)" }}>Good lighting, no sunglasses or mask</p>
-              </div>
-              <input id="selfie" type="file" accept="image/*" capture="user" className="hidden" onChange={(e) => setSelfieFile(e.target.files?.[0] ?? null)} />
-            </label>
-
-            <label className="mt-5 flex items-start gap-2.5 text-sm" style={{ color: "var(--muted)" }}>
-              <input type="checkbox" className="mt-0.5" checked={consent} onChange={(e) => setConsent(e.target.checked)} />
-              I confirm these documents are mine and I consent to HelpZone verifying them, including a background check.
-            </label>
-
-            {kycError && <p className="mt-3 text-xs" style={{ color: "var(--error)" }}>{kycError}</p>}
+              </>
+            )}
           </>
-        )}
-
-        {/* ===== Step 5: Video ===== */}
-        {step === 5 && (
-          <>
-            <h1 className="font-display text-h2">Introduce yourself</h1>
-            <p className="mt-1 text-sm" style={{ color: "var(--muted)" }}>
-              Record a short video (30 sec – 5 min). Families love seeing who they are hiring.
-            </p>
-
-            <div className="mt-5 flex flex-col items-center gap-4 rounded-xl p-8" style={{ background: "var(--line-light)" }}>
-              <label
-                htmlFor="videoRecord"
-                className="flex h-16 w-16 cursor-pointer items-center justify-center rounded-full text-white"
-                style={{ background: "var(--error)" }}
-              >
-                <Icon name="video" className="h-7 w-7" />
-                <input id="videoRecord" type="file" accept="video/*" capture="user" className="hidden" onChange={(e) => setVideoFile(e.target.files?.[0] ?? null)} />
-              </label>
-              <div className="text-center">
-                <p className="font-semibold">{videoFile ? videoFile.name : "Tap to record"}</p>
-                <div className="mt-2 flex justify-center gap-2">
-                  <span className="pill pill-neutral">Max 5 min</span>
-                  <span className="pill pill-neutral">Front camera</span>
-                </div>
-              </div>
-            </div>
-
-            <label className="mt-4 flex cursor-pointer items-center justify-center gap-2 text-sm font-semibold" style={{ color: "var(--primary)" }}>
-              <Icon name="upload" className="h-4 w-4" />
-              Upload from gallery instead
-              <input type="file" accept="video/*" className="hidden" onChange={(e) => setVideoFile(e.target.files?.[0] ?? null)} />
-            </label>
-
-            <p className="mt-6 text-sm font-semibold">What to talk about</p>
-            <div className="mt-3 flex flex-col gap-2.5 rounded-xl p-4" style={{ background: "var(--line-light)" }}>
-              {TALKING_POINTS.map((p) => (
-                <div key={p.text} className="flex items-center gap-3">
-                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-base" style={{ background: "var(--surface)" }}>
-                    {p.emoji}
-                  </span>
-                  <p className="text-sm">{p.text}</p>
-                </div>
-              ))}
-            </div>
-            <p className="mt-3 text-xs" style={{ color: "var(--muted)" }}>
-              A video is optional, but profiles with one get noticed first.
-            </p>
-          </>
-        )}
-
-        {/* Footer actions (step 1 has its own buttons) */}
-        {step > 1 && (
-          <div className="mt-6 grid grid-cols-2 gap-3">
-            {step > 2 ? (
-              <button type="button" onClick={() => setStep((s) => (s - 1) as Step)} disabled={isSubmitting} className="btn btn-outline">
-                ← Back
-              </button>
-            ) : (
-              <span />
-            )}
-            {step === 2 && (
-              <button type="button" onClick={handleSubmit(onDetails)} disabled={isSubmitting} className="btn btn-primary">
-                {isSubmitting ? "Saving…" : "Continue"}
-              </button>
-            )}
-            {step === 3 && (
-              <button type="button" onClick={onStep2} className="btn btn-primary">
-                Continue
-              </button>
-            )}
-            {step === 4 && (
-              <button type="button" onClick={onStep3} className="btn btn-primary">
-                Continue
-              </button>
-            )}
-            {step === 5 && (
-              <button type="button" onClick={onFinalSubmit} disabled={isSubmitting} className="btn btn-primary">
-                {isSubmitting ? submitStage || "Submitting…" : "Submit Profile"}
-              </button>
-            )}
-          </div>
         )}
       </div>
-
     </section>
   );
 }

@@ -3,47 +3,28 @@
 import { ApiError } from "@/lib/api-client";
 import { writeJson, STORAGE_KEYS } from "@/lib/services/storage";
 
-export interface ProviderApplicationInput {
-  fullName: string;
-  firstName?: string;
-  lastName?: string;
-  gender: "Male" | "Female";
-  nationality: string;
-  categoryId: string;
-  area: string;
-  city: string;
-  state?: string;
-  pincode?: string;
-  mobileNumber: string;
-  whatsappNumber: string;
-  email: string;
-  password: string;
-  /** Optional — in the OTP-first flow the selfie is sent later, with the KYC documents, in completeProviderProfile. */
-  photoFile?: File;
-}
+/*
+ * Helper (provider) registration mirrors the mobile app:
+ *   1. sendProviderOtp -> verifyProviderOtp   (creates the account, returns a session token)
+ *   2. completeProviderProfile                (called once per screen: details, documents, video)
+ * Every completeProviderProfile call is a partial update, so each screen
+ * saves its own part as the helper moves forward.
+ */
 
 export interface ProviderApplicationProvider {
   id: string;
-  email: string;
-  fullName: string;
+  email?: string;
+  fullName?: string;
   firstName?: string;
   lastName?: string;
-  gender?: string;
-  nationality?: string;
-  categoryId?: string;
+  categoryIds?: string[];
   area?: string;
   city?: string;
   state?: string;
   pincode?: string;
   mobileNumber?: string;
-  whatsappNumber?: string;
   imageUrl?: string;
   applicationStatus: "pending" | "approved" | "rejected";
-}
-
-export interface ProviderApplicationResult {
-  token: string;
-  provider: ProviderApplicationProvider;
 }
 
 export interface OtpSendResult {
@@ -55,6 +36,13 @@ export interface OtpVerifyResult {
   token: string;
   isNewAccount: boolean;
   provider: ProviderApplicationProvider;
+}
+
+/** A service from the admin-managed catalog; `key` is what providers store as their category id. */
+export interface CatalogService {
+  id: string;
+  key: string;
+  name: string;
 }
 
 async function postJson<T>(url: string, body: unknown): Promise<T> {
@@ -82,6 +70,16 @@ export async function verifyProviderOtp(mobileNumber: string, otp: string): Prom
   return result;
 }
 
+/** The services a helper can say they do ("What work do you do?"). */
+export async function fetchCatalogServices(): Promise<CatalogService[]> {
+  const response = await fetch("/api/services");
+  const data = await response.json().catch(() => null);
+  if (!response.ok || !data?.success) {
+    throw new ApiError(data?.message || "Couldn't load services", response.status, data);
+  }
+  return data.data as CatalogService[];
+}
+
 /** Uploads an image or video to the backend's generic upload endpoint and returns its public URL. */
 export async function uploadMedia(file: File, token?: string): Promise<string> {
   const formData = new FormData();
@@ -106,8 +104,8 @@ export async function uploadMedia(file: File, token?: string): Promise<string> {
 /**
  * Downscales a phone-camera photo before upload — the site proxies uploads
  * through a serverless function with a small request-body limit, and a
- * full-resolution Aadhaar + PAN + selfie set can exceed it. PDFs and
- * non-images pass through untouched.
+ * full-resolution Aadhaar + PAN set can exceed it. PDFs and non-images pass
+ * through untouched.
  */
 export async function shrinkImage(file: File, maxSide = 1600, quality = 0.82): Promise<File> {
   if (!file.type.startsWith("image/") || file.type === "image/gif") return file;
@@ -126,88 +124,45 @@ export async function shrinkImage(file: File, maxSide = 1600, quality = 0.82): P
   }
 }
 
-export async function submitProviderApplication(input: ProviderApplicationInput): Promise<ProviderApplicationResult> {
-  const formData = new FormData();
-  formData.append("fullName", input.fullName);
-  if (input.firstName) formData.append("firstName", input.firstName);
-  if (input.lastName) formData.append("lastName", input.lastName);
-  formData.append("gender", input.gender);
-  formData.append("nationality", input.nationality);
-  formData.append("categoryId", input.categoryId);
-  formData.append("area", input.area);
-  formData.append("city", input.city);
-  if (input.state) formData.append("state", input.state);
-  if (input.pincode) formData.append("pincode", input.pincode);
-  formData.append("mobileNumber", input.mobileNumber);
-  formData.append("whatsappNumber", input.whatsappNumber);
-  formData.append("email", input.email);
-  formData.append("password", input.password);
-  if (input.photoFile) formData.append("photo", input.photoFile);
-
-  // Goes through our own /api/providers/register proxy (same-origin), not
-  // the external API directly — see src/app/api/providers/register/route.ts.
-  const response = await fetch("/api/providers/register", { method: "POST", body: formData });
-  const data = await response.json().catch(() => null);
-  if (!response.ok || data?.success === false) {
-    throw new ApiError(data?.message || `Request failed with status ${response.status}`, response.status, data);
-  }
-  const result = data as ProviderApplicationResult;
-  writeJson(STORAGE_KEYS.providerSession, result.token);
-  return result;
-}
-
-export interface CompleteProfileIdProof {
-  idType: string;
-  idNumber: string;
-  file: File;
-}
-
 export interface CompleteProfileInput {
   token: string;
-  categoryIds: string[];
-  experienceYears?: number;
-  skills?: string[];
-  panNumber?: string;
-  aadhaarNumber?: string;
+  firstName?: string;
+  lastName?: string;
+  area?: string;
+  city?: string;
   state?: string;
   pincode?: string;
-  idProofs: CompleteProfileIdProof[];
-  /** Selfie for the profile photo. */
-  selfieFile?: File | null;
-  /** Public URL from uploadMedia() for the optional intro video. */
+  /** Service keys from the catalog. */
+  categoryIds?: string[];
+  aadhaarFront?: File;
+  aadhaarBack?: File;
+  panCard?: File;
+  /** Public URL from uploadMedia() for the intro / video KYC recording. */
   introVideoUrl?: string;
 }
 
 /**
- * Submits the KYC documents (one or more government IDs), work
- * preferences, and the optional intro video — the part of registration
- * the real backend treats as "completing" a provider's profile, separate
- * from the initial register() call. Marks the application as submitted
- * for review (applicationStatus -> pending, profileComplete -> true).
+ * Saves one screen's worth of a helper's profile. Only the fields that are
+ * passed are sent, so it can be called once per registration screen.
  */
 export async function completeProviderProfile(input: CompleteProfileInput): Promise<void> {
   const formData = new FormData();
-  formData.append(
-    "generalInfo",
-    JSON.stringify({
-      ...(input.panNumber && { panNumber: input.panNumber }),
-      ...(input.aadhaarNumber && { aadhaarNumber: input.aadhaarNumber }),
-      ...(input.state && { state: input.state }),
-      ...(input.pincode && { pincode: input.pincode }),
-      idProofs: input.idProofs.map(({ idType, idNumber }) => ({ idType, idNumber })),
-    })
-  );
-  formData.append(
-    "workPreferences",
-    JSON.stringify({
-      categoryIds: input.categoryIds,
-      ...(input.experienceYears !== undefined && { experienceYears: input.experienceYears }),
-      ...(input.skills && { skills: input.skills }),
-    })
-  );
-  const idFiles = await Promise.all(input.idProofs.map(({ file }) => shrinkImage(file)));
-  idFiles.forEach((file) => formData.append("idDocuments", file));
-  if (input.selfieFile) formData.append("photo", await shrinkImage(input.selfieFile));
+
+  const generalInfo = {
+    ...(input.firstName && { firstName: input.firstName }),
+    ...(input.lastName && { lastName: input.lastName }),
+    ...(input.area && { area: input.area }),
+    ...(input.city && { city: input.city }),
+    ...(input.state && { state: input.state }),
+    ...(input.pincode && { pincode: input.pincode }),
+  };
+  if (Object.keys(generalInfo).length) formData.append("generalInfo", JSON.stringify(generalInfo));
+  if (input.categoryIds?.length) formData.append("workPreferences", JSON.stringify({ categoryIds: input.categoryIds }));
+
+  const documents = { aadhaarFront: input.aadhaarFront, aadhaarBack: input.aadhaarBack, panCard: input.panCard };
+  for (const [field, file] of Object.entries(documents)) {
+    if (file) formData.append(field, await shrinkImage(file));
+  }
   if (input.introVideoUrl) formData.append("introVideoUrl", input.introVideoUrl);
 
   const response = await fetch("/api/providers/complete-profile", {
