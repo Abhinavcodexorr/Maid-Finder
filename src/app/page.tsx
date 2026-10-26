@@ -8,7 +8,9 @@ import { Icon } from "@/components/ui/icon";
 import { getCategories, getFeaturedProvidersFrom, fetchLiveProviders } from "@/lib/services";
 import { ProviderCardSkeleton } from "@/components/ui/shimmer";
 import { TESTIMONIALS } from "@/data/testimonials";
+import { FAQS } from "@/data/faqs";
 import { Avatar } from "@/components/ui/avatar";
+import { FaqList } from "@/components/sections/faq-list";
 import { TestimonialsCarousel } from "@/components/sections/testimonials-carousel";
 import { ScrollReveal, ScrollStagger, ScrollStaggerItem } from "@/components/ui/scroll-reveal";
 import { colorForCategory, colorForIndex } from "@/lib/category-colors";
@@ -53,6 +55,10 @@ const HELPER_PERKS = [
 ];
 
 const HERO_SERVICE_COUNT = 8;
+
+const POPULAR_CITIES = ["Mumbai", "Delhi", "Bengaluru", "Hyderabad", "Pune", "Chennai", "Kolkata", "Ahmedabad", "Surat", "Jaipur"];
+
+const HOME_FAQ_COUNT = 5;
 
 const fadeUp = (delay = 0) => ({
   initial: { opacity: 0, y: 20 },
@@ -108,8 +114,8 @@ export default function HomePage() {
           className="pointer-events-none absolute -bottom-32 -left-24 h-72 w-72 rounded-full opacity-50 blur-3xl"
           style={{ background: "radial-gradient(circle, rgba(14,165,233,0.25), transparent 70%)" }}
         />
-        <div className="container-page relative grid items-center gap-12 py-14 lg:grid-cols-[1.1fr_0.9fr] lg:py-24">
-          <div className="text-center lg:text-left">
+        <div className="container-page relative grid items-center gap-12 py-14 xl:grid-cols-[1.1fr_0.9fr] xl:py-24">
+          <div className="text-center xl:text-left">
             <motion.p {...heroAnim(0)} className="eyebrow">
               Trusted Service Marketplace
             </motion.p>
@@ -119,7 +125,7 @@ export default function HomePage() {
             </motion.h1>
             <motion.p
               {...heroAnim(0.16)}
-              className="mx-auto mt-5 max-w-xl text-lg leading-relaxed lg:mx-0"
+              className="mx-auto mt-5 max-w-xl text-lg leading-relaxed xl:mx-0"
               style={{ color: "var(--muted)" }}
             >
               Verified maids, cooks, nannies and more — browse free, then connect directly with 0% commission.
@@ -128,7 +134,7 @@ export default function HomePage() {
             {/* Search Box */}
             <motion.div
               {...heroAnim(0.24)}
-              className="mx-auto mt-8 max-w-2xl overflow-hidden rounded-2xl border bg-white shadow-xl transition-all focus-within:border-[var(--primary)] focus-within:ring-2 focus-within:ring-[var(--primary-soft)] lg:mx-0"
+              className="mx-auto mt-8 max-w-2xl overflow-hidden rounded-2xl border bg-white shadow-xl transition-all focus-within:border-[var(--primary)] focus-within:ring-2 focus-within:ring-[var(--primary-soft)] xl:mx-0"
               style={{ borderColor: "var(--line)" }}
             >
               <div className="flex flex-col sm:flex-row sm:items-center">
@@ -164,7 +170,7 @@ export default function HomePage() {
             </motion.div>
 
             {/* Quick service chips */}
-            <motion.div {...heroAnim(0.3)} className="mt-5 flex flex-wrap items-center justify-center gap-2 lg:justify-start">
+            <motion.div {...heroAnim(0.3)} className="mt-5 flex flex-wrap items-center justify-center gap-2 xl:justify-start">
               <span className="text-xs font-semibold" style={{ color: "var(--muted)" }}>Popular:</span>
               {POPULAR_SERVICES.slice(0, 5).map((svc) => (
                 <Link
@@ -181,7 +187,7 @@ export default function HomePage() {
             {/* Trust stats */}
             <motion.div
               {...heroAnim(0.36)}
-              className="mt-8 grid max-w-xl grid-cols-3 gap-4 border-t pt-6 text-center lg:text-left"
+              className="mt-8 grid max-w-xl grid-cols-3 gap-4 border-t pt-6 text-center xl:text-left"
               style={{ borderColor: "var(--line)" }}
             >
               {[
@@ -198,7 +204,7 @@ export default function HomePage() {
           </div>
 
           {/* Hero visual */}
-          <motion.div {...heroAnim(0.2)} className="relative mx-auto hidden w-full max-w-md lg:block">
+          <motion.div {...heroAnim(0.2)} className="relative mx-auto hidden w-full max-w-md xl:block">
             <div className="absolute -inset-3 rounded-[2rem] opacity-70 blur-xl" style={{ background: "var(--gradient-primary)" }} />
             <div className="relative overflow-hidden rounded-[1.75rem] border-4 border-white shadow-2xl">
               {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -250,7 +256,7 @@ export default function HomePage() {
                 <TiltCard maxTilt={8} scale={1.03} className="h-full">
                   <Link
                     href={svc.slug ? `/providers?category=${svc.slug}` : "/providers"}
-                    className="card card-hover flex h-full items-center gap-4 p-4"
+                    className="card card-hover flex h-full items-center gap-3 !p-3 sm:gap-4 sm:!p-4"
                   >
                     <span
                       className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl text-2xl"
@@ -259,13 +265,30 @@ export default function HomePage() {
                       {svc.emoji}
                     </span>
                     <span className="flex-1 text-sm font-semibold">{svc.label}</span>
-                    <Icon name="arrow-right" className="h-4 w-4 shrink-0" style={{ color: "var(--faint)" }} />
+                    <Icon name="arrow-right" className="hidden h-4 w-4 shrink-0 sm:block" style={{ color: "var(--faint)" }} />
                   </Link>
                 </TiltCard>
               </ScrollStaggerItem>
             );
           })}
         </ScrollStagger>
+
+        <motion.div {...fadeUp()} className="mt-8 flex flex-wrap items-center gap-2">
+          <span className="mr-1 flex items-center gap-1.5 text-sm font-semibold" style={{ color: "var(--ink-light)" }}>
+            <Icon name="map-pin" className="h-4 w-4" style={{ color: "var(--primary)" }} />
+            Popular cities:
+          </span>
+          {POPULAR_CITIES.map((city) => (
+            <Link
+              key={city}
+              href={`/providers?area=${encodeURIComponent(city)}`}
+              className="rounded-full border bg-white px-3.5 py-1.5 text-xs font-semibold transition-colors hover:border-[var(--primary)] hover:text-[var(--primary)]"
+              style={{ borderColor: "var(--line)", color: "var(--ink-light)" }}
+            >
+              {city}
+            </Link>
+          ))}
+        </motion.div>
       </section>
 
       {/* ====== HOW IT WORKS ====== */}
@@ -439,6 +462,19 @@ export default function HomePage() {
         <div className="mt-10">
           <TestimonialsCarousel items={TESTIMONIALS} />
         </div>
+      </section>
+
+      {/* ====== FAQ ====== */}
+      <section className="container-page pb-16 lg:pb-20">
+        <motion.div {...fadeUp()} className="mb-8 text-center">
+          <p className="eyebrow">FAQ</p>
+          <h2 className="font-display text-h2 mt-3">Questions, answered</h2>
+        </motion.div>
+        <FaqList items={FAQS.slice(0, HOME_FAQ_COUNT)} />
+        <p className="mt-6 text-center text-sm" style={{ color: "var(--muted)" }}>
+          Still curious?{" "}
+          <Link href="/contact" className="font-semibold" style={{ color: "var(--primary)" }}>Contact us →</Link>
+        </p>
       </section>
 
       {/* ====== HELPER CTA ====== */}
