@@ -9,6 +9,7 @@ import { getCategories, getFeaturedProvidersFrom, fetchLiveProviders } from "@/l
 import { ProviderCardSkeleton } from "@/components/ui/shimmer";
 import { TESTIMONIALS } from "@/data/testimonials";
 import { Avatar } from "@/components/ui/avatar";
+import { TestimonialsCarousel } from "@/components/sections/testimonials-carousel";
 import { ScrollReveal, ScrollStagger, ScrollStaggerItem } from "@/components/ui/scroll-reveal";
 import { colorForCategory, colorForIndex } from "@/lib/category-colors";
 import { TiltCard } from "@/components/ui/tilt-card";
@@ -429,41 +430,15 @@ export default function HomePage() {
       </section>
 
       {/* ====== TESTIMONIALS ====== */}
-      <section className="container-page py-16">
-        <motion.div {...fadeUp()} className="text-center">
+      <section className="overflow-hidden py-16">
+        <motion.div {...fadeUp()} className="container-page text-center">
           <p className="eyebrow">Testimonials</p>
           <h2 className="font-display text-h2 mt-3">What our users say</h2>
         </motion.div>
 
-        <ScrollStagger className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {TESTIMONIALS.slice(0, 3).map((t) => (
-            <ScrollStaggerItem key={t.id}>
-              <div className="card h-full">
-                <div className="mb-3 flex gap-0.5">
-                  {Array.from({ length: 5 }).map((_, j) => (
-                    <Icon
-                      key={j}
-                      name="star"
-                      className="h-4 w-4"
-                      fill={j < t.rating ? "var(--accent)" : "none"}
-                      style={{ color: j < t.rating ? "var(--accent)" : "var(--line)" }}
-                    />
-                  ))}
-                </div>
-                <p className="text-sm leading-relaxed" style={{ color: "var(--ink-light)" }}>
-                  &ldquo;{t.text}&rdquo;
-                </p>
-                <div className="mt-4 flex items-center gap-3">
-                  <Avatar initials={t.name[0]} imageUrl={t.avatar} className="h-9 w-9 text-xs" />
-                  <div>
-                    <p className="text-sm font-semibold">{t.name}</p>
-                    <p className="text-xs" style={{ color: "var(--muted)" }}>{t.area}</p>
-                  </div>
-                </div>
-              </div>
-            </ScrollStaggerItem>
-          ))}
-        </ScrollStagger>
+        <div className="mt-10">
+          <TestimonialsCarousel items={TESTIMONIALS} />
+        </div>
       </section>
 
       {/* ====== HELPER CTA ====== */}

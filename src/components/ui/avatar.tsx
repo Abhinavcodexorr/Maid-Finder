@@ -33,6 +33,7 @@ export function Avatar({
         <img
           src={imageUrl}
           alt={initials}
+          ref={(el) => { if (el?.complete && el.naturalWidth) setLoaded(true); }}
           className={`h-full w-full object-cover transition-opacity duration-300 ${loaded ? "opacity-100" : "opacity-0"}`}
           onLoad={() => setLoaded(true)}
           onError={() => setFailed(true)}

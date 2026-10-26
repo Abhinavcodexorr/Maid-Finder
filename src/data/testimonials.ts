@@ -41,6 +41,55 @@ export const TESTIMONIALS: Testimonial[] = [
     rating: 5,
     avatar: "/images/testimonials/t5.svg",
   },
+  {
+    id: "t6",
+    name: "Neha Sharma",
+    area: "Sector 62, Noida",
+    text: "I was nervous about letting a stranger into the house. Seeing the ID verification and an intro video on the profile made the decision easy.",
+    rating: 5,
+  },
+  {
+    id: "t7",
+    name: "Arjun Menon",
+    area: "Kakkanad, Kochi",
+    text: "Found a plumber and an electrician in the same afternoon. Both were on time and the rates were exactly what the profile said.",
+    rating: 4,
+  },
+  {
+    id: "t8",
+    name: "Kavita Deshmukh",
+    area: "Baner, Pune",
+    text: "Our elderly father needed a patient caregiver. We compared four profiles side by side and chose one with real experience in elder care.",
+    rating: 5,
+  },
+  {
+    id: "t9",
+    name: "Sameer Khan",
+    area: "Banjara Hills, Hyderabad",
+    text: "One membership, unlimited calls. I spoke to six drivers before picking one, and nobody asked me for a booking fee.",
+    rating: 5,
+  },
+  {
+    id: "t10",
+    name: "Divya Iyer",
+    area: "Adyar, Chennai",
+    text: "Simple and honest. No pushy agents calling me back — I browsed at my own pace and contacted the helper directly on WhatsApp.",
+    rating: 5,
+  },
+  {
+    id: "t11",
+    name: "Manish Tiwari",
+    area: "Gomti Nagar, Lucknow",
+    text: "Booked a painter for the whole flat. The profile showed past work and experience, and the final cost matched the quote.",
+    rating: 4,
+  },
+  {
+    id: "t12",
+    name: "Pooja Kulkarni",
+    area: "Salt Lake, Kolkata",
+    text: "As a working mother, finding a trustworthy nanny was my biggest worry. Help Zone made it a two-day job instead of two weeks.",
+    rating: 5,
+  },
 ];
 
 export function getTestimonials(): Testimonial[] {
