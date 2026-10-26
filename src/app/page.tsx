@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Icon } from "@/components/ui/icon";
 import { getCategories, getFeaturedProvidersFrom, fetchLiveProviders } from "@/lib/services";
@@ -33,9 +33,9 @@ const POPULAR_SERVICES = [
 ];
 
 const STEPS = [
-  { n: "01", title: "Tell us what you need", icon: "search" },
-  { n: "02", title: "Browse profiles — free", icon: "users" },
-  { n: "03", title: "Unlock & connect", icon: "unlock" },
+  { n: "01", title: "Tell us what you need", icon: "search", body: "Pick a service and your area to see verified professionals near you." },
+  { n: "02", title: "Browse profiles — free", icon: "users", body: "Compare experience, skills and verification status without signing up." },
+  { n: "03", title: "Unlock & connect", icon: "unlock", body: "Get a membership once, then call or WhatsApp any professional directly." },
 ];
 
 const TRUST_ITEMS = [
@@ -66,7 +66,6 @@ export default function HomePage() {
   const router = useRouter();
   const [serviceQuery, setServiceQuery] = useState("");
   const [locationQuery, setLocationQuery] = useState("");
-  const scrollRef = useRef<HTMLDivElement>(null);
 
   const [liveProviders, setLiveProviders] = useState<Provider[] | null>(null);
   useEffect(() => {
@@ -90,31 +89,38 @@ export default function HomePage() {
   return (
     <>
       {/* ====== HERO ====== */}
-      <section style={{ background: "var(--gradient-hero)" }}>
-        <div className="container-page py-16 lg:py-24">
-          <div className="mx-auto max-w-3xl text-center">
+      <section className="relative overflow-hidden" style={{ background: "var(--gradient-hero)" }}>
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -right-24 -top-24 h-80 w-80 rounded-full opacity-60 blur-3xl"
+          style={{ background: "radial-gradient(circle, rgba(59,130,246,0.35), transparent 70%)" }}
+        />
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -bottom-32 -left-24 h-72 w-72 rounded-full opacity-50 blur-3xl"
+          style={{ background: "radial-gradient(circle, rgba(14,165,233,0.25), transparent 70%)" }}
+        />
+        <div className="container-page relative grid items-center gap-12 py-14 lg:grid-cols-[1.1fr_0.9fr] lg:py-24">
+          <div className="text-center lg:text-left">
             <motion.p {...heroAnim(0)} className="eyebrow">
               Trusted Service Marketplace
             </motion.p>
-            <motion.h1
-              {...heroAnim(0.08)}
-              className="font-display text-display mt-4"
-            >
+            <motion.h1 {...heroAnim(0.08)} className="font-display text-display mt-4">
               Find the Right Professional{" "}
               <span style={{ color: "var(--primary)" }}>for Every Job</span>
             </motion.h1>
             <motion.p
               {...heroAnim(0.16)}
-              className="mx-auto mt-5 max-w-xl text-lg leading-relaxed"
+              className="mx-auto mt-5 max-w-xl text-lg leading-relaxed lg:mx-0"
               style={{ color: "var(--muted)" }}
             >
-              Verified pros, near you. Browse free, connect when you&apos;re ready.
+              Verified maids, cooks, nannies and more — browse free, then connect directly with 0% commission.
             </motion.p>
 
             {/* Search Box */}
             <motion.div
               {...heroAnim(0.24)}
-              className="mx-auto mt-8 max-w-2xl overflow-hidden rounded-2xl border bg-white shadow-lg transition-all focus-within:border-[var(--primary)] focus-within:ring-2 focus-within:ring-[var(--primary-soft)]"
+              className="mx-auto mt-8 max-w-2xl overflow-hidden rounded-2xl border bg-white shadow-xl transition-all focus-within:border-[var(--primary)] focus-within:ring-2 focus-within:ring-[var(--primary-soft)] lg:mx-0"
               style={{ borderColor: "var(--line)" }}
             >
               <div className="flex flex-col sm:flex-row">
@@ -149,23 +155,70 @@ export default function HomePage() {
               </div>
             </motion.div>
 
-            {/* Trust Strip */}
+            {/* Quick service chips */}
+            <motion.div {...heroAnim(0.3)} className="mt-5 flex flex-wrap items-center justify-center gap-2 lg:justify-start">
+              <span className="text-xs font-semibold" style={{ color: "var(--muted)" }}>Popular:</span>
+              {POPULAR_SERVICES.slice(0, 5).map((svc) => (
+                <Link
+                  key={svc.label}
+                  href={svc.slug ? `/providers?category=${svc.slug}` : "/providers"}
+                  className="rounded-full border bg-white/80 px-3 py-1 text-xs font-semibold backdrop-blur transition-colors hover:border-[var(--primary)] hover:text-[var(--primary)]"
+                  style={{ borderColor: "var(--line)", color: "var(--ink-light)" }}
+                >
+                  {svc.emoji} {svc.label}
+                </Link>
+              ))}
+            </motion.div>
+
+            {/* Trust stats */}
             <motion.div
-              {...heroAnim(0.32)}
-              className="mt-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm"
-              style={{ color: "var(--muted)" }}
+              {...heroAnim(0.36)}
+              className="mt-8 grid max-w-xl grid-cols-3 gap-4 border-t pt-6 text-center lg:text-left"
+              style={{ borderColor: "var(--line)" }}
             >
-              <span className="flex items-center gap-1.5 font-medium" style={{ color: "var(--success)" }}>
-                <Icon name="shield" className="h-4 w-4" /> Verified Professionals
-              </span>
-              <span className="flex items-center gap-1.5 font-medium">
-                <Icon name="star" className="h-4 w-4" style={{ color: "var(--accent)" }} /> Highly Rated
-              </span>
-              <span className="flex items-center gap-1.5 font-medium">
-                <Icon name="lock" className="h-4 w-4" style={{ color: "var(--locked)" }} /> Secure Membership
-              </span>
+              {[
+                { v: "100%", l: "ID verified" },
+                { v: "0%", l: "Commission" },
+                { v: "9", l: "Service categories" },
+              ].map((t) => (
+                <div key={t.l}>
+                  <p className="font-display text-2xl font-bold" style={{ color: "var(--primary)" }}>{t.v}</p>
+                  <p className="text-xs" style={{ color: "var(--muted)" }}>{t.l}</p>
+                </div>
+              ))}
             </motion.div>
           </div>
+
+          {/* Hero visual */}
+          <motion.div {...heroAnim(0.2)} className="relative mx-auto hidden w-full max-w-md lg:block">
+            <div className="absolute -inset-3 rounded-[2rem] opacity-70 blur-xl" style={{ background: "var(--gradient-primary)" }} />
+            <div className="relative overflow-hidden rounded-[1.75rem] border-4 border-white shadow-2xl">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/images/auth-service-hero.jpg"
+                alt="A verified Help Zone professional at work"
+                className="h-[480px] w-full object-cover"
+              />
+            </div>
+            <div className="absolute -left-8 top-10 flex items-center gap-3 rounded-2xl bg-white p-3 shadow-xl" style={{ border: "1px solid var(--line)" }}>
+              <span className="flex h-10 w-10 items-center justify-center rounded-xl" style={{ background: "var(--success-soft)", color: "var(--success)" }}>
+                <Icon name="shield" className="h-5 w-5" />
+              </span>
+              <div>
+                <p className="text-sm font-bold" style={{ color: "var(--ink)" }}>Identity verified</p>
+                <p className="text-xs" style={{ color: "var(--muted)" }}>Aadhaar &amp; PAN checked</p>
+              </div>
+            </div>
+            <div className="absolute -right-6 bottom-12 flex items-center gap-3 rounded-2xl bg-white p-3 shadow-xl" style={{ border: "1px solid var(--line)" }}>
+              <span className="flex h-10 w-10 items-center justify-center rounded-xl" style={{ background: "var(--primary-soft)", color: "var(--primary)" }}>
+                <Icon name="phone" className="h-5 w-5" />
+              </span>
+              <div>
+                <p className="text-sm font-bold" style={{ color: "var(--ink)" }}>Call directly</p>
+                <p className="text-xs" style={{ color: "var(--muted)" }}>No agency in between</p>
+              </div>
+            </div>
+          </motion.div>
         </div>
       </section>
 
@@ -229,7 +282,7 @@ export default function HomePage() {
               <ScrollStaggerItem key={step.n}>
                 <motion.div
                   whileHover={{ y: -4 }}
-                  className="card relative flex items-center gap-4 overflow-hidden h-full py-6"
+                  className="card relative flex flex-col gap-4 overflow-hidden h-full py-7 shadow-sm hover:shadow-lg"
                 >
                   <span
                     className="absolute -right-3 -top-4 font-display text-[5rem] font-extrabold leading-none pointer-events-none"
@@ -243,7 +296,10 @@ export default function HomePage() {
                   >
                     <Icon name={step.icon} className="h-7 w-7" />
                   </span>
-                  <h3 className="font-display text-lg font-bold leading-snug">{step.title}</h3>
+                  <div>
+                    <h3 className="font-display text-lg font-bold leading-snug">{step.title}</h3>
+                    <p className="mt-1.5 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>{step.body}</p>
+                  </div>
                 </motion.div>
               </ScrollStaggerItem>
             ))}

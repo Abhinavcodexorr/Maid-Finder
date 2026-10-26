@@ -53,7 +53,7 @@ function MembershipContent() {
   return (
     <>
       {/* Header */}
-      <section className="border-b" style={{ borderColor: "var(--line)" }}>
+      <section className="border-b" style={{ borderColor: "var(--line)", background: "var(--gradient-hero)" }}>
         <div className="container-page py-12 text-center">
           <motion.p {...fadeUp()} className="eyebrow">Membership Plans</motion.p>
           <motion.h1 {...fadeUp(0.06)} className="font-display text-display mt-3">
@@ -112,7 +112,7 @@ function MembershipContent() {
                   )}
                   <div className="mb-4">
                     <h3 className="font-display text-h3">{plan.name}</h3>
-                    <p className="mt-1 text-xs" style={{ color: "var(--muted)" }}>{plan.description}</p>
+                    <p className="mt-1 min-h-[2rem] text-xs" style={{ color: "var(--muted)" }}>{plan.description}</p>
                   </div>
 
                   <div className="mb-4">
