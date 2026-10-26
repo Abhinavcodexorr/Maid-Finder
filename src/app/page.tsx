@@ -123,7 +123,7 @@ export default function HomePage() {
               className="mx-auto mt-8 max-w-2xl overflow-hidden rounded-2xl border bg-white shadow-xl transition-all focus-within:border-[var(--primary)] focus-within:ring-2 focus-within:ring-[var(--primary-soft)] lg:mx-0"
               style={{ borderColor: "var(--line)" }}
             >
-              <div className="flex flex-col sm:flex-row">
+              <div className="flex flex-col sm:flex-row sm:items-center">
                 <div className="flex flex-1 items-center gap-3 border-b px-4 py-3.5 sm:border-b-0 sm:border-r" style={{ borderColor: "var(--line)" }}>
                   <Icon name="search" className="h-5 w-5 shrink-0" style={{ color: "var(--faint)" }} />
                   <input
@@ -146,12 +146,12 @@ export default function HomePage() {
                     aria-label="Enter location"
                   />
                 </div>
-              </div>
-              <div className="border-t px-3 pb-3 pt-0 sm:px-3 sm:pb-3" style={{ borderColor: "var(--line)" }}>
-                <button type="button" onClick={onSearch} className="btn btn-primary btn-lg mt-3 w-full sm:w-auto sm:px-10">
-                  <Icon name="search" className="h-4 w-4" />
-                  Find Professionals
-                </button>
+                <div className="p-2 sm:shrink-0">
+                  <button type="button" onClick={onSearch} className="btn btn-primary btn-lg w-full sm:w-auto">
+                    <Icon name="search" className="h-4 w-4" />
+                    Search
+                  </button>
+                </div>
               </div>
             </motion.div>
 
@@ -237,7 +237,7 @@ export default function HomePage() {
         </motion.div>
 
         <ScrollStagger
-          className="no-scrollbar -mx-4 flex gap-3 overflow-x-auto px-4 pb-2 sm:mx-0 sm:grid sm:grid-cols-3 sm:gap-4 sm:overflow-visible sm:px-0 lg:grid-cols-4 xl:grid-cols-6"
+          className="no-scrollbar -mx-4 flex gap-3 overflow-x-auto px-4 pb-2 sm:mx-0 sm:grid sm:grid-cols-3 sm:gap-4 sm:overflow-visible sm:px-0 lg:grid-cols-6"
         >
           {POPULAR_SERVICES.map((svc, i) => {
             const swatch = svc.slug ? colorForCategory(svc.slug) : colorForIndex(i);

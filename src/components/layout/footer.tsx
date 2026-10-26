@@ -23,6 +23,13 @@ const COLUMNS = [
     ],
   },
   {
+    title: "For Helpers",
+    links: [
+      { label: "Register as Helper", href: "/register-helper" },
+      { label: "Helper FAQs", href: "/faqs" },
+    ],
+  },
+  {
     title: "Support",
     links: [
       { label: "Help Centre", href: "/faqs" },
@@ -42,19 +49,6 @@ const COLUMNS = [
 export function Footer() {
   return (
     <footer style={{ background: "var(--gradient-dark)" }} className="text-white">
-      {/* CTA Band */}
-      <div className="border-b border-white/10">
-        <div className="container-page flex flex-col items-center justify-between gap-4 py-10 sm:flex-row">
-          <div>
-            <h3 className="font-display text-xl font-semibold">Ready to find the right professional?</h3>
-            <p className="mt-1 text-sm text-white/60">Browse for free. Pay only when you&apos;re ready to connect.</p>
-          </div>
-          <Link href="/providers" className="btn btn-primary btn-lg shrink-0">
-            Find Professionals
-          </Link>
-        </div>
-      </div>
-
       {/* Register as Helper Band */}
       <div className="border-b border-white/10 bg-white/5">
         <div className="container-page flex flex-col items-center justify-between gap-4 py-8 sm:flex-row">
@@ -74,7 +68,7 @@ export function Footer() {
       </div>
 
       {/* Main Footer */}
-      <div className="container-page grid gap-10 py-12 sm:grid-cols-2 lg:grid-cols-5">
+      <div className="container-page grid gap-10 py-12 sm:grid-cols-2 lg:grid-cols-6">
         {/* Brand Column */}
         <div className="lg:col-span-1">
           <Logo size={30} wordmarkClassName="text-lg text-white" />
