@@ -2,11 +2,11 @@
   "version": "0.0.1",
   "configurations": [
     {
-      "name": "maidfinder-dev",
+      "name": "maidfinder-dev-3001",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "dev"],
-      "port": 3010,
-      "autoPort": true
+      "runtimeArgs": ["run", "dev", "--", "-p", "3001"],
+      "port": 3001,
+      "autoPort": false
     }
   ]
 }

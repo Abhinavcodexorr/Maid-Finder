@@ -123,7 +123,7 @@ export default function AboutPage() {
             <Link href="/providers" className="btn" style={{ background: "white", color: "var(--primary)" }}>
               Browse Providers
             </Link>
-            <Link href="/register-helper" className="btn" style={{ background: "rgba(255,255,255,0.15)", color: "white" }}>
+            <Link href="/register-provider" className="btn" style={{ background: "rgba(255,255,255,0.15)", color: "white" }}>
               List Your Profile
             </Link>
           </div>

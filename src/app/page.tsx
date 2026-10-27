@@ -42,7 +42,7 @@ const FEATURES = [
   { icon: "lock", title: "Free to browse, pay once", body: "Explore every profile for free. One membership unlocks contact details for all of them." },
 ];
 
-const HELPER_PERKS = [
+const PROVIDER_PERKS = [
   { icon: "check-circle", title: "Free to list", body: "Create your profile at no cost." },
   { icon: "phone", title: "Get calls directly", body: "Families contact you, not an agency." },
   { icon: "trending-up", title: "Keep 100% of your earnings", body: "We never take a commission." },
@@ -173,7 +173,7 @@ export default function HomePage() {
             <motion.div {...heroAnim(0.32)} className="mt-6 flex flex-wrap gap-2.5">
               <Link href="/providers" className="btn btn-outline btn-sm">Search profiles</Link>
               <Link href="/membership" className="btn btn-outline btn-sm">Buy access package</Link>
-              <Link href="/register-helper" className="btn btn-outline btn-sm">Register as helper</Link>
+              <Link href="/register-provider" className="btn btn-outline btn-sm">Register as Provider</Link>
             </motion.div>
 
             <motion.ul {...heroAnim(0.4)} className="mt-6 flex flex-wrap gap-x-6 gap-y-2 text-sm font-medium" style={{ color: "var(--ink-light)" }}>
@@ -436,7 +436,7 @@ export default function HomePage() {
         </p>
       </section>
 
-      {/* ====== HELPER CTA ====== */}
+      {/* ====== PROVIDER CTA ====== */}
       <section className="container-page pb-16 lg:pb-20">
         <ScrollReveal direction="up">
           <div
@@ -449,14 +449,14 @@ export default function HomePage() {
             />
             <div className="relative grid items-center gap-8 lg:grid-cols-[1fr_1fr] lg:gap-12">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-widest text-white/70">For helpers</p>
+                <p className="text-xs font-semibold uppercase tracking-widest text-white/70">For providers</p>
                 <h2 className="font-display text-h1 mt-3">Are you a maid, cook or skilled professional?</h2>
                 <p className="mt-3 max-w-md text-sm leading-relaxed text-white/80">
                   Join Help Zone and get found by families looking for trusted help in your city.
                 </p>
                 <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-                  <Link href="/register-helper" className="btn btn-lg" style={{ background: "white", color: "var(--primary-dark)" }}>
-                    Register as Helper
+                  <Link href="/register-provider" className="btn btn-lg" style={{ background: "white", color: "var(--primary-dark)" }}>
+                    Register as Provider
                   </Link>
                   <Link
                     href="/providers"
@@ -469,7 +469,7 @@ export default function HomePage() {
                 </div>
               </div>
               <ul className="grid gap-3">
-                {HELPER_PERKS.map((perk) => (
+                {PROVIDER_PERKS.map((perk) => (
                   <li key={perk.title} className="flex items-center gap-4 rounded-2xl bg-white/10 p-4 backdrop-blur">
                     <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/15">
                       <Icon name={perk.icon} className="h-5 w-5" />

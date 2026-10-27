@@ -7,7 +7,7 @@ import { useLocation } from "@/context/LocationContext";
 import { RADIUS_OPTIONS } from "@/lib/geo";
 
 /** Pages where asking for a location would just be noise. */
-const HIDDEN_PREFIXES = ["/login", "/signup", "/register-helper", "/checkout", "/dashboard", "/forgot-password"];
+const HIDDEN_PREFIXES = ["/login", "/signup", "/register-provider", "/checkout", "/dashboard", "/forgot-password"];
 
 /**
  * Sits under the navbar on public pages. Until the visitor picks a place it

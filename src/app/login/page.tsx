@@ -147,8 +147,8 @@ function LoginContent() {
         </motion.ul>
 
         <p className="mt-4 text-center text-xs" style={{ color: "var(--muted)" }}>
-          Are you a helper?{" "}
-          <Link href="/register-helper" className="font-semibold" style={{ color: "var(--primary)" }}>
+          Are you a provider?{" "}
+          <Link href="/register-provider" className="font-semibold" style={{ color: "var(--primary)" }}>
             Register here
           </Link>
         </p>

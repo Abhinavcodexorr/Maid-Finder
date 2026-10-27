@@ -23,10 +23,10 @@ const COLUMNS = [
     ],
   },
   {
-    title: "For Helpers",
+    title: "For Providers",
     links: [
-      { label: "Register as Helper", href: "/register-helper" },
-      { label: "Helper FAQs", href: "/faqs" },
+      { label: "Register as Provider", href: "/register-provider" },
+      { label: "Provider FAQs", href: "/faqs" },
     ],
   },
   {

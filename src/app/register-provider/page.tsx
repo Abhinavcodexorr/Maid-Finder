@@ -44,7 +44,7 @@ const detailsSchema = z.object({
 type DetailsValues = z.infer<typeof detailsSchema>;
 
 /**
- * Where a returning helper should pick up: the first screen whose part of the
+ * Where a returning provider should pick up: the first screen whose part of the
  * profile is still missing, or null when everything has been submitted.
  * A rejected application goes back to the start so it can be corrected.
  */
@@ -182,11 +182,11 @@ function OtpInput({ value, onChange, onComplete }: { value: string; onChange: (v
 /* ================================================================
    PAGE
    ================================================================ */
-export default function RegisterHelperPage() {
+export default function RegisterProviderPage() {
   const [phase, setPhase] = useState<Phase>("mobile");
   const [step, setStep] = useState<Step>(1);
   const [submitted, setSubmitted] = useState(false);
-  /** Set when a returning helper has already completed every screen. */
+  /** Set when a returning provider has already completed every screen. */
   const [alreadyRegistered, setAlreadyRegistered] = useState<ProviderApplicationProvider["applicationStatus"] | null>(null);
   const [busy, setBusy] = useState(false);
   const [token, setToken] = useState("");
@@ -298,7 +298,7 @@ export default function RegisterHelperPage() {
     try {
       const { token: sessionToken, provider } = await verifyProviderOtp(mobile, otp);
       setToken(sessionToken);
-      // A returning helper who already saved some details starts with them filled in.
+      // A returning provider who already saved some details starts with them filled in.
       const [fallbackFirst, ...fallbackRest] = (provider.fullName ?? "").split(" ").filter(Boolean);
       const savedFirst = provider.firstName || fallbackFirst;
       const savedLast = provider.lastName || fallbackRest.join(" ");
@@ -330,7 +330,7 @@ export default function RegisterHelperPage() {
   };
 
   /* ---------- Steps ---------- */
-  // Best-effort: the helper's work area (pincode, else city + state) is turned
+  // Best-effort: the provider's work area (pincode, else city + state) is turned
   // into coordinates so families can search by distance. Failing to find them
   // must never block registration — the profile then just has no map position.
   const findCoordinates = async (values: DetailsValues): Promise<{ latitude: number; longitude: number } | null> => {

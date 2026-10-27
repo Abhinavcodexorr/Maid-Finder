@@ -5,7 +5,7 @@ import { Icon } from "@/components/ui/icon";
 const HELP_LINKS = [
   { icon: "info", title: "Read the FAQs", body: "Quick answers on memberships, verification and hiring.", href: "/faqs", cta: "Open FAQs" },
   { icon: "compass", title: "How it works", body: "A short walkthrough from search to hiring directly.", href: "/how-it-works", cta: "See the steps" },
-  { icon: "briefcase", title: "Are you a helper?", body: "List your profile for free and get found by families.", href: "/register-helper", cta: "Register as Helper" },
+  { icon: "briefcase", title: "Are you a provider?", body: "List your profile for free and get found by families.", href: "/register-provider", cta: "Register as Provider" },
 ];
 
 export default function ContactPage() {
