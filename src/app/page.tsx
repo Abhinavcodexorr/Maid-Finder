@@ -139,7 +139,7 @@ export default function HomePage() {
                   <Icon name="search" className="h-5 w-5 shrink-0" style={{ color: "var(--faint)" }} />
                   <input
                     className="w-full bg-transparent text-sm border-0 outline-none focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0 placeholder:text-[var(--faint)]"
-                    placeholder={typedService ? `Try "${typedService}"` : "What service do you need?"}
+                    placeholder={typedService ? `Try ${typedService}` : "What service do you need?"}
                     value={serviceQuery}
                     onChange={(e) => setServiceQuery(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && onSearch()}
