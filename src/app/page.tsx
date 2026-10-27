@@ -6,25 +6,19 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Icon } from "@/components/ui/icon";
 import {
-  getCategories,
-  getFeaturedProvidersFrom,
   fetchLiveProviders,
   fetchCatalogServices,
   fetchLivePlans,
 } from "@/lib/services";
 import type { CatalogService } from "@/lib/services";
 import { emojiForService } from "@/lib/service-emoji";
-import { ProviderCardSkeleton } from "@/components/ui/shimmer";
 import { TESTIMONIALS } from "@/data/testimonials";
 import { FAQS } from "@/data/faqs";
 import { useAuth } from "@/context/AuthContext";
-import { useLocation } from "@/context/LocationContext";
-import { applyLocation } from "@/lib/geo";
 import { useTypewriter } from "@/lib/use-typewriter";
 import { FaqList } from "@/components/sections/faq-list";
 import { PlanCards } from "@/components/sections/plan-cards";
 import { TestimonialsCarousel } from "@/components/sections/testimonials-carousel";
-import { ProfileCard } from "@/components/marketplace/profile-card";
 import { ScrollReveal, ScrollStagger, ScrollStaggerItem } from "@/components/ui/scroll-reveal";
 import { colorForIndex } from "@/lib/category-colors";
 import { TiltCard } from "@/components/ui/tilt-card";
@@ -54,10 +48,7 @@ const HELPER_PERKS = [
   { icon: "trending-up", title: "Keep 100% of your earnings", body: "We never take a commission." },
 ];
 
-const HERO_CHECKS = ["Every profile checked by our team", "Message or call helpers directly", "New professionals added regularly"];
-
 const HOME_SERVICE_COUNT = 8;
-const HOME_PROFILE_COUNT = 6;
 const HOME_FAQ_COUNT = 5;
 
 const fadeUp = (delay = 0) => ({
@@ -79,7 +70,6 @@ const heroAnim = (delay = 0) => ({
 export default function HomePage() {
   const router = useRouter();
   const { user, isSubscribed } = useAuth();
-  const { location, radiusKm } = useLocation();
 
   const [serviceKey, setServiceKey] = useState("");
   const [locationQuery, setLocationQuery] = useState("");
@@ -102,18 +92,6 @@ export default function HomePage() {
     return () => { cancelled = true; };
   }, []);
 
-  const serviceName = (key: string) =>
-    catalog?.find((svc) => svc.key === key)?.name ?? getCategories().find((c) => c.id === key)?.name ?? "Professional";
-
-  // With a chosen location, the profiles shown are the nearest ones; otherwise the usual featured list.
-  const featured = liveProviders
-    ? location
-      ? [...applyLocation(liveProviders, location, radiusKm)]
-          .sort((a, b) => (a.distanceKm ?? Infinity) - (b.distanceKm ?? Infinity))
-          .slice(0, HOME_PROFILE_COUNT)
-      : getFeaturedProvidersFrom(liveProviders, HOME_PROFILE_COUNT)
-    : [];
-
   const marqueeWords = (catalog ?? []).map((svc) => svc.name);
 
   const onSearch = () => {
@@ -127,7 +105,6 @@ export default function HomePage() {
     router.push(user ? `/checkout?plan=${planId}&redirect=${encodeURIComponent("/providers")}` : `/login?redirect=${encodeURIComponent("/membership")}`);
   };
 
-  const heroProvider = featured[0];
   const typedService = useTypewriter(marqueeWords);
 
   return (
@@ -209,44 +186,33 @@ export default function HomePage() {
             </motion.ul>
           </div>
 
-          {/* Phone mockup */}
-          <motion.div {...heroAnim(0.2)} className="relative mx-auto hidden w-full max-w-[320px] lg:block">
-            <div className="absolute -inset-6 rounded-[3rem] opacity-40 blur-2xl" style={{ background: "var(--gradient-primary)" }} />
-            <div className="relative rounded-[2.6rem] border-[10px] bg-white p-3 shadow-2xl" style={{ borderColor: "#0f172a" }}>
-              <div className="mx-auto mb-3 h-5 w-24 rounded-full" style={{ background: "#0f172a" }} />
-              <div className="relative overflow-hidden rounded-2xl">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={heroProvider?.photo || "/images/auth-service-hero.jpg"}
-                  alt="A verified Help Zone professional"
-                  className="h-64 w-full object-cover"
-                />
-                <span className="absolute left-3 top-3 rounded-full bg-white/95 px-3 py-1 text-[11px] font-bold shadow-sm">
-                  {heroProvider ? serviceName(heroProvider.categoryId) : "Verified helper"}
-                </span>
-                <span className="absolute right-3 top-3 flex items-center gap-1 rounded-full bg-white/95 px-2.5 py-1 text-[11px] font-bold shadow-sm" style={{ color: "var(--success)" }}>
-                  <Icon name="check-circle" className="h-3.5 w-3.5" />
-                  Verified
-                </span>
+          {/* Hero photo */}
+          <motion.div {...heroAnim(0.2)} className="relative mx-auto hidden w-full max-w-md lg:block">
+            <div className="absolute -inset-5 rounded-[3rem] opacity-40 blur-2xl" style={{ background: "var(--gradient-primary)" }} />
+            <div className="relative overflow-hidden rounded-[2.5rem] border-[6px] border-white shadow-2xl">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/images/auth-service-hero.jpg"
+                alt="A smiling home-help professional in a bright kitchen"
+                className="h-[540px] w-full object-cover object-top"
+              />
+            </div>
+            <div className="float-depth absolute -left-6 top-14 flex items-center gap-3 rounded-2xl bg-white p-3.5 shadow-xl" style={{ border: "1px solid var(--line)" }}>
+              <span className="flex h-11 w-11 items-center justify-center rounded-xl" style={{ background: "var(--success-soft)", color: "var(--success)" }}>
+                <Icon name="shield" className="h-5 w-5" />
+              </span>
+              <div>
+                <p className="text-sm font-bold">Identity verified</p>
+                <p className="text-xs" style={{ color: "var(--muted)" }}>Aadhaar &amp; PAN checked</p>
               </div>
-              <div className="px-2 pb-2 pt-4">
-                <p className="font-display text-xl font-bold">
-                  {heroProvider ? `${heroProvider.firstName} ${heroProvider.lastName ? `${heroProvider.lastName[0]}.` : ""}` : "Your next helper"}
-                </p>
-                <p className="mt-0.5 text-sm" style={{ color: "var(--muted)" }}>
-                  {heroProvider ? `${heroProvider.experienceYears} yrs · ${heroProvider.city}` : "ID-checked before going live"}
-                </p>
-                <div className="mt-4 flex items-center justify-between">
-                  <span className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-bold" style={{ background: "var(--line-light)", color: "var(--primary)" }}>
-                    <Icon name="lock" className="h-3.5 w-3.5" />
-                    Salary protected
-                  </span>
-                  <span className="flex items-center gap-1.5 text-xs font-medium">
-                    <span className="h-2 w-2 rounded-full" style={{ background: "var(--success)" }} />
-                    Ready now
-                  </span>
-                </div>
-                <span className="btn btn-primary mt-4 w-full">View profile</span>
+            </div>
+            <div className="float-depth-delay absolute -right-3 bottom-16 flex items-center gap-3 rounded-2xl bg-white p-3.5 shadow-xl" style={{ border: "1px solid var(--line)" }}>
+              <span className="flex h-11 w-11 items-center justify-center rounded-xl" style={{ background: "var(--primary-soft)", color: "var(--primary)" }}>
+                <Icon name="phone" className="h-5 w-5" />
+              </span>
+              <div>
+                <p className="text-sm font-bold">Call directly</p>
+                <p className="text-xs" style={{ color: "var(--muted)" }}>No agency in between</p>
               </div>
             </div>
           </motion.div>
@@ -324,69 +290,6 @@ export default function HomePage() {
             );
           })}
         </ScrollStagger>
-      </section>
-
-      {/* ====== VERIFIED PROFILES ====== */}
-      <section style={{ background: "var(--surface-muted)" }}>
-        <div className="container-page py-16 lg:py-20">
-          <div className="grid gap-10 lg:grid-cols-[0.8fr_1.2fr] lg:items-start">
-            <motion.div {...fadeUp()} className="lg:sticky lg:top-28">
-              <p className="eyebrow">{location ? "Near you" : "Verified profiles"}</p>
-              <h2 className="font-display text-h1 mt-3">
-                {location ? (
-                  <>Professionals near <Underlined>{location.city || "you"}</Underlined></>
-                ) : (
-                  <>Browse <Underlined>verified</Underlined> profiles</>
-                )}
-              </h2>
-              <p className="mt-4 text-base leading-relaxed" style={{ color: "var(--muted)" }}>
-                Find the professional that&apos;s perfect for your home. Every profile is checked by our team before it goes live.
-              </p>
-              <ul className="mt-5 space-y-3">
-                {HERO_CHECKS.map((item) => (
-                  <li key={item} className="flex items-center gap-3 text-sm font-medium">
-                    <span className="flex h-5 w-5 items-center justify-center rounded-full" style={{ background: "var(--primary-soft)", color: "var(--primary)" }}>
-                      <Icon name="check" className="h-3 w-3" />
-                    </span>
-                    {item}
-                  </li>
-                ))}
-              </ul>
-              <Link href="/providers" className="btn btn-dark btn-lg mt-7">
-                See all professionals <Icon name="arrow-right" className="h-4 w-4" />
-              </Link>
-            </motion.div>
-
-            <div>
-              {liveProviders === null && (
-                <div className="grid gap-5 sm:grid-cols-2">
-                  {Array.from({ length: 4 }).map((_, i) => <ProviderCardSkeleton key={i} />)}
-                </div>
-              )}
-
-              {liveProviders !== null && featured.length === 0 && (
-                <div className="card py-10 text-center text-sm" style={{ color: "var(--muted)" }}>
-                  {location && liveProviders.length > 0 ? (
-                    <>No professionals {radiusKm ? `within ${radiusKm} km of` : "near"} {location.city || "you"} yet. Try a wider distance from the bar at the top.</>
-                  ) : (
-                    <>
-                      No providers yet — be the first to{" "}
-                      <Link href="/register-helper" className="font-semibold" style={{ color: "var(--primary)" }}>register as a helper</Link>.
-                    </>
-                  )}
-                </div>
-              )}
-
-              <ScrollStagger className="grid gap-5 sm:grid-cols-2">
-                {featured.map((provider) => (
-                  <ScrollStaggerItem key={provider.id}>
-                    <ProfileCard provider={provider} serviceName={serviceName(provider.categoryId)} />
-                  </ScrollStaggerItem>
-                ))}
-              </ScrollStagger>
-            </div>
-          </div>
-        </div>
       </section>
 
       {/* ====== STATS BAND ====== */}
