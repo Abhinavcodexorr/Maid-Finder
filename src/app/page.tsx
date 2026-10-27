@@ -45,7 +45,6 @@ const HELPER_PERKS = [
 ];
 
 const HOME_SERVICE_COUNT = 8;
-const HERO_CHIP_COUNT = 5;
 
 const HOME_FAQ_COUNT = 5;
 
@@ -165,21 +164,6 @@ export default function HomePage() {
                   </button>
                 </div>
               </div>
-            </motion.div>
-
-            {/* Quick service chips */}
-            <motion.div {...heroAnim(0.3)} className="mt-5 flex flex-wrap items-center justify-center gap-2 xl:justify-start">
-              <span className="text-xs font-semibold" style={{ color: "var(--muted)" }}>Popular:</span>
-              {(catalog ?? []).slice(0, HERO_CHIP_COUNT).map((svc) => (
-                <Link
-                  key={svc.key}
-                  href={`/providers?category=${svc.key}`}
-                  className="rounded-full border bg-white/80 px-3 py-1 text-xs font-semibold backdrop-blur transition-colors hover:border-[var(--primary)] hover:text-[var(--primary)]"
-                  style={{ borderColor: "var(--line)", color: "var(--ink-light)" }}
-                >
-                  {emojiForService(svc.name)} {svc.name}
-                </Link>
-              ))}
             </motion.div>
 
             {/* Trust stats */}
