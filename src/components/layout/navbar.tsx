@@ -8,6 +8,7 @@ import { useAuth } from "@/context/AuthContext";
 import { Icon } from "@/components/ui/icon";
 import { Logo } from "@/components/ui/logo";
 import { ServicesMenu } from "@/components/layout/services-menu";
+import { ProfessionalsMenu } from "@/components/layout/professionals-menu";
 
 const NAV_LINKS = [
   { label: "Services", href: "/services" },
@@ -82,6 +83,7 @@ export function Navbar() {
             {navLinks.map((item) => {
               const active = pathname === item.href || pathname.startsWith(item.href + "/");
               if (item.href === "/services") return <ServicesMenu key={item.href} active={active} />;
+              if (item.href === "/providers") return <ProfessionalsMenu key={item.href} active={active} />;
               return (
                 <Link
                   key={item.href}
