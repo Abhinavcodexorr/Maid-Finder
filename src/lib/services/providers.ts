@@ -121,6 +121,9 @@ function matchesFilters(p: Provider, filters: ProviderFilters): boolean {
 function sortProviders(list: Provider[], sort: ProviderFilters["sort"]): Provider[] {
   const copy = [...list];
   switch (sort) {
+    case "nearest":
+      // Providers without a distance (no stored coordinates) go after the measured ones.
+      return copy.sort((a, b) => (a.distanceKm ?? Infinity) - (b.distanceKm ?? Infinity));
     case "experience":
       return copy.sort((a, b) => b.experienceYears - a.experienceYears);
     case "rating":

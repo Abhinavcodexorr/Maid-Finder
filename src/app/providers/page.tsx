@@ -16,6 +16,8 @@ import {
   toggleFavouriteCached,
 } from "@/lib/services";
 import { useAuth } from "@/context/AuthContext";
+import { useLocation } from "@/context/LocationContext";
+import { applyLocation } from "@/lib/geo";
 import { getCategoryById } from "@/lib/services/categories";
 import { maskProvider } from "@/lib/services/providers";
 import { colorForCategory } from "@/lib/category-colors";
@@ -674,7 +676,11 @@ function ProvidersContent() {
   const [mobileFilters, setMobileFilters] = useState(false);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
 
+  const { location, radiusKm } = useLocation();
   const [liveProviders, setLiveProviders] = useState<Provider[] | null>(null);
+  // Distances (and the radius cut-off) are worked out once here, so filters, sorting and paging all see them.
+  const nearbyProviders = useMemo(() => applyLocation(liveProviders ?? [], location, radiusKm), [liveProviders, location, radiusKm]);
+  const sortOptions = location ? [{ id: "nearest" as const, label: "Nearest First" }, ...SORT_OPTIONS] : SORT_OPTIONS;
   const areas = useMemo(() => getDistinctAreasFrom(liveProviders ?? []), [liveProviders]);
   const cities = useMemo(() => getDistinctCitiesFrom(liveProviders ?? []), [liveProviders]);
   const languages = useMemo(() => getDistinctLanguagesFrom(liveProviders ?? []), [liveProviders]);
@@ -696,7 +702,7 @@ function ProvidersContent() {
   const selectedLanguages = csv(searchParams.get("languages"));
   const selectedSkills = csv(searchParams.get("skills"));
   const verifiedOnly = searchParams.get("verified") === "1";
-  const sort = (searchParams.get("sort") as ProviderFilters["sort"]) ?? "rating";
+  const sort = (searchParams.get("sort") as ProviderFilters["sort"]) ?? (location ? "nearest" : "rating");
   const page = Number(searchParams.get("page") ?? "1");
   const q = searchParams.get("q") ?? "";
 
@@ -714,7 +720,7 @@ function ProvidersContent() {
 
   const result = useMemo(
     () =>
-      getProvidersFrom(liveProviders ?? [], {
+      getProvidersFrom(nearbyProviders, {
         q,
         categoryIds: categoryIds.length > 0 ? categoryIds : undefined,
         area: area || undefined,
@@ -728,7 +734,7 @@ function ProvidersContent() {
         page,
         pageSize: 9,
       }),
-    [liveProviders, q, categoryIds, area, experience, availabilityType, gender, selectedLanguages, selectedSkills, verifiedOnly, sort, page]
+    [nearbyProviders, q, categoryIds, area, experience, availabilityType, gender, selectedLanguages, selectedSkills, verifiedOnly, sort, page]
   );
 
   // Suggested candidates in case of 0 results
@@ -936,7 +942,7 @@ function ProvidersContent() {
             value={sort}
             onChange={(e) => updateParams({ sort: e.target.value })}
           >
-            {SORT_OPTIONS.map((o) => (
+            {sortOptions.map((o) => (
               <option key={o.id} value={o.id}>
                 Sort: {o.label}
               </option>
@@ -971,6 +977,11 @@ function ProvidersContent() {
             <div className="mb-5 hidden items-center justify-between rounded-2xl border border-[var(--line)] bg-white p-4 shadow-sm sm:flex">
               <p className="text-sm font-semibold" style={{ color: "var(--ink)" }}>
                 Showing <span className="text-[var(--primary)] font-bold">{result.total}</span> verified candidates
+                {location && (
+                  <span className="font-normal" style={{ color: "var(--muted)" }}>
+                    {" "}{radiusKm ? `within ${radiusKm} km of` : "near"} {location.city || "you"}
+                  </span>
+                )}
               </p>
 
               <div className="flex items-center gap-4">
@@ -1008,7 +1019,7 @@ function ProvidersContent() {
                   value={sort}
                   onChange={(e) => updateParams({ sort: e.target.value })}
                 >
-                  {SORT_OPTIONS.map((o) => (
+                  {sortOptions.map((o) => (
                     <option key={o.id} value={o.id}>
                       Sort: {o.label}
                     </option>
@@ -1040,7 +1051,7 @@ function ProvidersContent() {
                     No candidates match your current filters
                   </h3>
                   <p className="mx-auto mt-2 max-w-md text-sm text-[var(--muted)]">
-                    We couldn&apos;t find any professionals matching all selected filters. Try broadening your location or service requirements.
+                    {location ? `No professionals match these filters ${radiusKm ? `within ${radiusKm} km of` : "near"} ${location.city || "you"}. Try a wider distance from the bar at the top, or loosen the filters.` : "We couldn't find any professionals matching all selected filters. Try broadening your location or service requirements."}
                   </p>
                   <div className="mt-6 flex flex-wrap justify-center gap-3">
                     <button

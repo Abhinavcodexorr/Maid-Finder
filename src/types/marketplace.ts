@@ -28,6 +28,12 @@ export interface Provider {
   languages: string[];
   area: string;
   city: string;
+  state?: string;
+  /** Where the provider works; absent until the backend stores it (older registrations). */
+  latitude?: number;
+  longitude?: number;
+  /** Set by the "near me" ranking: straight-line km from the visitor's chosen location. */
+  distanceKm?: number;
   availabilityType: AvailabilityType;
   price: number;
   priceUnit: PriceUnit;
@@ -60,7 +66,7 @@ export interface ProviderFilters {
   languages?: string[];
   skills?: string[];
   verifiedOnly?: boolean;
-  sort?: "newest" | "experience" | "rating" | "price-asc" | "price-desc";
+  sort?: "nearest" | "newest" | "experience" | "rating" | "price-asc" | "price-desc";
   page?: number;
   pageSize?: number;
 }

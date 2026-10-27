@@ -137,6 +137,9 @@ export interface CompleteProfileInput {
   city?: string;
   state?: string;
   pincode?: string;
+  /** Where they work, so families can find them by distance. */
+  latitude?: number;
+  longitude?: number;
   /** Service keys from the catalog. */
   categoryIds?: string[];
   aadhaarFront?: File;
@@ -162,6 +165,7 @@ export async function completeProviderProfile(input: CompleteProfileInput): Prom
     ...(input.city && { city: input.city }),
     ...(input.state && { state: input.state }),
     ...(input.pincode && { pincode: input.pincode }),
+    ...(input.latitude !== undefined && input.longitude !== undefined && { latitude: input.latitude, longitude: input.longitude }),
   };
   if (Object.keys(generalInfo).length) formData.append("generalInfo", JSON.stringify(generalInfo));
   if (input.categoryIds?.length) formData.append("workPreferences", JSON.stringify({ categoryIds: input.categoryIds }));

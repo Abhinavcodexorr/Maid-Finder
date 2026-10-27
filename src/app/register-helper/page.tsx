@@ -308,9 +308,23 @@ export default function RegisterHelperPage() {
   };
 
   /* ---------- Steps ---------- */
+  // Best-effort: the helper's work area (pincode, else city + state) is turned
+  // into coordinates so families can search by distance. Failing to find them
+  // must never block registration — the profile then just has no map position.
+  const findCoordinates = async (values: DetailsValues): Promise<{ latitude: number; longitude: number } | null> => {
+    const query = values.pincode && /^\d{6}$/.test(values.pincode) ? `pincode=${values.pincode}` : `q=${encodeURIComponent(`${values.city}, ${values.state}`)}`;
+    try {
+      const place = await (await fetch(`/api/geo/locate?${query}`)).json();
+      return place?.success ? { latitude: place.lat, longitude: place.lng } : null;
+    } catch {
+      return null;
+    }
+  };
+
   const onDetails = async (values: DetailsValues) => {
     setBusy(true);
     try {
+      const coordinates = await findCoordinates(values);
       await completeProviderProfile({
         token,
         firstName: values.firstName,
@@ -322,6 +336,7 @@ export default function RegisterHelperPage() {
         city: values.city,
         area: values.area || values.city,
         pincode: values.pincode,
+        ...coordinates,
       });
       setStep(2);
     } catch (err) {

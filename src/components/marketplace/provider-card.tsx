@@ -9,6 +9,7 @@ import { getCategoryById, getCachedFavouriteIds, toggleFavouriteCached } from "@
 import { maskProvider } from "@/lib/services/providers";
 import { Icon } from "@/components/ui/icon";
 import { toast } from "@/components/ui/toaster";
+import { formatDistance } from "@/lib/geo";
 import { colorForCategory } from "@/lib/category-colors";
 import { TiltCard } from "@/components/ui/tilt-card";
 import type { Provider } from "@/types/marketplace";
@@ -143,6 +144,7 @@ export function ProviderCard({
                   <span className="flex items-center gap-1">
                     <Icon name="map-pin" className="h-3.5 w-3.5 text-[var(--muted)]" />
                     {provider.area}, {provider.city}
+                    {provider.distanceKm !== undefined && <span className="font-semibold text-[var(--primary)]"> · {formatDistance(provider.distanceKm)}</span>}
                   </span>
                   <span className="capitalize font-medium text-[var(--ink-secondary)]">
                     {provider.availabilityType}
@@ -311,6 +313,7 @@ export function ProviderCard({
             <span className="flex items-center gap-1">
               <Icon name="map-pin" className="h-3 w-3 text-[var(--muted)]" />
               {provider.area}
+              {provider.distanceKm !== undefined && <span className="font-semibold text-[var(--primary)]"> · {formatDistance(provider.distanceKm)}</span>}
             </span>
           </div>
 

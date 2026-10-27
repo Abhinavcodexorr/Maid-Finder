@@ -5,6 +5,8 @@ import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
 import { MobileNav } from "@/components/layout/mobile-nav";
 import { AuthProvider } from "@/context/AuthContext";
+import { LocationProvider } from "@/context/LocationContext";
+import { LocationBar } from "@/components/layout/location-bar";
 import { Toaster } from "@/components/ui/toaster";
 
 const inter = Inter({
@@ -41,11 +43,14 @@ export default function RootLayout({
       <body className={`${inter.variable} ${outfit.variable} antialiased`}>
         <ScrollProgressBar />
         <AuthProvider>
-          <Navbar />
-          <main className="min-h-[70vh]">{children}</main>
-          <Footer />
-          <MobileNav />
-          <Toaster />
+          <LocationProvider>
+            <Navbar />
+            <LocationBar />
+            <main className="min-h-[70vh]">{children}</main>
+            <Footer />
+            <MobileNav />
+            <Toaster />
+          </LocationProvider>
         </AuthProvider>
       </body>
     </html>

@@ -12,6 +12,8 @@ import { ProviderCardSkeleton } from "@/components/ui/shimmer";
 import { TESTIMONIALS } from "@/data/testimonials";
 import { FAQS } from "@/data/faqs";
 import { Avatar } from "@/components/ui/avatar";
+import { useLocation } from "@/context/LocationContext";
+import { applyLocation } from "@/lib/geo";
 import { useTypewriter } from "@/lib/use-typewriter";
 import { FaqList } from "@/components/sections/faq-list";
 import { TestimonialsCarousel } from "@/components/sections/testimonials-carousel";
@@ -85,7 +87,13 @@ export default function HomePage() {
     return () => { cancelled = true; };
   }, []);
 
-  const featured = liveProviders ? getFeaturedProvidersFrom(liveProviders, 6) : [];
+  const { location, radiusKm } = useLocation();
+  // With a chosen location, "top in your area" really is the nearest ones; otherwise the usual top list.
+  const featured = liveProviders
+    ? location
+      ? [...applyLocation(liveProviders, location, radiusKm)].sort((a, b) => (a.distanceKm ?? Infinity) - (b.distanceKm ?? Infinity)).slice(0, 6)
+      : getFeaturedProvidersFrom(liveProviders, 6)
+    : [];
 
   const typedService = useTypewriter((catalog ?? []).map((svc) => svc.name));
   const categories = getCategories();
@@ -369,7 +377,7 @@ export default function HomePage() {
           <motion.div {...fadeUp()} className="mb-8 flex items-end justify-between">
             <div>
               <p className="eyebrow">Featured Professionals</p>
-              <h2 className="font-display text-h2 mt-2">Top-rated in your area</h2>
+              <h2 className="font-display text-h2 mt-2">{location ? `Professionals near ${location.city || "you"}` : "Top-rated in your area"}</h2>
             </div>
             <Link href="/providers" className="hidden text-sm font-semibold sm:block" style={{ color: "var(--primary)" }}>
               View all →
@@ -384,8 +392,14 @@ export default function HomePage() {
 
           {liveProviders !== null && featured.length === 0 && (
             <div className="card py-10 text-center text-sm" style={{ color: "var(--muted)" }}>
-              No providers yet — be the first to{" "}
-              <Link href="/register-helper" className="font-semibold" style={{ color: "var(--primary)" }}>register as a helper</Link>.
+              {location && liveProviders.length > 0 ? (
+                <>No professionals {radiusKm ? `within ${radiusKm} km of` : "near"} {location.city || "you"} yet. Try a wider distance from the bar at the top.</>
+              ) : (
+                <>
+                  No providers yet — be the first to{" "}
+                  <Link href="/register-helper" className="font-semibold" style={{ color: "var(--primary)" }}>register as a helper</Link>.
+                </>
+              )}
             </div>
           )}
 

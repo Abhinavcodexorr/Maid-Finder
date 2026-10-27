@@ -22,6 +22,8 @@ export interface ApiProvider {
   nationality?: string;
   categoryIds?: string[];
   area?: string;
+  /** GeoJSON Point, [longitude, latitude]. */
+  location?: { type?: string; coordinates?: number[] };
   city?: string;
   state?: string;
   emirate?: string;
@@ -103,6 +105,9 @@ export function mapApiProviderToProvider(raw: ApiProvider): Provider {
     languages: raw.languages ?? [],
     area: raw.area || raw.emirate || raw.city || "",
     city: raw.city || raw.emirate || "",
+    state: raw.state,
+    longitude: raw.location?.coordinates?.[0],
+    latitude: raw.location?.coordinates?.[1],
     availabilityType: mapAvailabilityType(raw.duration),
     price: raw.monthlySalary ?? 0,
     priceUnit: "per month",
