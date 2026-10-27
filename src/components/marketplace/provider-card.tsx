@@ -14,6 +14,13 @@ import { colorForCategory } from "@/lib/category-colors";
 import { TiltCard } from "@/components/ui/tilt-card";
 import type { Provider } from "@/types/marketplace";
 
+const AVAILABILITY_LABEL: Record<Provider["availabilityType"], string> = {
+  "full-time": "Full time",
+  "part-time": "Part time",
+  "live-in": "Live-in",
+  "one-time": "One-time",
+};
+
 const CATEGORY_EMOJIS: Record<string, string> = {
   "cat-cook": "🍳",
   "cat-maid": "🧹",
@@ -223,150 +230,92 @@ export function ProviderCard({
     );
   }
 
-  // Grid Card View (Default)
+  // Grid Card View (Default) — photo with chips, one-line summary, city, salary and a pill button.
+  const summary = [AVAILABILITY_LABEL[provider.availabilityType], provider.experienceYears ? `${provider.experienceYears} yrs` : "New"].join(" · ");
+
   return (
-    <TiltCard className="h-full">
-    <Link
-      href={`/providers/${provider.id}`}
-      className="card card-hover group flex h-full w-full flex-col overflow-hidden p-0 transition-all hover:shadow-md"
-    >
-      <div className="relative h-52 w-full overflow-hidden bg-[var(--surface-muted)]">
-        {!imgLoaded && !imgFailed && (
-          <div className="absolute inset-0 shimmer z-0" />
-        )}
-        {provider.photo && !imgFailed ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={provider.photo}
-            alt={fullName}
-            onLoad={() => setImgLoaded(true)}
-            onError={() => setImgFailed(true)}
-            className={`h-full w-full object-cover transition-all duration-500 group-hover:scale-105 ${
-              imgLoaded ? "opacity-100" : "opacity-0"
-            }`}
-          />
-        ) : (
-          <div
-            className="flex h-full w-full items-center justify-center text-4xl font-bold text-white"
-            style={{ background: catColor.gradient }}
-          >
-            {provider.firstName[0]}{provider.lastName[0]}
-          </div>
-        )}
-
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-80" />
-
-        <div className="absolute top-3 inset-x-3 flex items-center justify-between pointer-events-none">
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-white/95 px-2.5 py-1 text-[11px] font-semibold text-[var(--success)] shadow-sm backdrop-blur-sm pointer-events-auto">
-            <span className="h-1.5 w-1.5 rounded-full bg-[var(--success)] animate-pulse" />
-            Available Now
-          </span>
-
-          <button
-            type="button"
-            onClick={onToggleSave}
-            aria-label={saved ? "Remove from saved" : "Save helper"}
-            className={`pointer-events-auto flex h-8 w-8 items-center justify-center rounded-full shadow-md backdrop-blur-sm transition-transform active:scale-90 ${
-              saved
-                ? "bg-white text-[var(--error)]"
-                : "bg-black/30 text-white hover:bg-white hover:text-[var(--error)]"
-            }`}
-          >
-            <Icon name={saved ? "heart-filled" : "heart"} className="h-4 w-4" />
-          </button>
-        </div>
-
-        <div className="absolute bottom-3 inset-x-3 pointer-events-none text-white">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="font-display text-lg font-bold leading-tight drop-shadow-sm">
-                {fullName}
-              </h3>
-              <p className="text-xs text-white/90 drop-shadow-sm font-medium">
-                {emoji} {cat?.name}
-              </p>
+    <TiltCard className="h-full" maxTilt={5}>
+      <Link
+        href={`/providers/${provider.id}`}
+        className="group flex h-full w-full flex-col overflow-hidden rounded-3xl border bg-white transition-shadow duration-300 hover:shadow-xl"
+        style={{ borderColor: "var(--line)" }}
+      >
+        <div className="relative aspect-[4/3] w-full overflow-hidden bg-[var(--surface-muted)]">
+          {!imgLoaded && !imgFailed && <div className="shimmer absolute inset-0 z-0" />}
+          {provider.photo && !imgFailed ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={provider.photo}
+              alt={fullName}
+              onLoad={() => setImgLoaded(true)}
+              onError={() => setImgFailed(true)}
+              className={`h-full w-full object-cover transition-all duration-500 group-hover:scale-105 ${imgLoaded ? "opacity-100" : "opacity-0"}`}
+            />
+          ) : (
+            <div className="flex h-full w-full items-center justify-center text-4xl font-bold text-white" style={{ background: catColor.gradient }}>
+              {provider.firstName[0]}{provider.lastName[0]}
             </div>
+          )}
 
+          <span className="absolute left-3 top-3 rounded-full bg-white/95 px-3 py-1 text-[11px] font-bold shadow-sm" style={{ color: "var(--ink-light)" }}>
+            {emoji} {cat?.name ?? "Professional"}
+          </span>
+          <div className="absolute right-3 top-3 flex items-center gap-2">
             {provider.verified && (
-              <span
-                title="Identity & Police Verified"
-                className="flex items-center gap-1 rounded-md bg-[var(--primary)] px-2 py-0.5 text-[10px] font-bold text-white shadow-sm"
-              >
-                <Icon name="check-circle" className="h-3 w-3" />
+              <span className="flex items-center gap-1 rounded-full bg-white/95 px-2.5 py-1 text-[11px] font-bold shadow-sm" style={{ color: "var(--success)" }}>
+                <Icon name="check-circle" className="h-3.5 w-3.5" />
                 Verified
               </span>
             )}
+            <button
+              type="button"
+              onClick={onToggleSave}
+              aria-label={saved ? "Remove from saved" : "Save helper"}
+              className={`flex h-8 w-8 items-center justify-center rounded-full shadow-md transition-transform active:scale-90 ${
+                saved ? "bg-white text-[var(--error)]" : "bg-white/95 text-[var(--muted)] hover:text-[var(--error)]"
+              }`}
+            >
+              <Icon name={saved ? "heart-filled" : "heart"} className="h-4 w-4" />
+            </button>
           </div>
         </div>
-      </div>
 
-      <div className="flex flex-1 flex-col justify-between p-4 space-y-3">
-        <div>
-          <div className="flex flex-wrap items-center justify-between gap-y-1 text-xs text-[var(--muted)]">
-            {typeof provider.rating === "number" && (
-              <span className="flex items-center gap-1 font-semibold text-[var(--ink)]">
-                <Icon name="star" className="h-3.5 w-3.5 text-amber-500" />
-                {provider.rating.toFixed(1)}
-              </span>
-            )}
-            <span>{provider.experienceYears} yrs experience</span>
-            <span className="flex items-center gap-1">
-              <Icon name="map-pin" className="h-3 w-3 text-[var(--muted)]" />
-              {provider.area}
-              {provider.distanceKm !== undefined && <span className="font-semibold text-[var(--primary)]"> · {formatDistance(provider.distanceKm)}</span>}
+        <div className="flex flex-1 flex-col p-5">
+          <h3 className="font-display text-xl font-bold leading-tight">{fullName}</h3>
+          <p className="mt-0.5 text-sm text-[var(--muted)]">{summary}</p>
+          <p className="mt-2 flex items-center gap-1.5 text-sm text-[var(--muted)]">
+            <Icon name="map-pin" className="h-3.5 w-3.5 shrink-0 text-[var(--faint)]" />
+            {provider.area}
+            {provider.distanceKm !== undefined && <span className="font-semibold text-[var(--primary)]"> · {formatDistance(provider.distanceKm)}</span>}
+          </p>
+
+          <div className="mt-4 flex items-center justify-between gap-2">
+            <span className="rounded-lg bg-[var(--line-light)] px-3 py-1.5 text-sm font-bold">
+              {isSubscribed ? (
+                <>₹{provider.price.toLocaleString("en-IN")} <span className="text-[11px] font-medium text-[var(--muted)]">{provider.priceUnit}</span></>
+              ) : (
+                <span className="flex items-center gap-1.5 whitespace-nowrap text-xs text-[var(--primary)]">
+                  <Icon name="lock" className="h-3.5 w-3.5" />
+                  Salary protected
+                </span>
+              )}
+            </span>
+            <span className="flex items-center gap-1.5 whitespace-nowrap text-xs font-medium text-[var(--ink-light)]">
+              <span className="h-2 w-2 rounded-full bg-[var(--success)]" />
+              Ready now
             </span>
           </div>
 
-          <div className="mt-3 flex flex-wrap gap-1.5">
-            {provider.skills.slice(0, 3).map((s) => (
-              <span
-                key={s}
-                className="rounded-md bg-[var(--surface-muted)] px-2 py-0.5 text-[10px] font-medium text-[var(--ink-secondary)]"
-              >
-                {s}
-              </span>
-            ))}
-          </div>
+          {isSubscribed ? (
+            <span className="btn btn-primary mt-5 w-full">View contact</span>
+          ) : (
+            <motion.button type="button" onClick={onUnlock} whileTap={{ scale: 0.97 }} className="btn btn-primary mt-5 w-full">
+              <Icon name="lock" className="h-3.5 w-3.5" />
+              Unlock contact
+            </motion.button>
+          )}
         </div>
-
-        <div className="border-t border-[var(--line-light)] pt-3 mt-auto">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <div>
-              {isSubscribed ? (
-                <div>
-                  <span className="font-display text-base font-bold" style={{ color: "var(--ink)" }}>
-                    ₹{provider.price.toLocaleString("en-IN")}
-                  </span>
-                  <span className="text-[11px] text-[var(--muted)]"> {provider.priceUnit}</span>
-                </div>
-              ) : (
-                <div className="flex items-center gap-1 whitespace-nowrap text-xs font-semibold text-[var(--locked)]">
-                  <Icon name="lock" className="h-3.5 w-3.5" />
-                  <span>Salary Protected</span>
-                </div>
-              )}
-            </div>
-
-            {isSubscribed ? (
-              <span className="btn btn-primary btn-sm text-xs font-semibold">
-                View Contact
-              </span>
-            ) : (
-              <motion.button
-                type="button"
-                onClick={onUnlock}
-                whileHover={{ scale: 1.04 }}
-                whileTap={{ scale: 0.96 }}
-                className="btn btn-primary btn-sm text-xs font-semibold"
-              >
-                <Icon name="lock" className="h-3 w-3" />
-                Unlock
-              </motion.button>
-            )}
-          </div>
-        </div>
-      </div>
-    </Link>
+      </Link>
     </TiltCard>
   );
 }

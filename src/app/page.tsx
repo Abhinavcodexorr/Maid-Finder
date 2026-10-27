@@ -5,32 +5,40 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Icon } from "@/components/ui/icon";
-import { getCategories, getFeaturedProvidersFrom, fetchLiveProviders, fetchCatalogServices } from "@/lib/services";
+import {
+  getCategories,
+  getFeaturedProvidersFrom,
+  fetchLiveProviders,
+  fetchCatalogServices,
+  fetchLivePlans,
+} from "@/lib/services";
 import type { CatalogService } from "@/lib/services";
 import { emojiForService } from "@/lib/service-emoji";
 import { ProviderCardSkeleton } from "@/components/ui/shimmer";
 import { TESTIMONIALS } from "@/data/testimonials";
 import { FAQS } from "@/data/faqs";
-import { Avatar } from "@/components/ui/avatar";
+import { useAuth } from "@/context/AuthContext";
 import { useLocation } from "@/context/LocationContext";
 import { applyLocation } from "@/lib/geo";
 import { useTypewriter } from "@/lib/use-typewriter";
 import { FaqList } from "@/components/sections/faq-list";
+import { PlanCards } from "@/components/sections/plan-cards";
 import { TestimonialsCarousel } from "@/components/sections/testimonials-carousel";
+import { ProfileCard } from "@/components/marketplace/profile-card";
 import { ScrollReveal, ScrollStagger, ScrollStaggerItem } from "@/components/ui/scroll-reveal";
-import { colorForCategory, colorForIndex } from "@/lib/category-colors";
+import { colorForIndex } from "@/lib/category-colors";
 import { TiltCard } from "@/components/ui/tilt-card";
-import { ParallaxStage } from "@/components/ui/parallax-stage";
 import { CountUp } from "@/components/ui/count-up";
-import type { Provider } from "@/types/marketplace";
+import { Underlined } from "@/components/ui/underlined";
+import type { Plan, Provider } from "@/types/marketplace";
 
 /* ================================================================
    CONSTANTS
    ================================================================ */
 const STEPS = [
-  { n: "01", title: "Tell us what you need", icon: "search", body: "Pick a service and your area to see verified professionals near you." },
-  { n: "02", title: "Browse profiles — free", icon: "users", body: "Compare experience, skills and verification status without signing up." },
-  { n: "03", title: "Unlock & connect", icon: "unlock", body: "Get a membership once, then call or WhatsApp any professional directly." },
+  { n: "01", title: "Register & search for free", body: "Pick a service and your area, then browse every verified profile — no payment needed to look." },
+  { n: "02", title: "Compare & shortlist", body: "See experience, skills and verification status side by side, and save the professionals you like." },
+  { n: "03", title: "Unlock & hire directly", body: "Get a membership once, then call or WhatsApp any professional yourself and agree terms directly." },
 ];
 
 const FEATURES = [
@@ -46,8 +54,10 @@ const HELPER_PERKS = [
   { icon: "trending-up", title: "Keep 100% of your earnings", body: "We never take a commission." },
 ];
 
-const HOME_SERVICE_COUNT = 8;
+const HERO_CHECKS = ["Every profile checked by our team", "Message or call helpers directly", "New professionals added regularly"];
 
+const HOME_SERVICE_COUNT = 8;
+const HOME_PROFILE_COUNT = 6;
 const HOME_FAQ_COUNT = 5;
 
 const fadeUp = (delay = 0) => ({
@@ -68,42 +78,57 @@ const heroAnim = (delay = 0) => ({
    ================================================================ */
 export default function HomePage() {
   const router = useRouter();
-  const [serviceQuery, setServiceQuery] = useState("");
+  const { user, isSubscribed } = useAuth();
+  const { location, radiusKm } = useLocation();
+
+  const [serviceKey, setServiceKey] = useState("");
   const [locationQuery, setLocationQuery] = useState("");
 
   const [catalog, setCatalog] = useState<CatalogService[] | null>(null);
-  useEffect(() => {
-    fetchCatalogServices()
-      .then(setCatalog)
-      .catch(() => setCatalog([]));
-  }, []);
-
   const [liveProviders, setLiveProviders] = useState<Provider[] | null>(null);
+  const [plans, setPlans] = useState<Plan[] | null>(null);
+
   useEffect(() => {
     let cancelled = false;
+    fetchCatalogServices()
+      .then((list) => { if (!cancelled) setCatalog(list); })
+      .catch(() => { if (!cancelled) setCatalog([]); });
     fetchLiveProviders()
       .then((list) => { if (!cancelled) setLiveProviders(list); })
       .catch(() => { if (!cancelled) setLiveProviders([]); });
+    fetchLivePlans()
+      .then((list) => { if (!cancelled) setPlans(list); })
+      .catch(() => { if (!cancelled) setPlans([]); });
     return () => { cancelled = true; };
   }, []);
 
-  const { location, radiusKm } = useLocation();
-  // With a chosen location, "top in your area" really is the nearest ones; otherwise the usual top list.
+  const serviceName = (key: string) =>
+    catalog?.find((svc) => svc.key === key)?.name ?? getCategories().find((c) => c.id === key)?.name ?? "Professional";
+
+  // With a chosen location, the profiles shown are the nearest ones; otherwise the usual featured list.
   const featured = liveProviders
     ? location
-      ? [...applyLocation(liveProviders, location, radiusKm)].sort((a, b) => (a.distanceKm ?? Infinity) - (b.distanceKm ?? Infinity)).slice(0, 6)
-      : getFeaturedProvidersFrom(liveProviders, 6)
+      ? [...applyLocation(liveProviders, location, radiusKm)]
+          .sort((a, b) => (a.distanceKm ?? Infinity) - (b.distanceKm ?? Infinity))
+          .slice(0, HOME_PROFILE_COUNT)
+      : getFeaturedProvidersFrom(liveProviders, HOME_PROFILE_COUNT)
     : [];
 
-  const typedService = useTypewriter((catalog ?? []).map((svc) => svc.name));
-  const categories = getCategories();
+  const marqueeWords = (catalog ?? []).map((svc) => svc.name);
 
   const onSearch = () => {
     const params = new URLSearchParams();
-    if (serviceQuery.trim()) params.set("q", serviceQuery.trim());
+    if (serviceKey) params.set("category", serviceKey);
     if (locationQuery.trim()) params.set("area", locationQuery.trim());
     router.push(`/providers?${params.toString()}`);
   };
+
+  const onSelectPlan = (planId: string) => {
+    router.push(user ? `/checkout?plan=${planId}&redirect=${encodeURIComponent("/providers")}` : `/login?redirect=${encodeURIComponent("/membership")}`);
+  };
+
+  const heroProvider = featured[0];
+  const typedService = useTypewriter(marqueeWords);
 
   return (
     <>
@@ -111,138 +136,148 @@ export default function HomePage() {
       <section className="relative overflow-hidden" style={{ background: "var(--gradient-hero)" }}>
         <div
           aria-hidden
-          className="blob-drift pointer-events-none absolute -right-24 -top-24 h-80 w-80 rounded-full opacity-60 blur-3xl"
+          className="blob-drift pointer-events-none absolute -right-24 -top-24 h-96 w-96 rounded-full opacity-60 blur-3xl"
           style={{ background: "radial-gradient(circle, rgba(59,130,246,0.35), transparent 70%)" }}
         />
         <div
           aria-hidden
-          className="blob-drift pointer-events-none absolute -bottom-32 -left-24 h-72 w-72 rounded-full opacity-50 blur-3xl"
+          className="blob-drift pointer-events-none absolute -bottom-32 -left-24 h-80 w-80 rounded-full opacity-50 blur-3xl"
           style={{ background: "radial-gradient(circle, rgba(14,165,233,0.25), transparent 70%)" }}
         />
-        <div className="container-page relative grid items-center gap-12 py-14 xl:grid-cols-[1.1fr_0.9fr] xl:py-24">
-          <div className="text-center xl:text-left">
-            <motion.p {...heroAnim(0)} className="eyebrow">
-              Trusted Service Marketplace
-            </motion.p>
+
+        <div className="container-page relative grid items-center gap-12 py-14 lg:grid-cols-[1.05fr_0.95fr] lg:py-20">
+          <div>
+            <motion.p {...heroAnim(0)} className="eyebrow">India&apos;s trusted home-help platform</motion.p>
             <motion.h1 {...heroAnim(0.08)} className="font-display text-display mt-4">
-              Find the Right Professional{" "}
-              <span className="text-gradient-animated">for Every Job</span>
+              Hire verified <Underlined>professionals</Underlined> for every job
             </motion.h1>
-            <motion.p
-              {...heroAnim(0.16)}
-              className="mx-auto mt-5 max-w-xl text-lg leading-relaxed xl:mx-0"
-              style={{ color: "var(--muted)" }}
-            >
-              Verified maids, cooks, nannies and more — browse free, then connect directly with 0% commission.
+            <motion.p {...heroAnim(0.16)} className="mt-5 max-w-xl text-lg leading-relaxed" style={{ color: "var(--muted)" }}>
+              Maids, cooks, nannies, drivers and more — browse free, then connect directly with 0% commission.
             </motion.p>
 
-            {/* Search Box */}
+            {/* Search card */}
             <motion.div
               {...heroAnim(0.24)}
-              className="mx-auto mt-8 max-w-2xl overflow-hidden rounded-2xl border bg-white shadow-xl transition-all focus-within:border-[var(--primary)] focus-within:ring-2 focus-within:ring-[var(--primary-soft)] xl:mx-0"
+              className="mt-8 max-w-xl rounded-3xl border bg-white p-5 shadow-xl"
               style={{ borderColor: "var(--line)" }}
             >
-              <div className="flex flex-col sm:flex-row sm:items-center">
-                <div className="flex flex-1 items-center gap-3 border-b px-4 py-3.5 sm:border-b-0 sm:border-r" style={{ borderColor: "var(--line)" }}>
-                  <Icon name="search" className="h-5 w-5 shrink-0" style={{ color: "var(--faint)" }} />
-                  <input
-                    className="w-full bg-transparent text-sm border-0 outline-none focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0 placeholder:text-[var(--faint)]"
-                    placeholder={typedService ? `Try ${typedService}` : "What service do you need?"}
-                    value={serviceQuery}
-                    onChange={(e) => setServiceQuery(e.target.value)}
-                    onKeyDown={(e) => e.key === "Enter" && onSearch()}
-                    aria-label="Search for a service"
-                  />
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <label htmlFor="heroService" className="text-[11px] font-bold uppercase tracking-[0.12em]" style={{ color: "var(--muted)" }}>
+                    Service
+                  </label>
+                  <select id="heroService" className="field mt-1.5" value={serviceKey} onChange={(e) => setServiceKey(e.target.value)}>
+                    <option value="">{typedService ? `Try ${typedService}` : "Any service"}</option>
+                    {(catalog ?? []).map((svc) => (
+                      <option key={svc.key} value={svc.key}>{svc.name}</option>
+                    ))}
+                  </select>
                 </div>
-                <div className="flex flex-1 items-center gap-3 px-4 py-3.5">
-                  <Icon name="map-pin" className="h-5 w-5 shrink-0" style={{ color: "var(--faint)" }} />
+                <div>
+                  <label htmlFor="heroLocation" className="text-[11px] font-bold uppercase tracking-[0.12em]" style={{ color: "var(--muted)" }}>
+                    Location
+                  </label>
                   <input
-                    className="w-full bg-transparent text-sm border-0 outline-none focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0 placeholder:text-[var(--faint)]"
-                    placeholder="Where do you need it?"
+                    id="heroLocation"
+                    className="field mt-1.5"
+                    placeholder="City or area"
                     value={locationQuery}
                     onChange={(e) => setLocationQuery(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && onSearch()}
-                    aria-label="Enter location"
                   />
                 </div>
-                <div className="p-2 sm:shrink-0">
-                  <button type="button" onClick={onSearch} className="btn btn-primary btn-lg w-full sm:w-auto">
-                    <Icon name="search" className="h-4 w-4" />
-                    Search
-                  </button>
-                </div>
               </div>
+              <button type="button" onClick={onSearch} className="btn btn-primary btn-lg mt-4 w-full">
+                <Icon name="search" className="h-4 w-4" />
+                Find a professional
+              </button>
             </motion.div>
 
-            {/* Trust stats */}
-            <motion.div
-              {...heroAnim(0.36)}
-              className="mt-8 grid max-w-xl grid-cols-3 gap-4 border-t pt-6 text-center xl:text-left"
-              style={{ borderColor: "var(--line)" }}
-            >
-              {[
-                { v: "100%", l: "ID verified" },
-                { v: "0%", l: "Commission" },
-                { v: "12+", l: "Service categories" },
-              ].map((t) => (
-                <div key={t.l}>
-                  <p className="font-display text-2xl font-bold" style={{ color: "var(--primary)" }}><CountUp value={t.v} /></p>
-                  <p className="text-xs" style={{ color: "var(--muted)" }}>{t.l}</p>
-                </div>
-              ))}
+            <motion.div {...heroAnim(0.32)} className="mt-6 flex flex-wrap gap-2.5">
+              <Link href="/providers" className="btn btn-outline btn-sm">Search profiles</Link>
+              <Link href="/membership" className="btn btn-outline btn-sm">Buy access package</Link>
+              <Link href="/register-helper" className="btn btn-outline btn-sm">Register as helper</Link>
             </motion.div>
+
+            <motion.ul {...heroAnim(0.4)} className="mt-6 flex flex-wrap gap-x-6 gap-y-2 text-sm font-medium" style={{ color: "var(--ink-light)" }}>
+              {["100% ID verified", "0% commission", "Free to browse"].map((item) => (
+                <li key={item} className="flex items-center gap-2">
+                  <Icon name="check-circle" className="h-4 w-4" style={{ color: "var(--success)" }} />
+                  {item}
+                </li>
+              ))}
+            </motion.ul>
           </div>
 
-          {/* Hero visual — rotates toward the cursor; the two cards float in front of the photo */}
-          <motion.div {...heroAnim(0.2)} className="relative mx-auto hidden w-full max-w-md xl:block">
-            <ParallaxStage>
-              <div className="absolute -inset-3 rounded-[2rem] opacity-70 blur-xl" style={{ background: "var(--gradient-primary)" }} />
-              <div className="relative overflow-hidden rounded-[1.75rem] border-4 border-white shadow-2xl">
+          {/* Phone mockup */}
+          <motion.div {...heroAnim(0.2)} className="relative mx-auto hidden w-full max-w-[320px] lg:block">
+            <div className="absolute -inset-6 rounded-[3rem] opacity-40 blur-2xl" style={{ background: "var(--gradient-primary)" }} />
+            <div className="relative rounded-[2.6rem] border-[10px] bg-white p-3 shadow-2xl" style={{ borderColor: "#0f172a" }}>
+              <div className="mx-auto mb-3 h-5 w-24 rounded-full" style={{ background: "#0f172a" }} />
+              <div className="relative overflow-hidden rounded-2xl">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src="/images/auth-service-hero.jpg"
-                  alt="A verified Help Zone professional at work"
-                  className="h-[480px] w-full object-cover"
+                  src={heroProvider?.photo || "/images/auth-service-hero.jpg"}
+                  alt="A verified Help Zone professional"
+                  className="h-64 w-full object-cover"
                 />
-              </div>
-              <div
-                className="float-depth absolute -left-8 top-10 flex items-center gap-3 rounded-2xl bg-white p-3 shadow-xl"
-                style={{ border: "1px solid var(--line)" }}
-              >
-                <span className="flex h-10 w-10 items-center justify-center rounded-xl" style={{ background: "var(--success-soft)", color: "var(--success)" }}>
-                  <Icon name="shield" className="h-5 w-5" />
+                <span className="absolute left-3 top-3 rounded-full bg-white/95 px-3 py-1 text-[11px] font-bold shadow-sm">
+                  {heroProvider ? serviceName(heroProvider.categoryId) : "Verified helper"}
                 </span>
-                <div>
-                  <p className="text-sm font-bold" style={{ color: "var(--ink)" }}>Identity verified</p>
-                  <p className="text-xs" style={{ color: "var(--muted)" }}>Aadhaar &amp; PAN checked</p>
-                </div>
-              </div>
-              <div
-                className="float-depth-delay absolute -right-6 bottom-12 flex items-center gap-3 rounded-2xl bg-white p-3 shadow-xl"
-                style={{ border: "1px solid var(--line)" }}
-              >
-                <span className="flex h-10 w-10 items-center justify-center rounded-xl" style={{ background: "var(--primary-soft)", color: "var(--primary)" }}>
-                  <Icon name="phone" className="h-5 w-5" />
+                <span className="absolute right-3 top-3 flex items-center gap-1 rounded-full bg-white/95 px-2.5 py-1 text-[11px] font-bold shadow-sm" style={{ color: "var(--success)" }}>
+                  <Icon name="check-circle" className="h-3.5 w-3.5" />
+                  Verified
                 </span>
-                <div>
-                  <p className="text-sm font-bold" style={{ color: "var(--ink)" }}>Call directly</p>
-                  <p className="text-xs" style={{ color: "var(--muted)" }}>No agency in between</p>
-                </div>
               </div>
-            </ParallaxStage>
+              <div className="px-2 pb-2 pt-4">
+                <p className="font-display text-xl font-bold">
+                  {heroProvider ? `${heroProvider.firstName} ${heroProvider.lastName ? `${heroProvider.lastName[0]}.` : ""}` : "Your next helper"}
+                </p>
+                <p className="mt-0.5 text-sm" style={{ color: "var(--muted)" }}>
+                  {heroProvider ? `${heroProvider.experienceYears} yrs · ${heroProvider.city}` : "ID-checked before going live"}
+                </p>
+                <div className="mt-4 flex items-center justify-between">
+                  <span className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-bold" style={{ background: "var(--line-light)", color: "var(--primary)" }}>
+                    <Icon name="lock" className="h-3.5 w-3.5" />
+                    Salary protected
+                  </span>
+                  <span className="flex items-center gap-1.5 text-xs font-medium">
+                    <span className="h-2 w-2 rounded-full" style={{ background: "var(--success)" }} />
+                    Ready now
+                  </span>
+                </div>
+                <span className="btn btn-primary mt-4 w-full">View profile</span>
+              </div>
+            </div>
           </motion.div>
         </div>
       </section>
 
-      {/* ====== POPULAR SERVICES ====== */}
-      <section className="container-page py-16">
-        <motion.div {...fadeUp()} className="mb-8 flex items-end justify-between gap-4">
+      {/* ====== SERVICE MARQUEE ====== */}
+      {marqueeWords.length > 0 && (
+        <section className="marquee overflow-hidden border-b bg-white py-6" style={{ borderColor: "var(--line)" }} aria-label="Services">
+          <div className="marquee-track flex w-max">
+            {[...marqueeWords, ...marqueeWords, ...marqueeWords, ...marqueeWords].map((word, i) => (
+              <span key={i} className="flex shrink-0 items-center gap-8 px-4 font-display text-3xl font-bold sm:text-4xl" aria-hidden={i >= marqueeWords.length}>
+                <span style={{ color: i % 3 === 1 ? "transparent" : "var(--ink)", WebkitTextStroke: i % 3 === 1 ? "1.5px var(--primary)" : undefined }}>{word}</span>
+                <span style={{ color: "var(--primary)" }}>✦</span>
+              </span>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* ====== SERVICES ====== */}
+      <section className="container-page py-16 lg:py-20">
+        <motion.div {...fadeUp()} className="mb-10 flex items-end justify-between gap-4">
           <div>
             <p className="eyebrow">Services</p>
-            <h2 className="font-display text-h2 mt-2">What can we help you with?</h2>
+            <h2 className="font-display text-h1 mt-3">
+              What can we <Underlined>help</Underlined> you with?
+            </h2>
           </div>
-          <Link href="/services" className="shrink-0 text-sm font-semibold" style={{ color: "var(--primary)" }}>
-            All services →
+          <Link href="/services" className="btn btn-outline btn-sm shrink-0">
+            All services <Icon name="arrow-right" className="h-4 w-4" />
           </Link>
         </motion.div>
 
@@ -291,60 +326,158 @@ export default function HomePage() {
         </ScrollStagger>
       </section>
 
-      {/* ====== HOW IT WORKS ====== */}
-      <section style={{ background: "var(--primary-soft)" }}>
-        <div className="container-page py-16">
-          <motion.div {...fadeUp()} className="text-center">
-            <p className="eyebrow">How It Works</p>
-            <h2 className="font-display text-h2 mt-3">Three simple steps</h2>
-          </motion.div>
-
-          <div className="relative mt-12">
-            <div
-              aria-hidden
-              className="absolute left-[16.7%] right-[16.7%] top-8 hidden border-t-2 border-dashed md:block"
-              style={{ borderColor: "var(--primary)", opacity: 0.25 }}
-            />
-            <ScrollStagger className="grid gap-10 md:grid-cols-3 md:gap-6">
-              {STEPS.map((step) => (
-                <ScrollStaggerItem key={step.n}>
-                  <div className="relative flex flex-col items-center text-center">
-                    <span className="relative">
-                      <span aria-hidden className="ring-pulse absolute inset-0 rounded-2xl" />
-                      <span
-                        className="relative flex h-16 w-16 items-center justify-center rounded-2xl text-white shadow-lg ring-8 ring-[var(--primary-soft)]"
-                        style={{ background: "var(--gradient-primary)" }}
-                      >
-                        <Icon name={step.icon} className="h-7 w-7" />
-                        <span
-                          className="absolute -right-2 -top-2 flex h-6 w-6 items-center justify-center rounded-full bg-white text-xs font-bold shadow"
-                          style={{ color: "var(--primary)" }}
-                        >
-                          {step.n.replace(/^0/, "")}
-                        </span>
-                      </span>
+      {/* ====== VERIFIED PROFILES ====== */}
+      <section style={{ background: "var(--surface-muted)" }}>
+        <div className="container-page py-16 lg:py-20">
+          <div className="grid gap-10 lg:grid-cols-[0.8fr_1.2fr] lg:items-start">
+            <motion.div {...fadeUp()} className="lg:sticky lg:top-28">
+              <p className="eyebrow">{location ? "Near you" : "Verified profiles"}</p>
+              <h2 className="font-display text-h1 mt-3">
+                {location ? (
+                  <>Professionals near <Underlined>{location.city || "you"}</Underlined></>
+                ) : (
+                  <>Browse <Underlined>verified</Underlined> profiles</>
+                )}
+              </h2>
+              <p className="mt-4 text-base leading-relaxed" style={{ color: "var(--muted)" }}>
+                Find the professional that&apos;s perfect for your home. Every profile is checked by our team before it goes live.
+              </p>
+              <ul className="mt-5 space-y-3">
+                {HERO_CHECKS.map((item) => (
+                  <li key={item} className="flex items-center gap-3 text-sm font-medium">
+                    <span className="flex h-5 w-5 items-center justify-center rounded-full" style={{ background: "var(--primary-soft)", color: "var(--primary)" }}>
+                      <Icon name="check" className="h-3 w-3" />
                     </span>
-                    <h3 className="font-display mt-5 text-lg font-bold leading-snug">{step.title}</h3>
-                    <p className="mt-2 max-w-xs text-sm leading-relaxed" style={{ color: "var(--muted)" }}>{step.body}</p>
-                  </div>
-                </ScrollStaggerItem>
-              ))}
-            </ScrollStagger>
+                    {item}
+                  </li>
+                ))}
+              </ul>
+              <Link href="/providers" className="btn btn-dark btn-lg mt-7">
+                See all professionals <Icon name="arrow-right" className="h-4 w-4" />
+              </Link>
+            </motion.div>
+
+            <div>
+              {liveProviders === null && (
+                <div className="grid gap-5 sm:grid-cols-2">
+                  {Array.from({ length: 4 }).map((_, i) => <ProviderCardSkeleton key={i} />)}
+                </div>
+              )}
+
+              {liveProviders !== null && featured.length === 0 && (
+                <div className="card py-10 text-center text-sm" style={{ color: "var(--muted)" }}>
+                  {location && liveProviders.length > 0 ? (
+                    <>No professionals {radiusKm ? `within ${radiusKm} km of` : "near"} {location.city || "you"} yet. Try a wider distance from the bar at the top.</>
+                  ) : (
+                    <>
+                      No providers yet — be the first to{" "}
+                      <Link href="/register-helper" className="font-semibold" style={{ color: "var(--primary)" }}>register as a helper</Link>.
+                    </>
+                  )}
+                </div>
+              )}
+
+              <ScrollStagger className="grid gap-5 sm:grid-cols-2">
+                {featured.map((provider) => (
+                  <ScrollStaggerItem key={provider.id}>
+                    <ProfileCard provider={provider} serviceName={serviceName(provider.categoryId)} />
+                  </ScrollStaggerItem>
+                ))}
+              </ScrollStagger>
+            </div>
           </div>
         </div>
       </section>
 
+      {/* ====== STATS BAND ====== */}
+      <section className="text-white" style={{ background: "var(--gradient-dark)" }}>
+        <div className="container-page py-16 text-center">
+          <motion.h2 {...fadeUp()} className="font-display text-h1">
+            Hiring made <Underlined>direct</Underlined>
+          </motion.h2>
+          <div className="mt-10 grid grid-cols-2 gap-y-10 md:grid-cols-4 md:divide-x md:divide-white/15">
+            {[
+              { value: liveProviders ? String(liveProviders.length) : "0", label: "Verified professionals available" },
+              { value: catalog ? String(catalog.length) : "0", label: "Services you can hire for" },
+              { value: "100%", label: "Profiles ID-verified" },
+              { value: "0%", label: "Commission, always" },
+            ].map((stat) => (
+              <div key={stat.label} className="px-4">
+                <p className="font-display text-4xl font-extrabold sm:text-5xl">
+                  <CountUp key={stat.value} value={stat.value} />
+                </p>
+                <p className="mx-auto mt-2 max-w-[11rem] text-sm text-white/70">{stat.label}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ====== HOW IT WORKS ====== */}
+      <section className="container-page py-16 lg:py-24">
+        <div className="grid gap-12 lg:grid-cols-[0.8fr_1.2fr] lg:items-center">
+          <motion.div {...fadeUp()}>
+            <p className="eyebrow">How it works</p>
+            <h2 className="font-display text-h1 mt-3">
+              Hire trusted professionals in <Underlined>3 simple steps</Underlined>
+            </h2>
+            <p className="mt-4 text-base" style={{ color: "var(--muted)" }}>After you register — it takes just a few days.</p>
+            <Link href="/how-it-works" className="btn btn-outline btn-lg mt-7">
+              Step-by-step guide <Icon name="arrow-right" className="h-4 w-4" />
+            </Link>
+          </motion.div>
+
+          <ol className="relative space-y-8">
+            <span aria-hidden className="absolute bottom-8 left-[27px] top-8 w-0.5" style={{ background: "var(--line)" }} />
+            {STEPS.map((step, i) => (
+              <motion.li key={step.n} {...fadeUp(i * 0.1)} className="relative flex gap-6">
+                <span
+                  className="relative z-10 flex h-14 w-14 shrink-0 items-center justify-center rounded-full font-display text-lg font-bold text-white shadow-lg"
+                  style={{ background: i === 0 ? "var(--gradient-primary)" : "var(--ink)" }}
+                >
+                  {step.n}
+                </span>
+                <div className="pt-1">
+                  <h3 className="font-display text-xl font-bold">{step.title}</h3>
+                  <p className="mt-1.5 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>{step.body}</p>
+                </div>
+              </motion.li>
+            ))}
+          </ol>
+        </div>
+      </section>
+
+      {/* ====== PRICING ====== */}
+      {plans !== null && plans.length > 0 && (
+        <section style={{ background: "var(--surface-muted)" }}>
+          <div className="container-page py-16 lg:py-24">
+            <motion.div {...fadeUp()} className="mb-12 text-center">
+              <p className="eyebrow">Hiring packages</p>
+              <h2 className="font-display text-h1 mt-3">
+                Simple, one-time <Underlined>pricing</Underlined>
+              </h2>
+              <p className="mx-auto mt-4 max-w-lg text-base" style={{ color: "var(--muted)" }}>
+                One payment, direct access to every profile. No hidden fees.
+              </p>
+            </motion.div>
+            <PlanCards plans={plans} onSelect={onSelectPlan} disabled={isSubscribed} ctaLabel="Get access" />
+          </div>
+        </section>
+      )}
+
       {/* ====== WHY HELP ZONE ====== */}
-      <section className="container-page py-16 lg:py-20">
+      <section className="container-page py-16 lg:py-24">
         <div className="grid items-center gap-10 lg:grid-cols-[0.85fr_1.15fr] lg:gap-14">
           <motion.div {...fadeUp()}>
             <p className="eyebrow">Why Help Zone</p>
-            <h2 className="font-display text-h1 mt-3">Built for trust and transparency</h2>
+            <h2 className="font-display text-h1 mt-3">
+              Built for <Underlined>trust</Underlined> and transparency
+            </h2>
             <p className="mt-4 text-base leading-relaxed" style={{ color: "var(--muted)" }}>
               Hiring someone for your home should feel safe. We check every professional, show you everything up front and
               stay out of the way when you connect.
             </p>
-            <Link href="/how-it-works" className="btn btn-outline mt-6">
+            <Link href="/how-it-works" className="btn btn-outline btn-lg mt-6">
               See how it works
               <Icon name="arrow-right" className="h-4 w-4" />
             </Link>
@@ -354,16 +487,16 @@ export default function HomePage() {
             {FEATURES.map((f) => (
               <ScrollStaggerItem key={f.title}>
                 <TiltCard maxTilt={7} scale={1.03} className="h-full">
-                <div className="card card-hover h-full">
-                  <span
-                    className="flex h-11 w-11 items-center justify-center rounded-xl"
-                    style={{ background: "var(--primary-soft)", color: "var(--primary)" }}
-                  >
-                    <Icon name={f.icon} className="h-5 w-5" />
-                  </span>
-                  <h3 className="font-display mt-4 text-base font-bold">{f.title}</h3>
-                  <p className="mt-1.5 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>{f.body}</p>
-                </div>
+                  <div className="card card-hover h-full">
+                    <span
+                      className="flex h-11 w-11 items-center justify-center rounded-xl"
+                      style={{ background: "var(--primary-soft)", color: "var(--primary)" }}
+                    >
+                      <Icon name={f.icon} className="h-5 w-5" />
+                    </span>
+                    <h3 className="font-display mt-4 text-base font-bold">{f.title}</h3>
+                    <p className="mt-1.5 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>{f.body}</p>
+                  </div>
                 </TiltCard>
               </ScrollStaggerItem>
             ))}
@@ -371,103 +504,13 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ====== FEATURED PROFESSIONALS ====== */}
-      <section style={{ background: "var(--line-light)" }}>
-        <div className="container-page py-16">
-          <motion.div {...fadeUp()} className="mb-8 flex items-end justify-between">
-            <div>
-              <p className="eyebrow">Featured Professionals</p>
-              <h2 className="font-display text-h2 mt-2">{location ? `Professionals near ${location.city || "you"}` : "Top-rated in your area"}</h2>
-            </div>
-            <Link href="/providers" className="hidden text-sm font-semibold sm:block" style={{ color: "var(--primary)" }}>
-              View all →
-            </Link>
-          </motion.div>
-
-          {liveProviders === null && (
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {Array.from({ length: 6 }).map((_, i) => <ProviderCardSkeleton key={i} />)}
-            </div>
-          )}
-
-          {liveProviders !== null && featured.length === 0 && (
-            <div className="card py-10 text-center text-sm" style={{ color: "var(--muted)" }}>
-              {location && liveProviders.length > 0 ? (
-                <>No professionals {radiusKm ? `within ${radiusKm} km of` : "near"} {location.city || "you"} yet. Try a wider distance from the bar at the top.</>
-              ) : (
-                <>
-                  No providers yet — be the first to{" "}
-                  <Link href="/register-helper" className="font-semibold" style={{ color: "var(--primary)" }}>register as a helper</Link>.
-                </>
-              )}
-            </div>
-          )}
-
-          <ScrollStagger className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {featured.map((provider) => {
-              const cat = categories.find((c) => c.id === provider.categoryId);
-              const catColor = colorForCategory(provider.categoryId);
-              return (
-                <ScrollStaggerItem key={provider.id}>
-                  <TiltCard maxTilt={6} className="h-full">
-                  <Link
-                    href={`/providers/${provider.id}`}
-                    className="card card-hover flex gap-4 h-full"
-                  >
-                    <Avatar
-                      initials={`${provider.firstName[0]}${provider.lastName[0]}`}
-                      imageUrl={provider.photo}
-                      color={catColor.color}
-                      soft={catColor.soft}
-                      className="h-16 w-16 shrink-0 text-lg"
-                    />
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2">
-                        <p className="truncate text-sm font-semibold">{provider.firstName} {provider.lastName[0]}.</p>
-                        {provider.verified && (
-                          <Icon name="check-circle" className="h-4 w-4 shrink-0" style={{ color: "var(--success)" }} />
-                        )}
-                      </div>
-                      <p className="text-xs font-medium" style={{ color: "var(--primary)" }}>{cat?.name}</p>
-                      <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs" style={{ color: "var(--muted)" }}>
-                        {typeof provider.rating === "number" && (
-                          <span className="flex items-center gap-1">
-                            <Icon name="star" className="h-3 w-3" style={{ color: "var(--accent)" }} />
-                            {provider.rating.toFixed(1)}
-                          </span>
-                        )}
-                        <span>{provider.experienceYears} yrs exp</span>
-                        <span className="flex items-center gap-1">
-                          <Icon name="map-pin" className="h-3 w-3" />
-                          {provider.area}
-                        </span>
-                      </div>
-                      <div className="mt-2.5 flex items-center justify-between">
-                        <span className="pill pill-locked">
-                          <Icon name="lock" className="h-3 w-3" /> Contact Protected
-                        </span>
-                      </div>
-                    </div>
-                  </Link>
-                  </TiltCard>
-                </ScrollStaggerItem>
-              );
-            })}
-          </ScrollStagger>
-
-          <div className="mt-6 text-center sm:hidden">
-            <Link href="/providers" className="text-sm font-semibold" style={{ color: "var(--primary)" }}>
-              View all professionals →
-            </Link>
-          </div>
-        </div>
-      </section>
-
       {/* ====== TESTIMONIALS ====== */}
-      <section className="overflow-hidden py-16">
+      <section className="overflow-hidden py-16" style={{ background: "var(--surface-muted)" }}>
         <motion.div {...fadeUp()} className="container-page text-center">
           <p className="eyebrow">Testimonials</p>
-          <h2 className="font-display text-h2 mt-3">What our users say</h2>
+          <h2 className="font-display text-h1 mt-3">
+            What our <Underlined>users</Underlined> say
+          </h2>
         </motion.div>
 
         <div className="mt-10">
@@ -476,10 +519,12 @@ export default function HomePage() {
       </section>
 
       {/* ====== FAQ ====== */}
-      <section className="container-page pb-16 lg:pb-20">
+      <section className="container-page py-16 lg:py-24">
         <motion.div {...fadeUp()} className="mb-8 text-center">
           <p className="eyebrow">FAQ</p>
-          <h2 className="font-display text-h2 mt-3">Questions, answered</h2>
+          <h2 className="font-display text-h1 mt-3">
+            Questions, <Underlined>answered</Underlined>
+          </h2>
         </motion.div>
         <FaqList items={FAQS.slice(0, HOME_FAQ_COUNT)} />
         <p className="mt-6 text-center text-sm" style={{ color: "var(--muted)" }}>

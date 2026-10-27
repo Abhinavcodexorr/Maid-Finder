@@ -6,6 +6,7 @@ import { Footer } from "@/components/layout/footer";
 import { MobileNav } from "@/components/layout/mobile-nav";
 import { AuthProvider } from "@/context/AuthContext";
 import { LocationProvider } from "@/context/LocationContext";
+import { AnnouncementBar } from "@/components/layout/announcement-bar";
 import { LocationBar } from "@/components/layout/location-bar";
 import { Toaster } from "@/components/ui/toaster";
 
@@ -44,6 +45,7 @@ export default function RootLayout({
         <ScrollProgressBar />
         <AuthProvider>
           <LocationProvider>
+            <AnnouncementBar />
             <Navbar />
             <LocationBar />
             <main className="min-h-[70vh]">{children}</main>

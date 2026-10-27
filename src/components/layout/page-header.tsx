@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { Icon } from "@/components/ui/icon";
+import { Underlined } from "@/components/ui/underlined";
 
 interface PageHeaderProps {
   title: string;
@@ -26,17 +26,14 @@ export function PageHeader({ title, accent, subtitle, eyebrow, children }: PageH
       />
       <div className="container-page relative py-12 text-center sm:py-16">
         {eyebrow && (
-          <p className="eyebrow inline-flex items-center gap-1.5">
-            <Icon name="sparkles" className="h-3.5 w-3.5" />
-            {eyebrow}
-          </p>
+          <p className="eyebrow">{eyebrow}</p>
         )}
         <h1 className="font-display text-h1 sm:text-display mt-3">
           {title}
           {accent && (
             <>
               {" "}
-              <span className="text-gradient-animated">{accent}</span>
+              <Underlined>{accent}</Underlined>
             </>
           )}
         </h1>

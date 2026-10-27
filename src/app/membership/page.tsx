@@ -3,28 +3,13 @@
 import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { motion } from "framer-motion";
 import { useAuth } from "@/context/AuthContext";
 import { fetchLivePlans } from "@/lib/services";
 import { Icon } from "@/components/ui/icon";
-import { TiltCard } from "@/components/ui/tilt-card";
+import { PageHeader } from "@/components/layout/page-header";
+import { PlanCards } from "@/components/sections/plan-cards";
 import { ScrollReveal, ScrollStagger, ScrollStaggerItem } from "@/components/ui/scroll-reveal";
 import type { Plan } from "@/types/marketplace";
-
-const fadeUp = (delay = 0) => ({
-  initial: { opacity: 0, y: 20 },
-  animate: { opacity: 1, y: 0 },
-  transition: { duration: 0.5, delay, ease: [0.22, 1, 0.36, 1] as const },
-});
-
-const INCLUDED = [
-  "Unlimited provider contact access",
-  "View phone numbers & pricing",
-  "WhatsApp integration",
-  "Save unlimited professionals",
-  "Priority customer support",
-  "Access across all categories",
-];
 
 function MembershipContent() {
   const router = useRouter();
@@ -53,18 +38,12 @@ function MembershipContent() {
 
   return (
     <>
-      {/* Header */}
-      <section className="border-b" style={{ borderColor: "var(--line)", background: "var(--gradient-hero)" }}>
-        <div className="container-page py-12 text-center">
-          <motion.p {...fadeUp()} className="eyebrow">Membership Plans</motion.p>
-          <motion.h1 {...fadeUp(0.06)} className="font-display text-display mt-3">
-            Unlock Every Provider
-          </motion.h1>
-          <motion.p {...fadeUp(0.12)} className="mx-auto mt-4 max-w-lg text-lg" style={{ color: "var(--muted)" }}>
-            One plan unlocks contact details for every professional — no per-listing charges, no hidden fees.
-          </motion.p>
-        </div>
-      </section>
+      <PageHeader
+        eyebrow="Membership Plans"
+        title="Simple, one-time"
+        accent="pricing"
+        subtitle="One plan unlocks contact details for every professional — no per-listing charges, no hidden fees."
+      />
 
       {/* Already subscribed banner */}
       {isSubscribed && (
@@ -91,68 +70,7 @@ function MembershipContent() {
             No membership plans are available right now. Please check back shortly.
           </div>
         ) : (
-        <ScrollStagger className="mx-auto grid max-w-4xl gap-6 lg:grid-cols-3">
-          {plans.map((plan) => {
-            const isPopular = plan.isPopular;
-            return (
-              <ScrollStaggerItem key={plan.id}>
-                <TiltCard maxTilt={6} scale={1.02} className="h-full">
-                <div
-                  className={`card relative flex flex-col overflow-hidden h-full ${isPopular ? "glow-pulse" : ""}`}
-                  style={isPopular ? {
-                    border: "2px solid var(--primary)",
-                  } : undefined}
-                >
-                  {isPopular && (
-                    <span
-                      className="absolute right-3 top-3 rounded-full px-3 py-1 text-xs font-bold text-white shadow-sm"
-                      style={{ background: "var(--gradient-primary)" }}
-                    >
-                      Most Popular
-                    </span>
-                  )}
-                  <div className="mb-4">
-                    <h3 className="font-display text-h3">{plan.name}</h3>
-                    <p className="mt-1 min-h-[2rem] text-xs" style={{ color: "var(--muted)" }}>{plan.description}</p>
-                  </div>
-
-                  <div className="mb-4">
-                    <span className="font-display text-3xl font-bold" style={{ color: "var(--ink)" }}>
-                      ₹{plan.price.toLocaleString("en-IN")}
-                    </span>
-                    <span className="text-sm" style={{ color: "var(--muted)" }}>
-                      {" "}/ {plan.durationDays} days
-                    </span>
-                    {plan.originalPrice && (
-                      <span className="ml-2 text-sm line-through" style={{ color: "var(--faint)" }}>
-                        ₹{plan.originalPrice.toLocaleString("en-IN")}
-                      </span>
-                    )}
-                  </div>
-
-                  <ul className="mb-6 flex-1 space-y-2.5">
-                    {INCLUDED.map((item) => (
-                      <li key={item} className="flex items-start gap-2 text-sm">
-                        <Icon name="check" className="mt-0.5 h-4 w-4 shrink-0" style={{ color: "var(--success)" }} />
-                        {item}
-                      </li>
-                    ))}
-                  </ul>
-
-                  <button
-                    type="button"
-                    onClick={() => onSelect(plan.id)}
-                    disabled={isSubscribed}
-                    className={isPopular ? "btn btn-primary btn-lg w-full" : "btn btn-outline btn-lg w-full"}
-                  >
-                    {isSubscribed ? "Already Active" : "Choose Plan"}
-                  </button>
-                </div>
-              </TiltCard>
-              </ScrollStaggerItem>
-            );
-          })}
-        </ScrollStagger>
+        <PlanCards plans={plans} onSelect={onSelect} disabled={isSubscribed} />
         )}
       </section>
 
