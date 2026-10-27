@@ -15,6 +15,7 @@ import {
 import type { CatalogService } from "@/lib/services";
 import { Icon } from "@/components/ui/icon";
 import { Logo } from "@/components/ui/logo";
+import { VideoRecorder } from "@/components/ui/video-recorder";
 import { toast } from "@/components/ui/toaster";
 
 /* ================================================================
@@ -22,6 +23,8 @@ import { toast } from "@/components/ui/toaster";
    ================================================================ */
 const OTP_LENGTH = 6;
 const OTP_RESEND_SECONDS = 60;
+/** Longest video KYC recording, in seconds — short enough to upload through the site's request-size limit. */
+const VIDEO_MAX_SECONDS = 60;
 const MOBILE_PATTERN = /^[6-9][0-9]{9}$/;
 
 type Phase = "mobile" | "otp" | "steps";
@@ -631,7 +634,7 @@ export default function RegisterHelperPage() {
                 <div className="mt-8 grid grid-cols-2 gap-3 rounded-2xl p-5 text-center text-sm" style={{ background: "var(--primary-soft)", color: "var(--ink-light)" }}>
                   <div className="flex flex-col items-center gap-2">
                     <Icon name="clock" className="h-6 w-6" />
-                    Takes 2 to 5 minutes
+                    Record up to 1 minute
                   </div>
                   <div className="flex flex-col items-center gap-2">
                     <Icon name="shield" className="h-6 w-6" />
@@ -651,17 +654,7 @@ export default function RegisterHelperPage() {
                     </>
                   ) : (
                     <>
-                      <label htmlFor="videoKyc" className="btn btn-primary btn-lg w-full cursor-pointer">
-                        Start Video KYC
-                        <input
-                          id="videoKyc"
-                          type="file"
-                          accept="video/*"
-                          capture="user"
-                          className="hidden"
-                          onChange={(e) => setVideoFile(e.target.files?.[0] ?? null)}
-                        />
-                      </label>
+                      <VideoRecorder maxSeconds={VIDEO_MAX_SECONDS} disabled={busy} onRecorded={setVideoFile} />
                       <button type="button" onClick={() => setSubmitted(true)} className="text-sm font-semibold" style={{ color: "var(--muted)" }}>
                         Skip for now
                       </button>
