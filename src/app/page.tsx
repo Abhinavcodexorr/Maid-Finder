@@ -12,7 +12,6 @@ import { ProviderCardSkeleton } from "@/components/ui/shimmer";
 import { TESTIMONIALS } from "@/data/testimonials";
 import { FAQS } from "@/data/faqs";
 import { Avatar } from "@/components/ui/avatar";
-import { LiveJoinFeed } from "@/components/sections/live-join-feed";
 import { useTypewriter } from "@/lib/use-typewriter";
 import { FaqList } from "@/components/sections/faq-list";
 import { TestimonialsCarousel } from "@/components/sections/testimonials-carousel";
@@ -47,8 +46,6 @@ const HELPER_PERKS = [
 
 const HOME_SERVICE_COUNT = 8;
 const HERO_CHIP_COUNT = 5;
-
-const POPULAR_CITIES = ["Mumbai", "Delhi", "Bengaluru", "Hyderabad", "Pune", "Chennai", "Kolkata", "Ahmedabad", "Surat", "Jaipur"];
 
 const HOME_FAQ_COUNT = 5;
 
@@ -91,19 +88,6 @@ export default function HomePage() {
 
   const featured = liveProviders ? getFeaturedProvidersFrom(liveProviders, 6) : [];
 
-  const serviceName = (key: string) => catalog?.find((svc) => svc.key === key)?.name ?? getCategories().find((c) => c.id === key)?.name ?? "Professional";
-  const newestJoins = [...(liveProviders ?? [])]
-    .sort((a, b) => new Date(b.joinedDate).getTime() - new Date(a.joinedDate).getTime())
-    .slice(0, 8)
-    .map((p) => ({
-      id: p.id,
-      name: `${p.firstName} ${p.lastName[0] ?? ""}.`.trim(),
-      service: serviceName(p.categoryId),
-      place: p.city || p.area,
-      joinedAt: p.joinedDate,
-      photo: p.photo,
-    }));
-
   const typedService = useTypewriter((catalog ?? []).map((svc) => svc.name));
   const categories = getCategories();
 
@@ -144,18 +128,6 @@ export default function HomePage() {
             >
               Verified maids, cooks, nannies and more — browse free, then connect directly with 0% commission.
             </motion.p>
-
-            {liveProviders !== null && liveProviders.length > 0 && (
-              <motion.div {...heroAnim(0.2)} className="mt-5 flex justify-center xl:justify-start">
-                <span className="inline-flex items-center gap-2 rounded-full border bg-white/80 px-3.5 py-1.5 text-xs font-semibold backdrop-blur" style={{ borderColor: "var(--line)", color: "var(--ink-light)" }}>
-                  <span className="relative flex h-2 w-2">
-                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full opacity-70" style={{ background: "var(--success)" }} />
-                    <span className="relative inline-flex h-2 w-2 rounded-full" style={{ background: "var(--success)" }} />
-                  </span>
-                  <span><CountUp value={String(liveProviders.length)} /> verified {liveProviders.length === 1 ? "professional" : "professionals"} on Help Zone right now</span>
-                </span>
-              </motion.div>
-            )}
 
             {/* Search Box */}
             <motion.div
@@ -270,8 +242,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      <LiveJoinFeed items={newestJoins} />
-
       {/* ====== POPULAR SERVICES ====== */}
       <section className="container-page py-16">
         <motion.div {...fadeUp()} className="mb-8 flex items-end justify-between gap-4">
@@ -327,23 +297,6 @@ export default function HomePage() {
             );
           })}
         </ScrollStagger>
-
-        <motion.div {...fadeUp()} className="mt-8 flex flex-wrap items-center gap-2">
-          <span className="mr-1 flex items-center gap-1.5 text-sm font-semibold" style={{ color: "var(--ink-light)" }}>
-            <Icon name="map-pin" className="h-4 w-4" style={{ color: "var(--primary)" }} />
-            Popular cities:
-          </span>
-          {POPULAR_CITIES.map((city) => (
-            <Link
-              key={city}
-              href={`/providers?area=${encodeURIComponent(city)}`}
-              className="rounded-full border bg-white px-3.5 py-1.5 text-xs font-semibold transition-colors hover:border-[var(--primary)] hover:text-[var(--primary)]"
-              style={{ borderColor: "var(--line)", color: "var(--ink-light)" }}
-            >
-              {city}
-            </Link>
-          ))}
-        </motion.div>
       </section>
 
       {/* ====== HOW IT WORKS ====== */}
