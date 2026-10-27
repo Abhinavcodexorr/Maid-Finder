@@ -19,7 +19,6 @@ import { colorForCategory, colorForIndex } from "@/lib/category-colors";
 import { TiltCard } from "@/components/ui/tilt-card";
 import { ParallaxStage } from "@/components/ui/parallax-stage";
 import { CountUp } from "@/components/ui/count-up";
-import { FloatingShapes } from "@/components/ui/floating-shapes";
 import type { Provider } from "@/types/marketplace";
 
 /* ================================================================
@@ -518,7 +517,6 @@ export default function HomePage() {
               aria-hidden
               className="pointer-events-none absolute -right-20 -top-20 h-72 w-72 rounded-full bg-white/10 blur-2xl"
             />
-            <FloatingShapes tone="light" />
             <div className="relative grid items-center gap-8 lg:grid-cols-[1fr_1fr] lg:gap-12">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-widest text-white/70">For helpers</p>

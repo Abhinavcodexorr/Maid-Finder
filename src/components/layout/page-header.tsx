@@ -1,6 +1,5 @@
 import type { ReactNode } from "react";
 import { Icon } from "@/components/ui/icon";
-import { FloatingShapes } from "@/components/ui/floating-shapes";
 
 interface PageHeaderProps {
   title: string;
@@ -25,7 +24,6 @@ export function PageHeader({ title, accent, subtitle, eyebrow, children }: PageH
         className="pointer-events-none absolute -bottom-28 -left-20 h-64 w-64 rounded-full opacity-50 blur-3xl"
         style={{ background: "radial-gradient(circle, rgba(14,165,233,0.22), transparent 70%)" }}
       />
-      <FloatingShapes />
       <div className="container-page relative py-12 text-center sm:py-16">
         {eyebrow && (
           <p className="eyebrow inline-flex items-center gap-1.5">
