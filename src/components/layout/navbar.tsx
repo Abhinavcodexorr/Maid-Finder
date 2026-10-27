@@ -7,6 +7,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useAuth } from "@/context/AuthContext";
 import { Icon } from "@/components/ui/icon";
 import { Logo } from "@/components/ui/logo";
+import { ServicesMenu } from "@/components/layout/services-menu";
 
 const NAV_LINKS = [
   { label: "Services", href: "/services" },
@@ -80,6 +81,7 @@ export function Navbar() {
           <div className="hidden items-center gap-1 md:flex">
             {navLinks.map((item) => {
               const active = pathname === item.href || pathname.startsWith(item.href + "/");
+              if (item.href === "/services") return <ServicesMenu key={item.href} active={active} />;
               return (
                 <Link
                   key={item.href}
