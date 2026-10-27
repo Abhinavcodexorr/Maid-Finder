@@ -17,6 +17,7 @@ import { Icon } from "@/components/ui/icon";
 import { Logo } from "@/components/ui/logo";
 import { VideoRecorder } from "@/components/ui/video-recorder";
 import { toast } from "@/components/ui/toaster";
+import type { ProviderApplicationProvider } from "@/lib/services";
 
 /* ================================================================
    CONSTANTS
@@ -41,6 +42,20 @@ const detailsSchema = z.object({
 });
 
 type DetailsValues = z.infer<typeof detailsSchema>;
+
+/**
+ * Where a returning helper should pick up: the first screen whose part of the
+ * profile is still missing, or null when everything has been submitted.
+ * A rejected application goes back to the start so it can be corrected.
+ */
+function nextStepFor(provider: ProviderApplicationProvider): Step | null {
+  if (provider.applicationStatus === "rejected") return 1;
+  const detailsDone = Boolean((provider.firstName || provider.fullName) && provider.categoryIds?.length && provider.city && provider.state);
+  if (!detailsDone) return 1;
+  if (!provider.aadhaarFrontUrl || !provider.aadhaarBackUrl) return 2;
+  if (!provider.introVideoUrl) return 3;
+  return null;
+}
 
 function formatCountdown(seconds: number) {
   const mm = String(Math.floor(seconds / 60)).padStart(2, "0");
@@ -171,6 +186,8 @@ export default function RegisterHelperPage() {
   const [phase, setPhase] = useState<Phase>("mobile");
   const [step, setStep] = useState<Step>(1);
   const [submitted, setSubmitted] = useState(false);
+  /** Set when a returning helper has already completed every screen. */
+  const [alreadyRegistered, setAlreadyRegistered] = useState<ProviderApplicationProvider["applicationStatus"] | null>(null);
   const [busy, setBusy] = useState(false);
   const [token, setToken] = useState("");
 
@@ -292,7 +309,13 @@ export default function RegisterHelperPage() {
       if (provider.city) setValue("city", provider.city);
       if (provider.area) setValue("area", provider.area);
       if (provider.pincode) setValue("pincode", provider.pincode);
-      setPhase("steps");
+      const resumeAt = nextStepFor(provider);
+      if (resumeAt === null) {
+        setAlreadyRegistered(provider.applicationStatus);
+      } else {
+        setStep(resumeAt);
+        setPhase("steps");
+      }
     } catch (err) {
       setOtpError(errorMessage(err));
     } finally {
@@ -381,6 +404,32 @@ export default function RegisterHelperPage() {
   };
 
   const goBack = () => setStep((s) => (s > 1 ? ((s - 1) as Step) : s));
+
+  /* ---------- Already registered ---------- */
+  if (alreadyRegistered) {
+    const approved = alreadyRegistered === "approved";
+    return (
+      <section className="mx-auto max-w-md px-4 py-16 text-center sm:px-6">
+        <div className="card">
+          <span
+            className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl"
+            style={{ background: approved ? "var(--success-soft)" : "var(--primary-soft)", color: approved ? "var(--success)" : "var(--primary)" }}
+          >
+            <Icon name={approved ? "check-circle" : "clock"} className="h-8 w-8" />
+          </span>
+          <h1 className="font-display text-h2">You&apos;re already registered</h1>
+          <p className="mx-auto mt-2 max-w-sm text-sm" style={{ color: "var(--muted)" }}>
+            {approved
+              ? "Your profile is approved and visible to families. Nothing more to do here."
+              : "Your profile is complete and under review. We'll let you know as soon as you're approved."}
+          </p>
+          <Link href="/" className="btn btn-primary btn-lg mt-6">
+            Back to Home
+          </Link>
+        </div>
+      </section>
+    );
+  }
 
   /* ---------- Success ---------- */
   if (submitted) {

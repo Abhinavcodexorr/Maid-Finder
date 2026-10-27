@@ -24,6 +24,10 @@ export interface ProviderApplicationProvider {
   pincode?: string;
   mobileNumber?: string;
   imageUrl?: string;
+  aadhaarFrontUrl?: string;
+  aadhaarBackUrl?: string;
+  panCardUrl?: string;
+  introVideoUrl?: string;
   applicationStatus: "pending" | "approved" | "rejected";
 }
 
