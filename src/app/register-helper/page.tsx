@@ -33,8 +33,6 @@ type Step = 1 | 2 | 3;
 const detailsSchema = z.object({
   firstName: z.string().trim().min(1, "Enter your first name"),
   lastName: z.string().trim().min(1, "Enter your last name"),
-  gender: z.enum(["Male", "Female"], { error: "Select your gender" }),
-  nationality: z.string().trim().min(1, "Enter your nationality"),
   categoryId: z.string().min(1, "Select the work you do"),
   state: z.string().min(1, "Select your state"),
   city: z.string().min(1, "Select your city"),
@@ -209,7 +207,7 @@ export default function RegisterHelperPage() {
     formState: { errors },
   } = useForm<DetailsValues>({
     resolver: zodResolver(detailsSchema),
-    defaultValues: { firstName: "", lastName: "", nationality: "Indian", categoryId: "", state: "", city: "", area: "", pincode: "" },
+    defaultValues: { firstName: "", lastName: "", categoryId: "", state: "", city: "", area: "", pincode: "" },
   });
   const selectedState = watch("state");
 
@@ -289,8 +287,6 @@ export default function RegisterHelperPage() {
       const savedLast = provider.lastName || fallbackRest.join(" ");
       if (savedFirst) setValue("firstName", savedFirst);
       if (savedLast) setValue("lastName", savedLast);
-      if (provider.gender === "Male" || provider.gender === "Female") setValue("gender", provider.gender);
-      if (provider.nationality) setValue("nationality", provider.nationality);
       if (provider.categoryIds?.[0]) setValue("categoryId", provider.categoryIds[0]);
       if (provider.state) setValue("state", provider.state);
       if (provider.city) setValue("city", provider.city);
@@ -332,8 +328,6 @@ export default function RegisterHelperPage() {
         token,
         firstName: values.firstName,
         lastName: values.lastName,
-        gender: values.gender,
-        nationality: values.nationality,
         categoryIds: [values.categoryId],
         state: values.state,
         city: values.city,
@@ -504,20 +498,6 @@ export default function RegisterHelperPage() {
                     <label className="mb-1.5 block text-sm font-semibold" htmlFor="lastName">Last name <span style={{ color: "var(--error)" }}>*</span></label>
                     <input id="lastName" className={`field ${errors.lastName ? "field-error" : ""}`} {...register("lastName")} />
                     <FieldError message={errors.lastName?.message} />
-                  </div>
-                  <div>
-                    <label className="mb-1.5 block text-sm font-semibold" htmlFor="gender">Gender <span style={{ color: "var(--error)" }}>*</span></label>
-                    <select id="gender" className={`field ${errors.gender ? "field-error" : ""}`} {...register("gender")}>
-                      <option value="">Select</option>
-                      <option value="Female">Female</option>
-                      <option value="Male">Male</option>
-                    </select>
-                    <FieldError message={errors.gender?.message} />
-                  </div>
-                  <div>
-                    <label className="mb-1.5 block text-sm font-semibold" htmlFor="nationality">Nationality <span style={{ color: "var(--error)" }}>*</span></label>
-                    <input id="nationality" className={`field ${errors.nationality ? "field-error" : ""}`} {...register("nationality")} />
-                    <FieldError message={errors.nationality?.message} />
                   </div>
                   <div>
                     <label className="mb-1.5 block text-sm font-semibold" htmlFor="categoryId">What work do you do? <span style={{ color: "var(--error)" }}>*</span></label>

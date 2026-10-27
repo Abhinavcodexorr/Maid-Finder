@@ -17,8 +17,6 @@ export interface ProviderApplicationProvider {
   fullName?: string;
   firstName?: string;
   lastName?: string;
-  gender?: string;
-  nationality?: string;
   categoryIds?: string[];
   area?: string;
   city?: string;
@@ -131,8 +129,6 @@ export interface CompleteProfileInput {
   token: string;
   firstName?: string;
   lastName?: string;
-  gender?: "Male" | "Female";
-  nationality?: string;
   area?: string;
   city?: string;
   state?: string;
@@ -159,8 +155,6 @@ export async function completeProviderProfile(input: CompleteProfileInput): Prom
   const generalInfo = {
     ...(input.firstName && { firstName: input.firstName }),
     ...(input.lastName && { lastName: input.lastName }),
-    ...(input.gender && { gender: input.gender }),
-    ...(input.nationality && { nationality: input.nationality }),
     ...(input.area && { area: input.area }),
     ...(input.city && { city: input.city }),
     ...(input.state && { state: input.state }),
