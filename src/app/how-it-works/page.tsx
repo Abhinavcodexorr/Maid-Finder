@@ -64,7 +64,7 @@ export default function HowItWorksPage() {
 
         <div className="grid gap-8 md:grid-cols-3">
           {/* Step 1 */}
-          <div className="card relative flex flex-col items-center text-center p-8 bg-white transition-all hover:shadow-md">
+          <div className="card card-hover relative flex flex-col items-center text-center p-8 bg-white">
             <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[var(--primary-soft)] text-[var(--primary)] mb-6 shadow-sm">
               <Icon name="search" className="h-7 w-7" />
             </div>
@@ -80,7 +80,7 @@ export default function HowItWorksPage() {
           </div>
 
           {/* Step 2 */}
-          <div className="card relative flex flex-col items-center text-center p-8 bg-white transition-all hover:shadow-md">
+          <div className="card card-hover relative flex flex-col items-center text-center p-8 bg-white">
             <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[var(--accent-soft)] text-[var(--accent)] mb-6 shadow-sm">
               <Icon name="unlock" className="h-7 w-7" />
             </div>
@@ -96,7 +96,7 @@ export default function HowItWorksPage() {
           </div>
 
           {/* Step 3 */}
-          <div className="card relative flex flex-col items-center text-center p-8 bg-white transition-all hover:shadow-md">
+          <div className="card card-hover relative flex flex-col items-center text-center p-8 bg-white">
             <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[var(--success-soft)] text-[var(--success)] mb-6 shadow-sm">
               <Icon name="check-circle" className="h-7 w-7" />
             </div>

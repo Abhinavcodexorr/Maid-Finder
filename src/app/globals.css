@@ -298,9 +298,13 @@ h1, h2, h3, h4, .font-display {
   padding: 24px;
   transition: all var(--duration) var(--ease);
 }
+.card-hover {
+  transform-style: preserve-3d;
+}
 .card-hover:hover {
-  box-shadow: var(--shadow-md);
-  transform: translateY(-2px);
+  box-shadow: 0 18px 36px -14px rgba(37, 99, 235, 0.28), var(--shadow-md);
+  transform: perspective(900px) translateY(-5px) rotateX(2.5deg);
+  border-color: color-mix(in srgb, var(--primary) 35%, var(--line));
 }
 
 /* ================================================================
@@ -538,4 +542,79 @@ h1, h2, h3, h4, .font-display {
 input[type="checkbox"],
 input[type="radio"] {
   accent-color: var(--primary);
+}
+
+
+/* ================================================================
+   3D SHAPES (see components/ui/floating-shapes.tsx)
+   ================================================================ */
+.shape-stage { perspective: 600px; }
+.shapes-brand { --shape-edge: rgba(37, 99, 235, 0.45); --shape-fill: rgba(37, 99, 235, 0.07); }
+.shapes-light { --shape-edge: rgba(255, 255, 255, 0.55); --shape-fill: rgba(255, 255, 255, 0.1); }
+
+@keyframes cubeSpin {
+  from { transform: rotateX(-24deg) rotateY(0deg); }
+  to { transform: rotateX(-24deg) rotateY(360deg); }
+}
+.cube { --size: 64px; position: relative; width: var(--size); height: var(--size); transform-style: preserve-3d; animation: cubeSpin 22s linear infinite; }
+.cube span { position: absolute; inset: 0; border: 1.5px solid var(--shape-edge); background: var(--shape-fill); }
+.cube span:nth-child(1) { transform: translateZ(32px); }
+.cube span:nth-child(2) { transform: rotateY(180deg) translateZ(32px); }
+.cube span:nth-child(3) { transform: rotateY(90deg) translateZ(32px); }
+.cube span:nth-child(4) { transform: rotateY(-90deg) translateZ(32px); }
+.cube span:nth-child(5) { transform: rotateX(90deg) translateZ(32px); }
+.cube span:nth-child(6) { transform: rotateX(-90deg) translateZ(32px); }
+
+@keyframes ringSpin {
+  from { transform: rotateX(68deg) rotateZ(0deg); }
+  to { transform: rotateX(68deg) rotateZ(360deg); }
+}
+.ring3d { width: 90px; height: 90px; border-radius: 9999px; border: 4px solid var(--shape-edge); animation: ringSpin 14s linear infinite; }
+
+@keyframes orbFloat {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-16px) scale(1.06); }
+}
+.orb {
+  width: 28px; height: 28px; border-radius: 9999px;
+  background: radial-gradient(circle at 30% 30%, #ffffff, var(--shape-edge));
+  box-shadow: 0 10px 24px -6px var(--shape-edge);
+  animation: orbFloat 7s ease-in-out infinite;
+}
+
+/* ================================================================
+   MOTION UTILITIES
+   ================================================================ */
+/* Moving gradient across highlighted headline words */
+@keyframes gradientShift { 0% { background-position: 0% 50%; } 100% { background-position: 200% 50%; } }
+.text-gradient-animated {
+  background: linear-gradient(90deg, var(--primary), #0ea5e9, #6366f1, var(--primary));
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: gradientShift 6s linear infinite;
+}
+
+/* Breathing halo for the featured pricing plan */
+@keyframes glowPulse {
+  0%, 100% { box-shadow: var(--shadow-lg), 0 0 0 4px var(--primary-soft); }
+  50% { box-shadow: 0 24px 48px -12px rgba(37, 99, 235, 0.4), 0 0 0 9px var(--primary-soft); }
+}
+.glow-pulse { animation: glowPulse 3.2s ease-in-out infinite; }
+
+/* Animated underline for nav links */
+.nav-underline { position: relative; }
+.nav-underline::after {
+  content: "";
+  position: absolute; left: 0; right: 0; bottom: -6px; height: 2px;
+  background: var(--primary); border-radius: 2px;
+  transform: scaleX(0); transform-origin: left; transition: transform 0.3s var(--ease);
+}
+.nav-underline:hover::after { transform: scaleX(1); }
+
+@media (prefers-reduced-motion: reduce) {
+  .cube, .ring3d, .orb, .text-gradient-animated, .glow-pulse { animation: none; }
+  .text-gradient-animated { background-position: 0 50%; }
+  .card-hover:hover { transform: none; }
 }

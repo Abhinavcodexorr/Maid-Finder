@@ -63,7 +63,7 @@ export default function AboutPage() {
         {/* Stats */}
         <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
           {STATS.map((s) => (
-            <div key={s.label} className="card py-5 text-center">
+            <div key={s.label} className="card card-hover py-5 text-center">
               <p className="font-display text-2xl font-bold sm:text-3xl" style={{ color: "var(--primary)" }}>{s.value}</p>
               <p className="mt-1 text-xs font-medium" style={{ color: "var(--muted)" }}>{s.label}</p>
             </div>
@@ -75,7 +75,7 @@ export default function AboutPage() {
           <h2 className="font-display text-xl font-bold" style={{ color: "var(--ink)" }}>How it works</h2>
           <div className="mt-4 grid gap-4 sm:grid-cols-3">
             {STEPS.map((step, i) => (
-              <div key={step.title} className="card">
+              <div key={step.title} className="card card-hover">
                 <span
                   className="flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold text-white"
                   style={{ background: "var(--primary)" }}
@@ -97,7 +97,7 @@ export default function AboutPage() {
           <h2 className="font-display text-xl font-bold" style={{ color: "var(--ink)" }}>What we stand for</h2>
           <div className="mt-4 grid gap-4 sm:grid-cols-2">
             {VALUES.map((v) => (
-              <div key={v.title} className="card flex gap-3.5">
+              <div key={v.title} className="card card-hover flex gap-3.5">
                 <span
                   className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl"
                   style={{ background: "var(--primary-soft)", color: "var(--primary)" }}

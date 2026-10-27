@@ -4,6 +4,7 @@ import { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
 import { getCategories, fetchLiveProviders } from "@/lib/services";
 import { Icon } from "@/components/ui/icon";
+import { TiltCard } from "@/components/ui/tilt-card";
 import { PageHeader } from "@/components/layout/page-header";
 import { ScrollReveal, ScrollStagger, ScrollStaggerItem } from "@/components/ui/scroll-reveal";
 import type { Provider } from "@/types/marketplace";
@@ -177,6 +178,7 @@ export default function ServicesPage() {
 
               return (
                 <ScrollStaggerItem key={cat.id}>
+                  <TiltCard maxTilt={6} scale={1.02} className="h-full">
                   <div className="card group flex flex-col justify-between overflow-hidden p-6 bg-white transition-all hover:shadow-lg hover:border-[var(--primary)] h-full">
                   <div>
                     {/* Top Row: Emoji Icon + Count Pill */}
@@ -237,6 +239,7 @@ export default function ServicesPage() {
                     </Link>
                   </div>
                 </div>
+              </TiltCard>
               </ScrollStaggerItem>
             );
           })}

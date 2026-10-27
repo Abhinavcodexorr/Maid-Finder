@@ -7,6 +7,7 @@ import { motion } from "framer-motion";
 import { useAuth } from "@/context/AuthContext";
 import { fetchLivePlans } from "@/lib/services";
 import { Icon } from "@/components/ui/icon";
+import { TiltCard } from "@/components/ui/tilt-card";
 import { ScrollReveal, ScrollStagger, ScrollStaggerItem } from "@/components/ui/scroll-reveal";
 import type { Plan } from "@/types/marketplace";
 
@@ -95,11 +96,11 @@ function MembershipContent() {
             const isPopular = plan.isPopular;
             return (
               <ScrollStaggerItem key={plan.id}>
+                <TiltCard maxTilt={6} scale={1.02} className="h-full">
                 <div
-                  className="card relative flex flex-col overflow-hidden h-full"
+                  className={`card relative flex flex-col overflow-hidden h-full ${isPopular ? "glow-pulse" : ""}`}
                   style={isPopular ? {
                     border: "2px solid var(--primary)",
-                    boxShadow: "var(--shadow-lg), 0 0 0 4px var(--primary-soft)",
                   } : undefined}
                 >
                   {isPopular && (
@@ -147,6 +148,7 @@ function MembershipContent() {
                     {isSubscribed ? "Already Active" : "Choose Plan"}
                   </button>
                 </div>
+              </TiltCard>
               </ScrollStaggerItem>
             );
           })}
