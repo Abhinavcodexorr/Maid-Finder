@@ -9,12 +9,6 @@ import { Icon } from "@/components/ui/icon";
 import { Logo } from "@/components/ui/logo";
 import { toast } from "@/components/ui/toaster";
 
-const BENEFITS = [
-  { icon: "unlock", text: "Unlock phone numbers and WhatsApp for every profile" },
-  { icon: "heart", text: "Save professionals and shortlist them for later" },
-  { icon: "shield", text: "Hire directly — 0% commission, no agency in between" },
-];
-
 const enter = (delay = 0) => ({
   initial: { opacity: 0, y: 18 },
   animate: { opacity: 1, y: 0 },
@@ -49,74 +43,22 @@ function LoginContent() {
   };
 
   return (
-    <div className="grid min-h-[calc(100vh-64px)] lg:grid-cols-[1.05fr_0.95fr]">
-      {/* Left panel — brand, photo and benefits (desktop only) */}
-      <div className="relative hidden flex-col justify-between overflow-hidden p-12 text-white lg:flex" style={{ background: "var(--gradient-primary)" }}>
-        <div aria-hidden className="blob-drift pointer-events-none absolute -left-24 -top-24 h-96 w-96 rounded-full bg-white/10 blur-3xl" />
-        <div aria-hidden className="blob-drift pointer-events-none absolute -bottom-32 right-0 h-96 w-96 rounded-full bg-sky-300/20 blur-3xl" />
+    <div className="relative flex min-h-[calc(100vh-64px)] items-center justify-center overflow-hidden px-4 py-12" style={{ background: "var(--gradient-hero)" }}>
+      <div aria-hidden className="blob-drift pointer-events-none absolute -right-24 -top-24 h-96 w-96 rounded-full opacity-60 blur-3xl" style={{ background: "radial-gradient(circle, rgba(59,130,246,0.35), transparent 70%)" }} />
+      <div aria-hidden className="blob-drift pointer-events-none absolute -bottom-32 -left-24 h-80 w-80 rounded-full opacity-50 blur-3xl" style={{ background: "radial-gradient(circle, rgba(14,165,233,0.25), transparent 70%)" }} />
 
-        <Link href="/" className="relative z-10 inline-flex w-fit items-center rounded-full bg-white/10 px-4 py-2 backdrop-blur-md transition-colors hover:bg-white/20">
-          <Logo size={26} theme="dark" />
-        </Link>
-
-        <div className="relative z-10 grid items-center gap-10 xl:grid-cols-[1fr_0.9fr]">
-          <motion.div {...enter(0.1)}>
-            <p className="eyebrow !text-white/80">Welcome back</p>
-            <h2 className="font-display mt-4 text-4xl font-extrabold leading-[1.1]">
-              Pick up right where you left off.
-            </h2>
-            <ul className="mt-8 space-y-4">
-              {BENEFITS.map((b) => (
-                <li key={b.text} className="flex items-start gap-3 text-sm text-white/90">
-                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-white/15">
-                    <Icon name={b.icon} className="h-4 w-4" />
-                  </span>
-                  <span className="pt-1">{b.text}</span>
-                </li>
-              ))}
-            </ul>
-          </motion.div>
-
-          <motion.div {...enter(0.2)} className="relative mx-auto w-full max-w-[280px]">
-            <div className="overflow-hidden rounded-[2rem] border-4 border-white/90 shadow-2xl">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src="/images/auth-service-hero.jpg"
-                alt="A smiling home-help professional in a bright kitchen"
-                className="h-[360px] w-full object-cover object-top"
-              />
-            </div>
-            <div className="float-depth absolute -left-6 bottom-10 flex items-center gap-2.5 rounded-2xl bg-white p-3 text-[var(--ink)] shadow-xl">
-              <span className="flex h-9 w-9 items-center justify-center rounded-xl" style={{ background: "var(--success-soft)", color: "var(--success)" }}>
-                <Icon name="shield" className="h-4 w-4" />
-              </span>
-              <div>
-                <p className="text-xs font-bold">Identity verified</p>
-                <p className="text-[11px]" style={{ color: "var(--muted)" }}>Aadhaar &amp; PAN checked</p>
-              </div>
-            </div>
-          </motion.div>
-        </div>
-
-        <p className="relative z-10 text-xs text-white/60">© {new Date().getFullYear()} Help Zone</p>
-      </div>
-
-      {/* Right panel — form */}
-      <div className="flex flex-col justify-center bg-white px-6 py-14 sm:px-10 lg:px-16">
-        <div className="mx-auto w-full max-w-sm">
-          {/* Phones have no left panel, so they get the logo here */}
-          <Link href="/" className="mb-8 flex items-center justify-center lg:hidden">
-            <Logo size={30} />
+      <div className="relative w-full max-w-md">
+        <motion.div {...enter(0)} className="rounded-[2rem] border bg-white p-8 shadow-2xl sm:p-10" style={{ borderColor: "var(--line)" }}>
+          <Link href="/" className="mb-8 flex justify-center">
+            <Logo size={34} />
           </Link>
 
-          <motion.div {...enter(0)}>
-            <h1 className="font-display text-h1">Log in to your account</h1>
-            <p className="mt-2 text-sm" style={{ color: "var(--muted)" }}>
-              Enter your details to unlock contact details and pricing.
-            </p>
-          </motion.div>
+          <h1 className="font-display text-center text-h1">Welcome back</h1>
+          <p className="mt-2 text-center text-sm" style={{ color: "var(--muted)" }}>
+            Log in to unlock contact details and pricing.
+          </p>
 
-          <motion.form {...enter(0.1)} className="mt-8" onSubmit={onSubmit}>
+          <form className="mt-8" onSubmit={onSubmit}>
             <div>
               <label className="mb-1.5 block text-sm font-semibold" htmlFor="login-id">
                 Email or mobile number
@@ -165,11 +107,6 @@ function LoginContent() {
               </div>
             </div>
 
-            <label className="mt-4 flex cursor-pointer items-center gap-2 text-sm" style={{ color: "var(--ink-light)" }}>
-              <input type="checkbox" defaultChecked style={{ accentColor: "var(--primary)" }} className="h-4 w-4 rounded" />
-              Keep me logged in
-            </label>
-
             {error && (
               <div className="mt-5 flex items-start gap-2 rounded-2xl p-3.5 text-sm" style={{ background: "var(--error-soft)", color: "var(--error)" }}>
                 <Icon name="alert-circle" className="mt-0.5 h-4 w-4 shrink-0" />
@@ -177,7 +114,7 @@ function LoginContent() {
               </div>
             )}
 
-            <button type="submit" disabled={submitting} className="btn btn-primary btn-lg mt-6 w-full">
+            <button type="submit" disabled={submitting} className="btn btn-primary btn-lg mt-7 w-full">
               {submitting ? (
                 <>
                   <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
@@ -190,25 +127,31 @@ function LoginContent() {
                 </>
               )}
             </button>
-          </motion.form>
+          </form>
 
-          <motion.div {...enter(0.2)}>
-            <div className="my-7 flex items-center gap-4 text-xs font-medium" style={{ color: "var(--faint)" }}>
-              <span className="h-px flex-1" style={{ background: "var(--line)" }} />
-              NEW HERE?
-              <span className="h-px flex-1" style={{ background: "var(--line)" }} />
-            </div>
+          <p className="mt-7 text-center text-sm" style={{ color: "var(--muted)" }}>
+            New to Help Zone?{" "}
+            <Link href={`/signup?redirect=${encodeURIComponent(redirect)}`} className="font-semibold" style={{ color: "var(--primary)" }}>
+              Create an account
+            </Link>
+          </p>
+        </motion.div>
 
-            <div className="grid gap-3 sm:grid-cols-2">
-              <Link href={`/signup?redirect=${encodeURIComponent(redirect)}`} className="btn btn-outline w-full">
-                Create an account
-              </Link>
-              <Link href="/register-helper" className="btn btn-outline w-full">
-                Register as helper
-              </Link>
-            </div>
-          </motion.div>
-        </div>
+        <motion.ul {...enter(0.15)} className="mt-6 flex flex-wrap justify-center gap-x-6 gap-y-2 text-xs font-medium" style={{ color: "var(--ink-light)" }}>
+          {["100% ID verified", "0% commission", "Direct contact"].map((item) => (
+            <li key={item} className="flex items-center gap-1.5">
+              <Icon name="check-circle" className="h-4 w-4" style={{ color: "var(--success)" }} />
+              {item}
+            </li>
+          ))}
+        </motion.ul>
+
+        <p className="mt-4 text-center text-xs" style={{ color: "var(--muted)" }}>
+          Are you a helper?{" "}
+          <Link href="/register-helper" className="font-semibold" style={{ color: "var(--primary)" }}>
+            Register here
+          </Link>
+        </p>
       </div>
     </div>
   );
