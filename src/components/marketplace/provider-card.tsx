@@ -251,21 +251,24 @@ export function ProviderCard({
             </div>
           )}
 
-          <span className="absolute left-3 top-3 inline-flex items-center gap-1.5 rounded-full bg-white/95 px-3 py-1 text-[11px] font-bold shadow-sm" style={{ color: "var(--ink-light)" }}>
-            <ServiceGlyph name={cat?.name ?? ""} className="h-3.5 w-3.5" /> {cat?.name ?? "Professional"}
+          <span className="absolute bottom-3 left-3 inline-flex max-w-[calc(100%-1.5rem)] items-center gap-1.5 rounded-full bg-white/95 px-3 py-1 text-[11px] font-bold shadow-sm" style={{ color: "var(--ink-light)" }}>
+            <ServiceGlyph name={cat?.name ?? ""} className="h-3.5 w-3.5 shrink-0" />
+            <span className="truncate">{cat?.name ?? "Professional"}</span>
           </span>
-          <div className="absolute right-3 top-3 flex items-center gap-2">
-            {provider.verified && (
+          <div className="absolute inset-x-3 top-3 flex items-center justify-between gap-2">
+            {provider.verified ? (
               <span className="flex items-center gap-1 rounded-full bg-white/95 px-2.5 py-1 text-[11px] font-bold shadow-sm" style={{ color: "var(--success)" }}>
                 <Icon name="check-circle" className="h-3.5 w-3.5" />
                 Verified
               </span>
+            ) : (
+              <span />
             )}
             <button
               type="button"
               onClick={onToggleSave}
               aria-label={saved ? "Remove from saved" : "Save professional"}
-              className={`flex h-8 w-8 items-center justify-center rounded-full shadow-md transition-transform active:scale-90 ${
+              className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full shadow-md transition-transform active:scale-90 ${
                 saved ? "bg-white text-[var(--error)]" : "bg-white/95 text-[var(--muted)] hover:text-[var(--error)]"
               }`}
             >
