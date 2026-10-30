@@ -6,11 +6,11 @@ interface MarqueeService {
   name: string;
 }
 
-function Row({ services, reverse, offset }: { services: MarqueeService[]; reverse?: boolean; offset: number }) {
+function Row({ services, offset }: { services: MarqueeService[]; offset: number }) {
   // The track holds two identical halves so translating by -50% loops seamlessly.
   const half = [...services, ...services];
   return (
-    <div className={`marquee overflow-hidden ${reverse ? "marquee-reverse" : ""}`}>
+    <div className="marquee overflow-hidden">
       <div className="marquee-track flex w-max gap-3 py-1.5 pr-3">
         {[...half, ...half].map((svc, i) => {
           const isCopy = i >= services.length;
@@ -35,14 +35,13 @@ function Row({ services, reverse, offset }: { services: MarqueeService[]; revers
   );
 }
 
-/** Two rows of service pills drifting in opposite directions; every pill opens that service's search. */
+/** A single row of service pills drifting left; every pill opens that service's search. */
 export function ServiceMarquee({ services }: { services: MarqueeService[] }) {
   if (services.length === 0) return null;
-  const reversed = [...services].reverse();
   return (
     <section
       aria-label="Services"
-      className="relative space-y-3 border-b bg-[var(--surface-muted)] py-8"
+      className="relative border-b bg-[var(--surface-muted)] py-6"
       style={{
         borderColor: "var(--line)",
         maskImage: "linear-gradient(90deg, transparent, black 8%, black 92%, transparent)",
@@ -50,7 +49,6 @@ export function ServiceMarquee({ services }: { services: MarqueeService[] }) {
       }}
     >
       <Row services={services} offset={0} />
-      <Row services={reversed} reverse offset={3} />
     </section>
   );
 }
