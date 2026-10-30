@@ -21,7 +21,7 @@ export function ServicesMenu({ active }: { active: boolean }) {
   }, []);
 
   return (
-    <HoverMenu label="Services" href="/services" active={active}>
+    <HoverMenu label="Services" href="/services" active={active} width="min(760px,92vw)">
       {(close) => (
         <>
           {services === null && <p className="p-4 text-sm" style={{ color: "var(--muted)" }}>Loading services…</p>}
@@ -29,7 +29,7 @@ export function ServicesMenu({ active }: { active: boolean }) {
             <p className="p-4 text-sm" style={{ color: "var(--muted)" }}>Services are unavailable right now.</p>
           )}
 
-          <div className="grid max-h-[22rem] grid-cols-2 gap-1 overflow-y-auto">
+          <div className="grid max-h-[calc(100vh-11rem)] grid-cols-2 gap-1 overflow-y-auto lg:grid-cols-3">
             {(services ?? []).map((svc) => (
               <Link
                 key={svc.key}
