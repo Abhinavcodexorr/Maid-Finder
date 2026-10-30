@@ -93,6 +93,23 @@ function StepHeader({ step, onBack }: { step: Step; onBack: () => void }) {
   );
 }
 
+/** Example intro video; a shimmer holds its place until the first frame is ready. */
+function SampleVideo() {
+  const [ready, setReady] = useState(false);
+  return (
+    <div className={`relative aspect-[9/16] w-full max-w-[15rem] overflow-hidden rounded-2xl shadow-lg ${ready ? "bg-black" : "shimmer"}`}>
+      <video
+        src="/videos/sample-intro.mp4"
+        controls
+        playsInline
+        preload="metadata"
+        onLoadedData={() => setReady(true)}
+        className={`h-full w-full object-cover transition-opacity duration-300 ${ready ? "opacity-100" : "opacity-0"}`}
+      />
+    </div>
+  );
+}
+
 function UploadTile({
   id,
   label,
@@ -697,13 +714,7 @@ export default function RegisterProviderPage() {
                 ) : (
                   <div className="mt-6 flex flex-col items-center">
                     <p className="mb-3 text-xs font-bold uppercase tracking-[0.14em]" style={{ color: "var(--muted)" }}>Example video — watch before you record</p>
-                    <video
-                      src="/videos/sample-intro.mp4"
-                      controls
-                      playsInline
-                      preload="metadata"
-                      className="aspect-[9/16] w-full max-w-[15rem] rounded-2xl bg-black object-cover shadow-lg"
-                    />
+                    <SampleVideo />
                     <p className="mt-3 max-w-xs text-center text-xs leading-relaxed" style={{ color: "var(--muted)" }}>
                       Introduce yourself clearly: your name, the work you do and your experience.
                     </p>
