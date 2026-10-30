@@ -9,7 +9,7 @@ import { z } from "zod";
 import { useAuth } from "@/context/AuthContext";
 import { getCategories, saveLiveCustomerProfile, updateLookingFor } from "@/lib/services";
 import { Icon } from "@/components/ui/icon";
-import { Logo } from "@/components/ui/logo";
+import { AuthShell } from "@/components/layout/auth-shell";
 import { toast } from "@/components/ui/toaster";
 import type { AvailabilityType } from "@/types/marketplace";
 
@@ -155,13 +155,9 @@ function SignupContent() {
   const stepLabels = ["Account", "Services", "Location"];
 
   return (
-    <section className="mx-auto max-w-xl px-4 py-12 sm:px-6">
-      <div className="mb-6 flex items-center justify-center">
-        <Logo size={32} />
-      </div>
-
+    <AuthShell maxWidth="max-w-xl">
       {/* Step indicator */}
-      <div className="card">
+      <div>
         <div className="mb-6 flex items-center gap-2">
           {stepLabels.map((label, i) => {
             const s = i + 1;
@@ -198,31 +194,31 @@ function SignupContent() {
             <form className="mt-6 grid gap-4 sm:grid-cols-2" onSubmit={handleSubmit(onStep1)}>
               <div>
                 <label className="mb-1.5 block text-sm font-semibold" htmlFor="fn">First name</label>
-                <input id="fn" className={`field ${errors.firstName ? "field-error" : ""}`} {...register("firstName")} />
+                <input id="fn" className={`field !rounded-full !py-3 ${errors.firstName ? "field-error" : ""}`} {...register("firstName")} />
                 {errors.firstName && <p className="mt-1 text-xs" style={{ color: "var(--error)" }}>{errors.firstName.message}</p>}
               </div>
               <div>
                 <label className="mb-1.5 block text-sm font-semibold" htmlFor="ln">Last name</label>
-                <input id="ln" className={`field ${errors.lastName ? "field-error" : ""}`} {...register("lastName")} />
+                <input id="ln" className={`field !rounded-full !py-3 ${errors.lastName ? "field-error" : ""}`} {...register("lastName")} />
                 {errors.lastName && <p className="mt-1 text-xs" style={{ color: "var(--error)" }}>{errors.lastName.message}</p>}
               </div>
               <div className="sm:col-span-2">
                 <label className="mb-1.5 block text-sm font-semibold" htmlFor="email">Email address</label>
-                <input id="email" className={`field ${errors.email ? "field-error" : ""}`} type="email" {...register("email")} />
+                <input id="email" className={`field !rounded-full !py-3 ${errors.email ? "field-error" : ""}`} type="email" {...register("email")} />
                 {errors.email && <p className="mt-1 text-xs" style={{ color: "var(--error)" }}>{errors.email.message}</p>}
               </div>
               <div className="sm:col-span-2">
                 <label className="mb-1.5 block text-sm font-semibold" htmlFor="phone">Mobile number</label>
-                <div className="flex overflow-hidden rounded-xl border" style={{ borderColor: errors.phone ? "var(--error)" : "var(--line)" }}>
+                <div className="flex overflow-hidden rounded-full border" style={{ borderColor: errors.phone ? "var(--error)" : "var(--line)" }}>
                   <span className="flex items-center border-r px-3.5 text-sm font-semibold" style={{ borderColor: "var(--line)", color: "var(--muted)" }}>+91</span>
-                  <input id="phone" className="w-full px-3.5 py-2.5 text-sm outline-none" inputMode="numeric" {...register("phone")} />
+                  <input id="phone" className="w-full bg-transparent px-3.5 py-3 text-sm outline-none" inputMode="numeric" {...register("phone")} />
                 </div>
                 {errors.phone && <p className="mt-1 text-xs" style={{ color: "var(--error)" }}>{errors.phone.message}</p>}
               </div>
               <div>
                 <label className="mb-1.5 block text-sm font-semibold" htmlFor="pw">Password</label>
                 <div className="relative">
-                  <input id="pw" className={`field pr-12 ${errors.password ? "field-error" : ""}`} type={showPassword ? "text" : "password"} {...register("password")} />
+                  <input id="pw" className={`field !rounded-full !py-3 !pr-12 ${errors.password ? "field-error" : ""}`} type={showPassword ? "text" : "password"} {...register("password")} />
                   <button type="button" onClick={() => setShowPassword((s) => !s)} className="absolute right-3 top-1/2 -translate-y-1/2">
                     <Icon name={showPassword ? "eye-off" : "eye"} className="h-4 w-4" style={{ color: "var(--muted)" }} />
                   </button>
@@ -231,7 +227,7 @@ function SignupContent() {
               </div>
               <div>
                 <label className="mb-1.5 block text-sm font-semibold" htmlFor="cpw">Confirm password</label>
-                <input id="cpw" className={`field ${errors.confirmPassword ? "field-error" : ""}`} type={showPassword ? "text" : "password"} {...register("confirmPassword")} />
+                <input id="cpw" className={`field !rounded-full !py-3 ${errors.confirmPassword ? "field-error" : ""}`} type={showPassword ? "text" : "password"} {...register("confirmPassword")} />
                 {errors.confirmPassword && <p className="mt-1 text-xs" style={{ color: "var(--error)" }}>{errors.confirmPassword.message}</p>}
               </div>
               <label className="flex items-start gap-2 text-sm sm:col-span-2">
@@ -268,7 +264,7 @@ function SignupContent() {
                     key={cat.id}
                     type="button"
                     onClick={() => toggleCategory(cat.id)}
-                    className="rounded-xl border-2 p-3 text-left transition-all"
+                    className="rounded-2xl border-2 p-3.5 text-left transition-all"
                     style={{
                       borderColor: active ? "var(--primary)" : "var(--line)",
                       background: active ? "var(--primary-soft)" : "var(--surface)",
@@ -330,7 +326,7 @@ function SignupContent() {
           </>
         )}
       </div>
-    </section>
+    </AuthShell>
   );
 }
 

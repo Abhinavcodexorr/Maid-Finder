@@ -111,8 +111,8 @@ export default function ProviderProfilePage({ params }: { params: Promise<{ id: 
       </div>
 
       {/* Profile Header */}
-      <section className="border-b" style={{ borderColor: "var(--line)", background: "var(--surface)" }}>
-        <div className="container-page py-8">
+      <section className="border-b" style={{ borderColor: "var(--line)", background: "var(--gradient-hero)" }}>
+        <div className="container-page py-10">
           <div className="flex flex-col gap-6 md:flex-row md:items-start">
             {/* Photo */}
             <motion.div
@@ -120,7 +120,7 @@ export default function ProviderProfilePage({ params }: { params: Promise<{ id: 
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.5 }}
             >
-              <div className="h-32 w-32 shrink-0 overflow-hidden rounded-2xl shadow-lg md:h-40 md:w-40">
+              <div className="h-32 w-32 shrink-0 overflow-hidden rounded-3xl border-4 border-white shadow-xl md:h-40 md:w-40">
                 {provider.photo ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={provider.photo} alt={provider.firstName} className="h-full w-full object-cover" />
@@ -173,7 +173,7 @@ export default function ProviderProfilePage({ params }: { params: Promise<{ id: 
               </div>
 
               <div className="mt-4 flex flex-wrap gap-2">
-                <button type="button" onClick={onToggleSave} className="btn btn-outline btn-sm">
+                <button type="button" onClick={onToggleSave} className="btn btn-outline btn-sm !rounded-full !bg-white">
                   <Icon
                     name={saved ? "heart-filled" : "heart"}
                     className="h-4 w-4"
@@ -181,7 +181,7 @@ export default function ProviderProfilePage({ params }: { params: Promise<{ id: 
                   />
                   {saved ? "Saved" : "Save"}
                 </button>
-                <button type="button" className="btn btn-outline btn-sm">
+                <button type="button" className="btn btn-outline btn-sm !rounded-full !bg-white">
                   <Icon name="share" className="h-4 w-4" />
                   Share
                 </button>
