@@ -256,16 +256,6 @@ export default function ServicesPage() {
                       </p>
                     </div>
 
-                    {/* Pricing Benchmark */}
-                    {details.startingPrice && (
-                    <div className="mt-4 rounded-xl bg-[var(--surface-muted)] p-3 border border-[var(--line-light)]">
-                      <div className="flex items-center justify-between text-xs">
-                        <span className="font-medium text-[var(--muted)]">Market Salary / Rate:</span>
-                        <span className="font-bold text-[var(--primary)]">{details.startingPrice}</span>
-                      </div>
-                    </div>
-                    )}
-
                     {/* Popular Skills */}
                     <div className="mt-4">
                       <span className="text-[11px] font-bold uppercase tracking-wider text-[var(--muted)]">
