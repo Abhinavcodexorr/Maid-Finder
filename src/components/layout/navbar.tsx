@@ -17,6 +17,7 @@ const NAV_LINKS = [
   { label: "How It Works", href: "/how-it-works" },
   { label: "Membership", href: "/membership" },
   { label: "Resources", href: "/blog" },
+  { label: "Contact", href: "/contact" },
 ];
 
 const AUTH_NAV_LINKS = [
@@ -24,6 +25,7 @@ const AUTH_NAV_LINKS = [
   { label: "Find Professionals", href: "/providers" },
   { label: "Saved", href: "/dashboard/saved" },
   { label: "Resources", href: "/blog" },
+  { label: "Contact", href: "/contact" },
 ];
 
 const PROFILE_LINKS = [
@@ -82,7 +84,7 @@ export function Navbar() {
           </Link>
 
           {/* Desktop Nav Links */}
-          <div className="hidden items-center gap-1 lg:flex">
+          <div className="hidden items-center gap-1 xl:flex">
             {navLinks.map((item) => {
               const active = pathname === item.href || pathname.startsWith(item.href + "/");
               if (item.href === "/services") return <ServicesMenu key={item.href} active={active} />;
@@ -95,7 +97,7 @@ export function Navbar() {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className="relative whitespace-nowrap rounded-lg px-3 py-2 text-sm font-medium transition-colors"
+                  className="relative whitespace-nowrap rounded-lg px-2 py-2 text-sm font-medium transition-colors xl:px-3"
                   style={{
                     color: active ? "var(--primary)" : "var(--ink-light)",
                   }}
@@ -128,14 +130,14 @@ export function Navbar() {
                 {/* Notifications bell */}
                 <button
                   type="button"
-                  className="relative hidden rounded-lg p-2 transition-colors hover:bg-[var(--line-light)] lg:block"
+                  className="relative hidden rounded-lg p-2 transition-colors hover:bg-[var(--line-light)] xl:block"
                   aria-label="Notifications"
                 >
                   <Icon name="bell" className="h-5 w-5" style={{ color: "var(--muted)" }} />
                 </button>
 
                 {/* Profile dropdown */}
-                <div className="relative hidden lg:block" ref={menuRef}>
+                <div className="relative hidden xl:block" ref={menuRef}>
                   <button
                     type="button"
                     onClick={() => setMenuOpen((o) => !o)}
@@ -199,7 +201,7 @@ export function Navbar() {
                 </div>
               </>
             ) : (
-              <div className="hidden items-center gap-2 lg:flex">
+              <div className="hidden items-center gap-2 xl:flex">
                 <Link href="/login" className="btn btn-ghost text-sm">
                   Log in
                 </Link>
@@ -213,7 +215,7 @@ export function Navbar() {
             <button
               type="button"
               onClick={() => setMobileOpen(true)}
-              className="rounded-lg p-2 transition-colors hover:bg-[var(--line-light)] lg:hidden"
+              className="rounded-lg p-2 transition-colors hover:bg-[var(--line-light)] xl:hidden"
               aria-label="Open menu"
             >
               <Icon name="menu" className="h-5 w-5" />
@@ -229,7 +231,7 @@ export function Navbar() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[60] bg-black/40 lg:hidden"
+            className="fixed inset-0 z-[60] bg-black/40 xl:hidden"
             onClick={() => setMobileOpen(false)}
           >
             <motion.div
