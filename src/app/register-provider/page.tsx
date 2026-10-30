@@ -30,6 +30,8 @@ const MOBILE_PATTERN = /^[6-9][0-9]{9}$/;
 
 type Phase = "mobile" | "otp" | "steps";
 type Step = 1 | 2 | 3;
+/** Which secondary ID document the provider has chosen to upload. */
+type SecondaryId = "aadhaar" | "pan" | "passport" | "other";
 
 const detailsSchema = z.object({
   firstName: z.string().trim().min(1, "Enter your first name"),
@@ -52,7 +54,7 @@ function nextStepFor(provider: ProviderApplicationProvider): Step | null {
   if (provider.applicationStatus === "rejected") return 1;
   const detailsDone = Boolean((provider.firstName || provider.fullName) && provider.categoryIds?.length && provider.city && provider.state);
   if (!detailsDone) return 1;
-  if (!provider.aadhaarFrontUrl || !provider.aadhaarBackUrl) return 2;
+  if ((!provider.aadhaarFrontUrl || !provider.aadhaarBackUrl) && !provider.panCardUrl) return 2;
   if (!provider.introVideoUrl) return 3;
   return null;
 }
@@ -207,8 +209,16 @@ export default function RegisterProviderPage() {
   // Step 2: documents
   const [aadhaarFront, setAadhaarFront] = useState<File | null>(null);
   const [aadhaarBack, setAadhaarBack] = useState<File | null>(null);
-  const [panFront, setPanFront] = useState<File | null>(null);
-  const [noPan, setNoPan] = useState(false);
+
+  /**
+   * Secondary ID type chosen by the provider.
+   * "pan"       → PAN card front upload
+   * "passport"  → Passport front upload
+   * "other"     → Any other govt-issued ID (voter ID, driving licence, etc.)
+   * "none"      → Provider skips secondary ID
+   */
+  const [secondaryIdType, setSecondaryIdType] = useState<SecondaryId | null>(null);
+  const [secondaryIdFile, setSecondaryIdFile] = useState<File | null>(null);
   const [docsError, setDocsError] = useState("");
 
   // Step 3: video KYC
@@ -367,16 +377,19 @@ export default function RegisterProviderPage() {
   };
 
   const onDocuments = async () => {
-    if (!aadhaarFront || !aadhaarBack) return setDocsError("Upload both sides of your Aadhaar Card.");
-    if (!noPan && !panFront) return setDocsError("Upload your PAN Card, or tick \"I don't have a PAN Card\".");
+    if (!secondaryIdType) return setDocsError("Select which document you want to upload.");
+    if (secondaryIdType === "aadhaar" && (!aadhaarFront || !aadhaarBack)) return setDocsError("Upload both the front and back of your Aadhaar Card.");
+    if (secondaryIdType !== "aadhaar" && !secondaryIdFile) return setDocsError("Upload a clear photo of your document.");
     setDocsError("");
     setBusy(true);
     try {
       await completeProviderProfile({
         token,
-        aadhaarFront,
-        aadhaarBack,
-        panCard: noPan ? undefined : (panFront ?? undefined),
+        aadhaarFront: secondaryIdType === "aadhaar" ? (aadhaarFront ?? undefined) : undefined,
+        aadhaarBack: secondaryIdType === "aadhaar" ? (aadhaarBack ?? undefined) : undefined,
+        panCard: secondaryIdType === "pan" ? (secondaryIdFile ?? undefined) : undefined,
+        passportFront: secondaryIdType === "passport" ? (secondaryIdFile ?? undefined) : undefined,
+        otherIdProof: secondaryIdType === "other" ? (secondaryIdFile ?? undefined) : undefined,
       });
       setStep(3);
     } catch (err) {
@@ -612,22 +625,54 @@ export default function RegisterProviderPage() {
                 <h1 className="font-display text-h1">Upload your documents</h1>
                 <p className="mt-2 text-sm" style={{ color: "var(--muted)" }}>Please upload clear and valid documents.</p>
 
-                <p className="mb-3 mt-6 text-sm font-semibold">Aadhaar Card <span style={{ color: "var(--error)" }}>*</span></p>
-                <div className="grid grid-cols-2 gap-3">
-                  <UploadTile id="aadhaarFront" label="Upload Aadhaar Front" file={aadhaarFront} disabled={busy} onChange={setAadhaarFront} />
-                  <UploadTile id="aadhaarBack" label="Upload Aadhaar Back" file={aadhaarBack} disabled={busy} onChange={setAadhaarBack} />
+                {/* 1. Pick the document, 2. its upload opens */}
+                <p className="mb-3 mt-6 text-sm font-semibold">
+                  Which document do you want to upload? <span style={{ color: "var(--error)" }}>*</span>
+                </p>
+                <div className="mb-5 flex flex-wrap gap-2">
+                  {(
+                    [
+                      { value: "aadhaar", label: "Aadhaar Card" },
+                      { value: "pan", label: "PAN Card" },
+                      { value: "passport", label: "Passport" },
+                      { value: "other", label: "Other ID" },
+                    ] as { value: SecondaryId; label: string }[]
+                  ).map((opt) => (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      disabled={busy}
+                      onClick={() => { setSecondaryIdType(opt.value); setSecondaryIdFile(null); setDocsError(""); }}
+                      className="rounded-full border px-4 py-1.5 text-sm font-semibold transition-colors"
+                      style={
+                        secondaryIdType === opt.value
+                          ? { background: "var(--primary)", color: "white", borderColor: "var(--primary)" }
+                          : { background: "var(--surface)", color: "var(--ink)", borderColor: "var(--line)" }
+                      }
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
                 </div>
 
-                <hr className="my-6" style={{ borderColor: "var(--line)" }} />
+                {/* Aadhaar needs both sides */}
+                {secondaryIdType === "aadhaar" && (
+                  <div className="grid grid-cols-2 gap-3">
+                    <UploadTile id="aadhaarFront" label="Upload Aadhaar Front" file={aadhaarFront} disabled={busy} onChange={setAadhaarFront} />
+                    <UploadTile id="aadhaarBack" label="Upload Aadhaar Back" file={aadhaarBack} disabled={busy} onChange={setAadhaarBack} />
+                  </div>
+                )}
 
-                <p className="mb-3 text-sm font-semibold">PAN Card <span style={{ color: "var(--error)" }}>*</span></p>
-                <div className="grid grid-cols-2 gap-3">
-                  <UploadTile id="panFront" label="Upload PAN Front" file={noPan ? null : panFront} disabled={busy || noPan} onChange={setPanFront} />
-                </div>
-                <label className="mt-4 flex items-center gap-2.5 text-sm">
-                  <input type="checkbox" checked={noPan} onChange={(e) => setNoPan(e.target.checked)} />
-                  I don&apos;t have a PAN Card
-                </label>
+                {/* Every other document is a single image */}
+                {secondaryIdType && secondaryIdType !== "aadhaar" && (
+                  <UploadTile
+                    id="secondaryIdFile"
+                    label={secondaryIdType === "pan" ? "Upload PAN Card" : secondaryIdType === "passport" ? "Upload Passport" : "Upload ID Proof"}
+                    file={secondaryIdFile}
+                    disabled={busy}
+                    onChange={setSecondaryIdFile}
+                  />
+                )}
 
                 <FieldError message={docsError} />
 

@@ -149,6 +149,10 @@ export interface CompleteProfileInput {
   aadhaarFront?: File;
   aadhaarBack?: File;
   panCard?: File;
+  /** Passport front (alternative secondary ID). Sent as `passportFront` to the backend. */
+  passportFront?: File;
+  /** Other government-issued ID (driving licence, voter ID, etc.). Sent as `otherIdProof`. */
+  otherIdProof?: File;
   /** Public URL from uploadMedia() for the intro / video KYC recording. */
   introVideoUrl?: string;
 }
@@ -172,7 +176,13 @@ export async function completeProviderProfile(input: CompleteProfileInput): Prom
   if (Object.keys(generalInfo).length) formData.append("generalInfo", JSON.stringify(generalInfo));
   if (input.categoryIds?.length) formData.append("workPreferences", JSON.stringify({ categoryIds: input.categoryIds }));
 
-  const documents = { aadhaarFront: input.aadhaarFront, aadhaarBack: input.aadhaarBack, panCard: input.panCard };
+  const documents = {
+    aadhaarFront: input.aadhaarFront,
+    aadhaarBack: input.aadhaarBack,
+    panCard: input.panCard,
+    passportFront: input.passportFront,
+    otherIdProof: input.otherIdProof,
+  };
   for (const [field, file] of Object.entries(documents)) {
     if (file) formData.append(field, await shrinkImage(file));
   }
