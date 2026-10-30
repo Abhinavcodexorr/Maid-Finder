@@ -19,8 +19,7 @@ import { FaqList } from "@/components/sections/faq-list";
 import { PlanCards } from "@/components/sections/plan-cards";
 import { TestimonialsCarousel } from "@/components/sections/testimonials-carousel";
 import { ScrollReveal, ScrollStagger, ScrollStaggerItem } from "@/components/ui/scroll-reveal";
-import { ServiceGlyph, pickShowcaseServices, serviceImage } from "@/components/ui/service-glyph";
-import { TiltCard } from "@/components/ui/tilt-card";
+import { ServiceGlyph, pickShowcaseServices, serviceGradient, serviceImage } from "@/components/ui/service-glyph";
 import { CountUp } from "@/components/ui/count-up";
 import { Underlined } from "@/components/ui/underlined";
 import { ProfileShowcase } from "@/components/sections/profile-showcase";
@@ -390,37 +389,56 @@ export default function HomePage() {
 
       {/* ====== WHY HELP ZONE ====== */}
       <section className="container-page py-16 lg:py-24">
-        <div className="grid items-center gap-10 lg:grid-cols-[0.85fr_1.15fr] lg:gap-14">
-          <motion.div {...fadeUp()}>
-            <p className="eyebrow">Why Help Zone</p>
-            <h2 className="font-display text-h1 mt-3">
-              Built for <Underlined>trust</Underlined> and transparency
-            </h2>
-            <p className="mt-4 text-base leading-relaxed" style={{ color: "var(--muted)" }}>
-              Hiring someone for your home should feel safe. We check every professional, show you everything up front and
-              stay out of the way when you connect.
-            </p>
-            <Link href="/how-it-works" className="btn btn-outline btn-lg mt-6">
-              See how it works
-              <Icon name="arrow-right" className="h-4 w-4" />
-            </Link>
+        <motion.div {...fadeUp()} className="mx-auto max-w-2xl text-center">
+          <p className="eyebrow justify-center">Why Help Zone</p>
+          <h2 className="font-display text-h1 mt-3">
+            Built for <span style={{ color: "var(--primary)" }}>trust</span> and transparency
+          </h2>
+          <p className="mt-4 text-base leading-relaxed" style={{ color: "var(--muted)" }}>
+            Hiring someone for your home should feel safe. We check every professional, show you everything up front and
+            stay out of the way when you connect.
+          </p>
+        </motion.div>
+
+        <div className="mt-12 grid items-stretch gap-6 lg:grid-cols-[0.8fr_1.2fr]">
+          {/* Photo panel */}
+          <motion.div {...fadeUp(0.05)} className="relative min-h-[360px] overflow-hidden rounded-[2rem] shadow-xl">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/images/services/elderly.jpg" alt="A caregiver smiling with an elderly woman" className="absolute inset-0 h-full w-full object-cover object-[28%_center]" />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#0d1530]/90 via-[#0d1530]/20 to-transparent" />
+            <div className="absolute inset-x-5 bottom-5 text-white">
+              <p className="font-display text-2xl font-extrabold leading-snug">Every professional is checked before going live.</p>
+              <ul className="mt-4 flex flex-wrap gap-2">
+                {["Aadhaar", "PAN", "Intro video"].map((chip) => (
+                  <li key={chip} className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1.5 text-xs font-semibold backdrop-blur">
+                    <Icon name="check" className="h-3 w-3 text-emerald-300" /> {chip}
+                  </li>
+                ))}
+              </ul>
+              <Link href="/how-it-works#verification" className="mt-5 inline-flex items-center gap-2 text-sm font-bold">
+                See how we verify <Icon name="arrow-right" className="h-4 w-4" />
+              </Link>
+            </div>
           </motion.div>
 
+          {/* Feature cards */}
           <ScrollStagger className="grid gap-4 sm:grid-cols-2">
-            {FEATURES.map((f) => (
+            {FEATURES.map((f, i) => (
               <ScrollStaggerItem key={f.title}>
-                <TiltCard maxTilt={7} scale={1.03} className="h-full">
-                  <div className="card card-hover h-full">
-                    <span
-                      className="flex h-11 w-11 items-center justify-center rounded-xl"
-                      style={{ background: "var(--primary-soft)", color: "var(--primary)" }}
-                    >
-                      <Icon name={f.icon} className="h-5 w-5" />
-                    </span>
-                    <h3 className="font-display mt-4 text-base font-bold">{f.title}</h3>
-                    <p className="mt-1.5 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>{f.body}</p>
-                  </div>
-                </TiltCard>
+                <div className="group relative flex h-full flex-col overflow-hidden rounded-[1.75rem] border bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl" style={{ borderColor: "var(--line)" }}>
+                  <span aria-hidden className="font-display absolute -right-2 -top-4 text-8xl font-extrabold opacity-[0.05] transition-opacity group-hover:opacity-10">
+                    0{i + 1}
+                  </span>
+                  <span
+                    className="flex h-14 w-14 items-center justify-center rounded-2xl text-white shadow-lg transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-3"
+                    style={{ background: serviceGradient([0, 2, 1, 3][i]) }}
+                  >
+                    <Icon name={f.icon} className="h-6 w-6" />
+                  </span>
+                  <h3 className="font-display mt-5 text-lg font-extrabold">{f.title}</h3>
+                  <p className="mt-2 flex-1 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>{f.body}</p>
+                  <span aria-hidden className="mt-5 block h-1 w-10 rounded-full transition-all duration-300 group-hover:w-20" style={{ background: serviceGradient([0, 2, 1, 3][i]) }} />
+                </div>
               </ScrollStaggerItem>
             ))}
           </ScrollStagger>
