@@ -190,19 +190,31 @@ export default function HomePage() {
           </div>
 
           {/* Hero artwork: blue arch with family, verified seal and stat cards */}
-          <motion.div {...heroAnim(0.2)} className="relative mx-auto w-full max-w-sm lg:max-w-[34rem]">
+          <motion.div {...heroAnim(0.2)} className="relative mx-auto w-full max-w-md lg:max-w-[34rem]">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src="/images/helpzone-hero-arch.webp"
+              src="/images/helpzone-hero-family.webp"
               alt="A caregiver with a happy family, with a verified background-checked seal"
               className="block h-auto w-full"
               style={{
-                WebkitMaskImage: "linear-gradient(to right, transparent, #000 4%, #000 96%, transparent), linear-gradient(to bottom, transparent, #000 4%, #000 96%, transparent)",
+                WebkitMaskImage: "linear-gradient(to right, transparent, #000 4%, #000 96%, transparent), linear-gradient(to bottom, transparent, #000 7%, #000 93%, transparent)",
                 WebkitMaskComposite: "source-in",
-                maskImage: "linear-gradient(to right, transparent, #000 4%, #000 96%, transparent), linear-gradient(to bottom, transparent, #000 4%, #000 96%, transparent)",
+                maskImage: "linear-gradient(to right, transparent, #000 4%, #000 96%, transparent), linear-gradient(to bottom, transparent, #000 7%, #000 93%, transparent)",
                 maskComposite: "intersect",
               }}
             />
+            {/* Live seal drawn over the artwork's seal so its lettering is crisp and spelled correctly */}
+            <svg viewBox="0 0 120 120" className="absolute aspect-square w-[18.6%] drop-shadow-md" style={{ left: "73.5%", top: "10.2%" }} aria-hidden>
+              <defs>
+                <path id="seal-circle" d="M60,60 m-44,0 a44,44 0 1,1 88,0 a44,44 0 1,1 -88,0" />
+              </defs>
+              <circle cx="60" cy="60" r="60" fill="#fff" />
+              <circle cx="60" cy="60" r="21" fill="none" stroke="var(--primary)" strokeWidth="2.6" />
+              <text fontSize="9.2" fontWeight="800" letterSpacing="2.1" fill="var(--primary)">
+                <textPath href="#seal-circle">VERIFIED · BACKGROUND · CHECKED ·</textPath>
+              </text>
+              <path d="M50 61l7.5 7.5 14-16" fill="none" stroke="var(--primary)" strokeWidth="4.5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
           </motion.div>
         </div>
       </section>
