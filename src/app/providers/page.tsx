@@ -16,7 +16,7 @@ import { useLocation } from "@/context/LocationContext";
 import { ProviderCard } from "@/components/marketplace/provider-card";
 import { applyLocation } from "@/lib/geo";
 import { fetchCatalogServices } from "@/lib/services/provider-applications";
-import { ServiceGlyph, serviceGradient } from "@/components/ui/service-glyph";
+import { ServiceGlyph } from "@/components/ui/service-glyph";
 import { Icon } from "@/components/ui/icon";
 import { ProviderCardSkeleton } from "@/components/ui/shimmer";
 import { ScrollStagger, ScrollStaggerItem } from "@/components/ui/scroll-reveal";
@@ -484,7 +484,7 @@ const [categories, setCategories] = useState(() => getCategories());
   return (
     <div className="min-h-screen bg-[var(--surface-muted)] pb-16">
       {/* Hero Header with Search Bar */}
-      <section className="relative overflow-hidden border-b pb-6 pt-10 sm:pt-14" style={{ borderColor: "var(--line)", background: "var(--gradient-hero)" }}>
+      <section className="relative overflow-hidden border-b pb-10 pt-10 sm:pt-14" style={{ borderColor: "var(--line)", background: "var(--gradient-hero)" }}>
         <div aria-hidden className="pointer-events-none absolute -right-24 -top-24 h-80 w-80 rounded-full opacity-60 blur-3xl" style={{ background: "radial-gradient(circle, rgba(59,130,246,0.30), transparent 70%)" }} />
         <div className="container-page relative space-y-8">
           <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
@@ -523,46 +523,6 @@ const [categories, setCategories] = useState(() => getCategories());
                 Search
               </button>
             </form>
-          </div>
-
-          {/* Quick Category Tabs Bar */}
-          <div className="no-scrollbar -mx-4 flex gap-2.5 overflow-x-auto px-4 pb-1 sm:mx-0 sm:px-0">
-            <button
-              type="button"
-              onClick={() => updateParams({ category: null })}
-              className={`inline-flex shrink-0 items-center gap-2 rounded-full py-2 pl-2 pr-5 text-sm font-bold transition-all ${
-                categoryIds.length === 0
-                  ? "text-white shadow-lg"
-                  : "border bg-white text-[var(--ink-secondary)] hover:-translate-y-0.5 hover:shadow-md"
-              }`}
-              style={categoryIds.length === 0 ? { background: "var(--gradient-primary)" } : { borderColor: "var(--line)" }}
-            >
-              <span className={`flex h-8 w-8 items-center justify-center rounded-full ${categoryIds.length === 0 ? "bg-white/25" : "bg-[var(--primary-soft)] text-[var(--primary)]"}`}>
-                <Icon name="grid" className="h-4 w-4" />
-              </span>
-              All ({(liveProviders ?? []).length})
-            </button>
-            {categories.map((c, i) => {
-              const active = categoryIds.includes(c.id) || categoryIds.includes(c.slug);
-              return (
-                <button
-                  key={c.id}
-                  type="button"
-                  onClick={() => updateParams({ category: active ? null : c.id })}
-                  className={`inline-flex shrink-0 items-center gap-2 rounded-full py-2 pl-2 pr-5 text-sm font-bold transition-all ${
-                    active
-                      ? "text-white shadow-lg"
-                      : "border bg-white text-[var(--ink-secondary)] hover:-translate-y-0.5 hover:shadow-md"
-                  }`}
-                  style={active ? { background: "var(--gradient-primary)" } : { borderColor: "var(--line)" }}
-                >
-                  <span className="flex h-8 w-8 items-center justify-center rounded-full text-white" style={{ background: active ? "rgba(255,255,255,0.25)" : serviceGradient(i) }}>
-                    <ServiceGlyph name={c.name} className="h-4 w-4" />
-                  </span>
-                  {c.name}
-                </button>
-              );
-            })}
           </div>
         </div>
       </section>
