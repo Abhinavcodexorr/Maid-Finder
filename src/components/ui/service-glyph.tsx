@@ -62,16 +62,22 @@ export function servicePhoto(name: string): string | null {
   return PHOTOS.find(([pattern]) => pattern.test(name))?.[1] ?? null;
 }
 
+/** The photo uploaded in the admin panel wins; otherwise a bundled photo for common services. */
+export function serviceImage(svc: { name: string; imageUrl?: string }): string | null {
+  return svc.imageUrl || servicePhoto(svc.name);
+}
+
 /**
- * Picks services for a tile grid so each photo appears once: services with
- * their own photo first, then the rest (shown as icon cards).
+ * Picks services for a tile grid: those with a photo first (the admin's own
+ * upload counts, and bundled photos are not repeated), then the rest, which
+ * show as icon cards.
  */
-export function pickShowcaseServices<T extends { name: string }>(services: T[], count: number): T[] {
+export function pickShowcaseServices<T extends { name: string; imageUrl?: string }>(services: T[], count: number): T[] {
   const seen = new Set<string>();
   const withPhoto: T[] = [];
   const rest: T[] = [];
   for (const svc of services) {
-    const photo = servicePhoto(svc.name);
+    const photo = serviceImage(svc);
     if (photo && !seen.has(photo)) {
       seen.add(photo);
       withPhoto.push(svc);

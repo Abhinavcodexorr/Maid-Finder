@@ -19,7 +19,7 @@ import { FaqList } from "@/components/sections/faq-list";
 import { PlanCards } from "@/components/sections/plan-cards";
 import { TestimonialsCarousel } from "@/components/sections/testimonials-carousel";
 import { ScrollReveal, ScrollStagger, ScrollStaggerItem } from "@/components/ui/scroll-reveal";
-import { ServiceGlyph, pickShowcaseServices, servicePhoto } from "@/components/ui/service-glyph";
+import { ServiceGlyph, pickShowcaseServices, serviceImage } from "@/components/ui/service-glyph";
 import { TiltCard } from "@/components/ui/tilt-card";
 import { CountUp } from "@/components/ui/count-up";
 import { Underlined } from "@/components/ui/underlined";
@@ -272,7 +272,7 @@ export default function HomePage() {
 
         <ScrollStagger className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
           {pickShowcaseServices(catalog ?? [], HOME_SERVICE_COUNT).map((svc) => {
-            const photo = servicePhoto(svc.name);
+            const photo = serviceImage(svc);
             return (
               <ScrollStaggerItem key={svc.key}>
                 <Link
