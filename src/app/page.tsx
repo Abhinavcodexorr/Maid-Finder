@@ -8,6 +8,7 @@ import { Icon } from "@/components/ui/icon";
 import {
   fetchCatalogServices,
   fetchLivePlans,
+  fetchLiveProviders,
 } from "@/lib/services";
 import type { CatalogService } from "@/lib/services";
 import { TESTIMONIALS } from "@/data/testimonials";
@@ -22,7 +23,8 @@ import { ServiceGlyph, pickShowcaseServices, servicePhoto } from "@/components/u
 import { TiltCard } from "@/components/ui/tilt-card";
 import { CountUp } from "@/components/ui/count-up";
 import { Underlined } from "@/components/ui/underlined";
-import type { Plan } from "@/types/marketplace";
+import { ProfileShowcase } from "@/components/sections/profile-showcase";
+import type { Plan, Provider } from "@/types/marketplace";
 
 /* ================================================================
    CONSTANTS
@@ -74,12 +76,16 @@ export default function HomePage() {
 
   const [catalog, setCatalog] = useState<CatalogService[] | null>(null);
   const [plans, setPlans] = useState<Plan[] | null>(null);
+  const [liveProviders, setLiveProviders] = useState<Provider[]>([]);
 
   useEffect(() => {
     let cancelled = false;
     fetchCatalogServices()
       .then((list) => { if (!cancelled) setCatalog(list); })
       .catch(() => { if (!cancelled) setCatalog([]); });
+    fetchLiveProviders()
+      .then((list) => { if (!cancelled) setLiveProviders(list); })
+      .catch(() => {});
     fetchLivePlans()
       .then((list) => { if (!cancelled) setPlans(list); })
       .catch(() => { if (!cancelled) setPlans([]); });
@@ -302,6 +308,9 @@ export default function HomePage() {
           })}
         </ScrollStagger>
       </section>
+
+      {/* ====== VERIFIED PROFILES ====== */}
+      <ProfileShowcase providers={liveProviders} />
 
       {/* ====== STATS BAND ====== */}
       <section className="text-white" style={{ background: "var(--gradient-dark)" }}>
