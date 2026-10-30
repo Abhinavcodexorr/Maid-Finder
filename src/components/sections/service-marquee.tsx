@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { ServiceGlyph, serviceGradient } from "@/components/ui/service-glyph";
 
 interface MarqueeService {
@@ -15,19 +14,17 @@ function Row({ services, offset }: { services: MarqueeService[]; offset: number 
         {[...half, ...half].map((svc, i) => {
           const isCopy = i >= services.length;
           return (
-            <Link
+            <div
               key={i}
-              href={`/providers?category=${svc.key}`}
               aria-hidden={isCopy || undefined}
-              tabIndex={isCopy ? -1 : undefined}
-              className="group flex shrink-0 items-center gap-3 rounded-full border bg-white py-2 pl-2 pr-6 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg"
+              className="flex shrink-0 select-none items-center gap-3 rounded-full border bg-white py-2 pl-2 pr-6 shadow-sm"
               style={{ borderColor: "var(--line)" }}
             >
-              <span className="flex h-11 w-11 items-center justify-center rounded-full text-white transition-transform duration-300 group-hover:scale-110" style={{ background: serviceGradient((i % services.length) + offset) }}>
+              <span className="flex h-11 w-11 items-center justify-center rounded-full text-white" style={{ background: serviceGradient((i % services.length) + offset) }}>
                 <ServiceGlyph name={svc.name} className="h-5 w-5" />
               </span>
               <span className="font-display text-lg font-extrabold">{svc.name}</span>
-            </Link>
+            </div>
           );
         })}
       </div>
@@ -35,7 +32,7 @@ function Row({ services, offset }: { services: MarqueeService[]; offset: number 
   );
 }
 
-/** A single row of service pills drifting left; every pill opens that service's search. */
+/** A single row of service pills drifting left; decorative, not clickable. */
 export function ServiceMarquee({ services }: { services: MarqueeService[] }) {
   if (services.length === 0) return null;
   return (
