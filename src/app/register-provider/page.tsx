@@ -695,13 +695,18 @@ export default function RegisterProviderPage() {
                 {videoPreview ? (
                   <video src={videoPreview} controls playsInline className="mt-6 aspect-video w-full rounded-2xl bg-black object-cover" />
                 ) : (
-                  <div className="mt-8 flex justify-center">
-                    <div className="relative flex h-48 w-48 items-center justify-center rounded-full" style={{ background: "var(--primary-soft)" }}>
-                      <Icon name="user" className="h-24 w-24" style={{ color: "var(--primary)" }} />
-                      <span className="absolute bottom-3 right-1 flex h-14 w-14 items-center justify-center rounded-full border-4 border-white text-white" style={{ background: "var(--error)" }}>
-                        <Icon name="video" className="h-6 w-6" />
-                      </span>
-                    </div>
+                  <div className="mt-6 flex flex-col items-center">
+                    <p className="mb-3 text-xs font-bold uppercase tracking-[0.14em]" style={{ color: "var(--muted)" }}>Example video — watch before you record</p>
+                    <video
+                      src="/videos/sample-intro.mp4"
+                      controls
+                      playsInline
+                      preload="metadata"
+                      className="aspect-[9/16] w-full max-w-[15rem] rounded-2xl bg-black object-cover shadow-lg"
+                    />
+                    <p className="mt-3 max-w-xs text-center text-xs leading-relaxed" style={{ color: "var(--muted)" }}>
+                      Introduce yourself clearly: your name, the work you do and your experience.
+                    </p>
                   </div>
                 )}
 
