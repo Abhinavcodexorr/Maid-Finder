@@ -197,7 +197,7 @@ export function Navbar() {
                   Log in
                 </Link>
                 <Link href="/signup" className="btn btn-primary">
-                  Get Started
+                  Register for free
                 </Link>
               </div>
             )}
@@ -294,7 +294,7 @@ export function Navbar() {
                   </button>
                 ) : (
                   <div className="grid gap-2">
-                    <Link href="/signup" className="btn btn-primary w-full">Get Started</Link>
+                    <Link href="/signup" className="btn btn-primary w-full">Register for free</Link>
                     <Link href="/login" className="btn btn-outline w-full">Log in</Link>
                   </div>
                 )}
