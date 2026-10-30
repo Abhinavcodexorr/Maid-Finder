@@ -31,7 +31,7 @@ function SideCard({ image, side }: { image: string; side: "left" | "right" }) {
   return (
     <div
       aria-hidden
-      className={`absolute top-1/2 hidden h-[440px] w-52 -translate-y-1/2 overflow-hidden rounded-[2rem] opacity-90 blur-[3px] sm:block ${side === "left" ? "left-0 -rotate-3" : "right-0 rotate-3"}`}
+      className={`absolute top-1/2 hidden h-[540px] w-56 -translate-y-1/2 overflow-hidden rounded-[2rem] opacity-90 blur-[3px] sm:block ${side === "left" ? "left-0 -rotate-3" : "right-0 rotate-3"}`}
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img src={image} alt="" className="h-full w-full object-cover" />
@@ -141,7 +141,7 @@ export function ProfileShowcase({ providers }: { providers: Provider[] }) {
                   transition={{ duration: 0.35 }}
                   className="px-3 pb-4"
                 >
-                  <div className="relative h-64 overflow-hidden rounded-2xl" style={{ background: "var(--gradient-primary)" }}>
+                  <div className="relative h-[22rem] overflow-hidden rounded-2xl" style={{ background: "var(--gradient-primary)" }}>
                     {current.photo ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img src={current.photo} alt={`${current.firstName} ${current.lastName}`} className="h-full w-full object-cover" />
@@ -163,7 +163,7 @@ export function ProfileShowcase({ providers }: { providers: Provider[] }) {
                     )}
                   </div>
 
-                  <div className="px-2 pt-4">
+                  <div className="px-2 pt-5">
                     <p className="font-display text-xl font-extrabold">
                       {current.firstName} {current.lastName ? `${current.lastName[0]}.` : ""}
                     </p>
@@ -175,7 +175,7 @@ export function ProfileShowcase({ providers }: { providers: Provider[] }) {
                       <Icon name="map-pin" className="h-4 w-4" style={{ color: "var(--primary)" }} />
                       {[current.area, current.city].filter(Boolean).join(", ") || "India"}
                     </p>
-                    <div className="mt-3 flex items-center justify-between">
+                    <div className="mt-4 flex items-center justify-between">
                       <span className="rounded-xl px-3 py-2 text-xs font-bold" style={{ background: "var(--primary-soft)", color: "var(--primary-dark)" }}>
                         0% commission
                       </span>
@@ -183,7 +183,7 @@ export function ProfileShowcase({ providers }: { providers: Provider[] }) {
                         <span className="h-2 w-2 rounded-full" style={{ background: "var(--success)" }} /> Ready now
                       </span>
                     </div>
-                    <Link href={`/providers/${current.id}`} className="btn btn-primary mt-4 w-full !rounded-full">
+                    <Link href={`/providers/${current.id}`} className="btn btn-primary mt-5 w-full !rounded-full">
                       View profile
                     </Link>
                   </div>
