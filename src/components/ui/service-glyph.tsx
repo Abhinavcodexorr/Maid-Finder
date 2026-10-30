@@ -46,3 +46,38 @@ export function serviceGradient(index: number): string {
   const [from, to] = SERVICE_GRADIENTS[index % SERVICE_GRADIENTS.length];
   return `linear-gradient(135deg, ${from}, ${to})`;
 }
+
+// Real photos exist for a handful of services; the rest fall back to an icon card.
+const PHOTOS: Array<[RegExp, string]> = [
+  [/cook|chef/i, "/images/services/cooking.jpg"],
+  [/nanny|baby|child/i, "/images/services/nanny.jpg"],
+  [/elder|nurs|patient/i, "/images/services/elderly.jpg"],
+  [/driver/i, "/images/services/driver.jpg"],
+  [/electric/i, "/images/services/electrician.jpg"],
+  [/garden/i, "/images/services/gardener.jpg"],
+  [/clean|maid|wash|laundry|cloth|sofa|bath/i, "/images/services/cleaning.jpg"],
+];
+
+export function servicePhoto(name: string): string | null {
+  return PHOTOS.find(([pattern]) => pattern.test(name))?.[1] ?? null;
+}
+
+/**
+ * Picks services for a tile grid so each photo appears once: services with
+ * their own photo first, then the rest (shown as icon cards).
+ */
+export function pickShowcaseServices<T extends { name: string }>(services: T[], count: number): T[] {
+  const seen = new Set<string>();
+  const withPhoto: T[] = [];
+  const rest: T[] = [];
+  for (const svc of services) {
+    const photo = servicePhoto(svc.name);
+    if (photo && !seen.has(photo)) {
+      seen.add(photo);
+      withPhoto.push(svc);
+    } else {
+      rest.push(svc);
+    }
+  }
+  return [...withPhoto, ...rest].slice(0, count);
+}

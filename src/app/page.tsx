@@ -18,7 +18,7 @@ import { FaqList } from "@/components/sections/faq-list";
 import { PlanCards } from "@/components/sections/plan-cards";
 import { TestimonialsCarousel } from "@/components/sections/testimonials-carousel";
 import { ScrollReveal, ScrollStagger, ScrollStaggerItem } from "@/components/ui/scroll-reveal";
-import { ServiceGlyph, serviceGradient } from "@/components/ui/service-glyph";
+import { ServiceGlyph, pickShowcaseServices, servicePhoto } from "@/components/ui/service-glyph";
 import { TiltCard } from "@/components/ui/tilt-card";
 import { CountUp } from "@/components/ui/count-up";
 import { Underlined } from "@/components/ui/underlined";
@@ -104,33 +104,28 @@ export default function HomePage() {
   return (
     <>
       {/* ====== HERO ====== */}
-      <section className="relative overflow-hidden text-white" style={{ background: "var(--gradient-dark)" }}>
-        <div aria-hidden className="pointer-events-none absolute inset-0 opacity-[0.18]" style={{ backgroundImage: "radial-gradient(rgba(255,255,255,0.7) 1px, transparent 1px)", backgroundSize: "28px 28px", maskImage: "radial-gradient(ellipse at 70% 40%, black, transparent 70%)", WebkitMaskImage: "radial-gradient(ellipse at 70% 40%, black, transparent 70%)" }} />
-        <div aria-hidden className="blob-drift pointer-events-none absolute -right-32 -top-32 h-[34rem] w-[34rem] rounded-full opacity-70 blur-3xl" style={{ background: "radial-gradient(circle, rgba(59,130,246,0.55), transparent 65%)" }} />
-        <div aria-hidden className="blob-drift pointer-events-none absolute -bottom-40 left-1/4 h-[28rem] w-[28rem] rounded-full opacity-50 blur-3xl" style={{ background: "radial-gradient(circle, rgba(236,72,153,0.28), transparent 65%)" }} />
-
-        <div className="container-page relative grid items-center gap-14 py-16 lg:grid-cols-[1.05fr_0.95fr] lg:py-24">
+      <section className="relative overflow-hidden" style={{ background: "var(--gradient-hero)" }}>
+        <div className="container-page relative grid items-center gap-12 py-12 lg:grid-cols-[1.05fr_0.95fr] lg:py-20">
           <div>
-            <motion.p {...heroAnim(0)} className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3.5 py-1.5 text-xs font-bold uppercase tracking-[0.14em] backdrop-blur">
-              <span className="h-2 w-2 rounded-full bg-emerald-400" /> India&apos;s trusted home-help platform
+            <motion.p {...heroAnim(0)} className="inline-flex items-center gap-2 rounded-full border bg-white px-3.5 py-1.5 text-xs font-bold uppercase tracking-[0.12em] shadow-sm" style={{ borderColor: "var(--line)", color: "var(--ink-light)" }}>
+              <span className="flex h-5 w-5 items-center justify-center rounded-full text-white" style={{ background: "var(--primary)" }}>
+                <Icon name="check" className="h-3 w-3" />
+              </span>
+              India&apos;s trusted home-help platform
             </motion.p>
             <motion.h1 {...heroAnim(0.08)} className="font-display text-display mt-5">
-              Hire verified{" "}
-              <span style={{ background: "linear-gradient(90deg, #7dd3fc, #93c5fd 45%, #c4b5fd)", WebkitBackgroundClip: "text", backgroundClip: "text", color: "transparent" }}>
-                professionals
-              </span>{" "}
-              for every job
+              Hire verified <span style={{ color: "var(--primary)" }}>professionals</span> for every job
             </motion.h1>
-            <motion.p {...heroAnim(0.16)} className="mt-5 max-w-xl text-lg leading-relaxed text-white/70">
-              Maids, cooks, nannies, drivers and more — browse free, then connect directly with 0% commission.
+            <motion.p {...heroAnim(0.16)} className="mt-5 max-w-xl text-lg leading-relaxed" style={{ color: "var(--muted)" }}>
+              Browse verified maids, cooks, nannies, drivers and more across India. No agency fees — contact professionals directly and hire today.
             </motion.p>
 
             {/* Search bar */}
-            <motion.div {...heroAnim(0.24)} className="mt-9 max-w-2xl rounded-[1.75rem] bg-white p-2.5 shadow-2xl sm:rounded-full">
+            <motion.div {...heroAnim(0.24)} className="mt-8 max-w-2xl rounded-[1.75rem] border bg-white p-2.5 shadow-xl sm:rounded-full" style={{ borderColor: "var(--line)" }}>
               <div className="flex flex-col gap-1 sm:flex-row sm:items-center">
                 <div className="flex-1 px-4 py-1.5 sm:border-r sm:border-[var(--line)]">
                   <label htmlFor="heroService" className="block text-[10px] font-bold uppercase tracking-[0.14em]" style={{ color: "var(--muted)" }}>
-                    Service
+                    Expertise
                   </label>
                   <select
                     id="heroService"
@@ -139,7 +134,7 @@ export default function HomePage() {
                     value={serviceKey}
                     onChange={(e) => setServiceKey(e.target.value)}
                   >
-                    <option value="">{typedService || "Any service"}</option>
+                    <option value="">{typedService || "Any expertise"}</option>
                     {(catalog ?? []).map((svc) => (
                       <option key={svc.key} value={svc.key}>{svc.name}</option>
                     ))}
@@ -153,7 +148,7 @@ export default function HomePage() {
                     id="heroLocation"
                     className="w-full bg-transparent text-sm font-semibold outline-none placeholder:font-medium"
                     style={{ color: "var(--ink)" }}
-                    placeholder="City or area"
+                    placeholder="Anywhere in India"
                     value={locationQuery}
                     onChange={(e) => setLocationQuery(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && onSearch()}
@@ -161,56 +156,51 @@ export default function HomePage() {
                 </div>
                 <button type="button" onClick={onSearch} className="btn btn-primary btn-lg w-full sm:w-auto">
                   <Icon name="search" className="h-4 w-4" />
-                  Find a professional
+                  Search
                 </button>
               </div>
             </motion.div>
 
-            <motion.div {...heroAnim(0.32)} className="mt-6 flex flex-wrap gap-2.5">
+            <motion.div {...heroAnim(0.32)} className="mt-5 flex flex-wrap gap-2.5">
               {[
                 { href: "/providers", label: "Search profiles" },
                 { href: "/membership", label: "Buy access package" },
                 { href: "/register-provider", label: "Register as Provider" },
               ].map((l) => (
-                <Link key={l.href} href={l.href} className="rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm font-semibold backdrop-blur transition-colors hover:bg-white/20">
+                <Link key={l.href} href={l.href} className="rounded-full border bg-white/70 px-4 py-2 text-sm font-semibold transition-colors hover:bg-white" style={{ borderColor: "var(--line)" }}>
                   {l.label}
                 </Link>
               ))}
             </motion.div>
 
-            <motion.ul {...heroAnim(0.4)} className="mt-7 flex flex-wrap gap-x-6 gap-y-2 text-sm font-medium text-white/80">
+            <motion.ul {...heroAnim(0.4)} className="mt-6 flex flex-wrap gap-x-6 gap-y-2 text-sm font-medium" style={{ color: "var(--ink-light)" }}>
               {["100% ID verified", "0% commission", "Free to browse"].map((item) => (
                 <li key={item} className="flex items-center gap-2">
-                  <Icon name="check-circle" className="h-4 w-4 text-emerald-400" />
+                  <Icon name="check-circle" className="h-4 w-4" style={{ color: "var(--success)" }} />
                   {item}
                 </li>
               ))}
             </motion.ul>
           </div>
 
-          {/* Service constellation — every tile is a real link into search */}
+          {/* Arch photo with a verified seal */}
           <motion.div {...heroAnim(0.2)} className="relative mx-auto hidden w-full max-w-md lg:block">
-            <div className="grid grid-cols-2 gap-4">
-              {(catalog ?? []).slice(0, 6).map((svc, i) => (
-                <Link
-                  key={svc.key}
-                  href={`/providers?category=${svc.key}`}
-                  className={`group relative overflow-hidden rounded-3xl p-5 text-white shadow-2xl transition-transform duration-300 hover:-translate-y-1.5 ${i % 2 === 1 ? "mt-8" : ""} ${i === 0 || i === 3 ? "h-52" : "h-44"}`}
-                  style={{ background: serviceGradient(i) }}
-                >
-                  <ServiceGlyph name={svc.name} className="absolute -bottom-5 -right-5 h-28 w-28 opacity-25 transition-transform duration-500 group-hover:scale-110 group-hover:-rotate-6" />
-                  <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/20 backdrop-blur">
-                    <ServiceGlyph name={svc.name} className="h-6 w-6" />
-                  </span>
-                  <p className="absolute bottom-5 left-5 right-5 font-display text-lg font-extrabold leading-tight">{svc.name}</p>
-                </Link>
-              ))}
-              {catalog === null &&
-                Array.from({ length: 6 }).map((_, i) => (
-                  <div key={i} className={`shimmer rounded-3xl ${i % 2 === 1 ? "mt-8" : ""} h-44`} />
-                ))}
+            <div className="relative overflow-hidden rounded-t-[14rem] rounded-b-[2rem] shadow-2xl" style={{ background: "var(--primary-dark)" }}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/images/services/elderly.jpg" alt="A smiling caregiver with an elderly woman at home" className="h-[560px] w-full object-cover object-[30%_center]" />
             </div>
-            <div className="float-depth absolute -left-10 top-1/2 flex items-center gap-3 rounded-2xl bg-white p-3.5 shadow-2xl" style={{ color: "var(--ink)" }}>
+            <svg viewBox="0 0 120 120" className="absolute -right-6 -top-4 h-28 w-28 drop-shadow-lg" aria-hidden>
+              <defs>
+                <path id="seal-circle" d="M60,60 m-44,0 a44,44 0 1,1 88,0 a44,44 0 1,1 -88,0" />
+              </defs>
+              <circle cx="60" cy="60" r="58" fill="#fff" />
+              <circle cx="60" cy="60" r="31" fill="var(--primary)" />
+              <text fontSize="9.5" fontWeight="800" letterSpacing="2.4" fill="var(--primary-dark)">
+                <textPath href="#seal-circle">VERIFIED · BACKGROUND · CHECKED ·</textPath>
+              </text>
+              <path d="M46 61l10 10 19-21" fill="none" stroke="#fff" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+            <div className="float-depth absolute -left-8 bottom-24 flex items-center gap-3 rounded-2xl bg-white p-3.5 shadow-xl" style={{ border: "1px solid var(--line)" }}>
               <span className="flex h-11 w-11 items-center justify-center rounded-xl" style={{ background: "var(--success-soft)", color: "var(--success)" }}>
                 <Icon name="shield" className="h-5 w-5" />
               </span>
@@ -219,11 +209,14 @@ export default function HomePage() {
                 <p className="text-xs" style={{ color: "var(--muted)" }}>Aadhaar &amp; PAN checked</p>
               </div>
             </div>
-            <div className="float-depth-delay absolute -right-4 -top-5 flex items-center gap-2 rounded-full bg-white px-4 py-2.5 text-sm font-bold shadow-2xl" style={{ color: "var(--ink)" }}>
-              <span className="flex h-7 w-7 items-center justify-center rounded-full text-white" style={{ background: "var(--gradient-primary)" }}>
-                <Icon name="phone" className="h-3.5 w-3.5" />
+            <div className="float-depth-delay absolute -right-4 bottom-6 flex items-center gap-3 rounded-2xl bg-white p-3.5 shadow-xl" style={{ border: "1px solid var(--line)" }}>
+              <span className="flex h-11 w-11 items-center justify-center rounded-xl" style={{ background: "var(--primary-soft)", color: "var(--primary)" }}>
+                <Icon name="phone" className="h-5 w-5" />
               </span>
-              0% commission
+              <div>
+                <p className="text-sm font-bold">Call directly</p>
+                <p className="text-xs" style={{ color: "var(--muted)" }}>0% commission</p>
+              </div>
             </div>
           </motion.div>
         </div>
@@ -272,26 +265,41 @@ export default function HomePage() {
         )}
 
         <ScrollStagger className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
-          {(catalog ?? []).slice(0, HOME_SERVICE_COUNT).map((svc, i) => (
-            <ScrollStaggerItem key={svc.key}>
-              <Link
-                href={`/providers?category=${svc.key}`}
-                className="group relative flex h-44 flex-col justify-between overflow-hidden rounded-3xl p-5 text-white shadow-lg transition-all duration-300 hover:-translate-y-1.5 hover:shadow-2xl sm:h-52"
-                style={{ background: serviceGradient(i + 3) }}
-              >
-                <ServiceGlyph name={svc.name} className="absolute -bottom-6 -right-6 h-32 w-32 opacity-20 transition-transform duration-500 group-hover:scale-110 group-hover:-rotate-6 sm:h-36 sm:w-36" />
-                <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/20 backdrop-blur">
-                  <ServiceGlyph name={svc.name} className="h-6 w-6" />
-                </span>
-                <div className="relative flex items-end justify-between gap-2">
-                  <p className="font-display text-lg font-extrabold leading-tight sm:text-xl">{svc.name}</p>
-                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/25 transition-transform group-hover:translate-x-1">
-                    <Icon name="arrow-right" className="h-4 w-4" />
-                  </span>
-                </div>
-              </Link>
-            </ScrollStaggerItem>
-          ))}
+          {pickShowcaseServices(catalog ?? [], HOME_SERVICE_COUNT).map((svc) => {
+            const photo = servicePhoto(svc.name);
+            return (
+              <ScrollStaggerItem key={svc.key}>
+                <Link
+                  href={`/providers?category=${svc.key}`}
+                  className="group relative flex h-56 flex-col justify-end overflow-hidden rounded-3xl border p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl sm:h-64"
+                  style={{ borderColor: "var(--line)", background: photo ? "#0f172a" : "var(--surface)" }}
+                >
+                  {photo ? (
+                    <>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={photo} alt="" className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/15 to-transparent" />
+                    </>
+                  ) : (
+                    <span className="absolute left-5 top-5 flex h-12 w-12 items-center justify-center rounded-2xl" style={{ background: "var(--primary-soft)", color: "var(--primary)" }}>
+                      <ServiceGlyph name={svc.name} className="h-6 w-6" />
+                    </span>
+                  )}
+                  <div className="relative flex items-end justify-between gap-2">
+                    <p className="font-display text-lg font-extrabold leading-tight sm:text-xl" style={{ color: photo ? "white" : "var(--ink)" }}>
+                      {svc.name}
+                    </p>
+                    <span
+                      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-transform group-hover:translate-x-1"
+                      style={photo ? { background: "rgba(255,255,255,0.9)", color: "var(--ink)" } : { background: "var(--primary)", color: "white" }}
+                    >
+                      <Icon name="arrow-right" className="h-4 w-4" />
+                    </span>
+                  </div>
+                </Link>
+              </ScrollStaggerItem>
+            );
+          })}
         </ScrollStagger>
       </section>
 
