@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { useAuth } from "@/context/AuthContext";
+import { ServiceGlyph } from "@/components/ui/service-glyph";
 import { getCategoryById, getCachedFavouriteIds, toggleFavouriteCached } from "@/lib/services";
 import { maskProvider } from "@/lib/services/providers";
 import { Icon } from "@/components/ui/icon";
@@ -21,17 +22,6 @@ const AVAILABILITY_LABEL: Record<Provider["availabilityType"], string> = {
   "one-time": "One-time",
 };
 
-const CATEGORY_EMOJIS: Record<string, string> = {
-  "cat-cook": "🍳",
-  "cat-maid": "🧹",
-  "cat-plumber": "🔧",
-  "cat-electrician": "⚡",
-  "cat-carpenter": "🪚",
-  "cat-driver": "🚗",
-  "cat-babysitter": "👶",
-  "cat-elderly-care": "👵",
-  "cat-painter": "🎨",
-};
 
 export function ProviderCard({
   provider,
@@ -86,8 +76,7 @@ export function ProviderCard({
     router.push(user ? `/membership?redirect=${encodeURIComponent(redir)}` : `/login?redirect=${encodeURIComponent(redir)}`);
   };
 
-  const emoji = CATEGORY_EMOJIS[provider.categoryId] ?? "🧹";
-  const fullName = `${provider.firstName} ${provider.lastName}`;
+  const fullName = `${provider.firstName} ${provider.lastName}`.trim().replace(/\b\w/g, (c) => c.toUpperCase());
   const catColor = colorForCategory(provider.categoryId);
 
   if (viewMode === "list") {
@@ -136,7 +125,7 @@ export function ProviderCard({
                     {fullName}
                   </h3>
                   <span className="inline-flex items-center gap-1 text-xs text-[var(--primary)] font-semibold">
-                    {emoji} {cat?.name}
+                    <ServiceGlyph name={cat?.name ?? ""} className="h-3.5 w-3.5" /> {cat?.name}
                   </span>
                 </div>
 
@@ -252,13 +241,18 @@ export function ProviderCard({
               className={`h-full w-full object-cover transition-all duration-500 group-hover:scale-105 ${imgLoaded ? "opacity-100" : "opacity-0"}`}
             />
           ) : (
-            <div className="flex h-full w-full items-center justify-center text-4xl font-bold text-white" style={{ background: catColor.gradient }}>
-              {provider.firstName[0]}{provider.lastName[0]}
+            <div className="relative flex h-full w-full items-center justify-center" style={{ background: catColor.gradient }}>
+              <span aria-hidden className="absolute -left-8 -top-8 h-36 w-36 rounded-full bg-white/10" />
+              <span aria-hidden className="absolute -bottom-10 -right-6 h-44 w-44 rounded-full bg-white/10" />
+              <ServiceGlyph name={cat?.name ?? ""} className="absolute bottom-3 right-3 h-20 w-20 text-white/15" />
+              <span className="relative flex h-24 w-24 items-center justify-center rounded-full border-4 border-white/70 bg-white/20 text-3xl font-extrabold text-white shadow-xl backdrop-blur">
+                {provider.firstName[0]}{provider.lastName[0]}
+              </span>
             </div>
           )}
 
-          <span className="absolute left-3 top-3 rounded-full bg-white/95 px-3 py-1 text-[11px] font-bold shadow-sm" style={{ color: "var(--ink-light)" }}>
-            {emoji} {cat?.name ?? "Professional"}
+          <span className="absolute left-3 top-3 inline-flex items-center gap-1.5 rounded-full bg-white/95 px-3 py-1 text-[11px] font-bold shadow-sm" style={{ color: "var(--ink-light)" }}>
+            <ServiceGlyph name={cat?.name ?? ""} className="h-3.5 w-3.5" /> {cat?.name ?? "Professional"}
           </span>
           <div className="absolute right-3 top-3 flex items-center gap-2">
             {provider.verified && (
@@ -281,7 +275,7 @@ export function ProviderCard({
         </div>
 
         <div className="flex flex-1 flex-col p-5">
-          <h3 className="font-display text-xl font-bold leading-tight">{fullName}</h3>
+          <h3 className="font-display text-xl font-extrabold leading-tight" style={{ color: "var(--ink)" }}>{fullName}</h3>
           <p className="mt-0.5 text-sm text-[var(--muted)]">{summary}</p>
           <p className="mt-2 flex items-center gap-1.5 text-sm text-[var(--muted)]">
             <Icon name="map-pin" className="h-3.5 w-3.5 shrink-0 text-[var(--faint)]" />

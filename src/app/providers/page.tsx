@@ -1,6 +1,7 @@
 "use client";
 
 import { Suspense, useMemo, useState, useEffect } from "react";
+import Link from "next/link";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -16,7 +17,7 @@ import { useLocation } from "@/context/LocationContext";
 import { ProviderCard } from "@/components/marketplace/provider-card";
 import { applyLocation } from "@/lib/geo";
 import { fetchCatalogServices } from "@/lib/services/provider-applications";
-import { emojiForService } from "@/lib/service-emoji";
+import { ServiceGlyph, serviceGradient } from "@/components/ui/service-glyph";
 import { Icon } from "@/components/ui/icon";
 import { ProviderCardSkeleton } from "@/components/ui/shimmer";
 import { ScrollStagger, ScrollStaggerItem } from "@/components/ui/scroll-reveal";
@@ -90,11 +91,11 @@ function FilterPanel({
   activeCount: number;
 }) {
   return (
-    <div className="space-y-6">
+    <div className="space-y-7 [&>div+div]:border-t [&>div+div]:border-[var(--line-light)] [&>div+div]:pt-6">
       {/* Service Categories */}
       <div>
         <div className="flex items-center justify-between mb-2">
-          <p className="text-xs font-bold uppercase tracking-wider text-[var(--muted)]">Service</p>
+          <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-[var(--muted)]">Service</p>
           {categoryIds.length > 0 && (
             <button
               type="button"
@@ -105,24 +106,30 @@ function FilterPanel({
             </button>
           )}
         </div>
-        <div className="space-y-1.5 max-h-56 overflow-y-auto pr-1">
+        <div className="max-h-72 space-y-0.5 overflow-y-auto pr-1">
           {categories.map((c) => {
             const checked = categoryIds.includes(c.id) || categoryIds.includes(c.slug);
-            const emoji = emojiForService(c.name);
             return (
               <label
                 key={c.id}
-                className={`flex items-center gap-2.5 rounded-lg px-2 py-1.5 text-xs transition-colors cursor-pointer ${
-                  checked ? "bg-[var(--primary-soft)] text-[var(--primary)] font-semibold" : "hover:bg-[var(--surface-muted)] text-[var(--ink)]"
+                className={`flex cursor-pointer items-center gap-3 rounded-xl px-2 py-1.5 text-sm transition-colors ${
+                  checked ? "bg-[var(--primary-soft)] font-semibold text-[var(--primary-dark)]" : "text-[var(--ink)] hover:bg-[var(--surface-muted)]"
                 }`}
               >
                 <input
                   type="checkbox"
                   checked={checked}
                   onChange={() => toggleCsv("category", c.id, categoryIds)}
-                  className="rounded accent-[var(--primary)] cursor-pointer"
+                  className="sr-only"
                 />
-                <span>{emoji} {c.name}</span>
+                <span
+                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg"
+                  style={checked ? { background: "var(--primary)", color: "white" } : { background: "var(--line-light)", color: "var(--ink-light)" }}
+                >
+                  <ServiceGlyph name={c.name} className="h-4 w-4" />
+                </span>
+                <span className="flex-1">{c.name}</span>
+                {checked && <Icon name="check" className="h-4 w-4 text-[var(--primary)]" />}
               </label>
             );
           })}
@@ -132,7 +139,7 @@ function FilterPanel({
       {/* Specific Skills if single category selected */}
       {availableSkills.length > 0 && (
         <div>
-          <p className="mb-2 text-xs font-bold uppercase tracking-wider text-[var(--muted)]">Skills & Speciality</p>
+          <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.14em] text-[var(--muted)]">Skills & Speciality</p>
           <div className="flex flex-wrap gap-1.5">
             {availableSkills.map((sk) => {
               const active = selectedSkills.includes(sk);
@@ -157,9 +164,9 @@ function FilterPanel({
 
       {/* Location / Area */}
       <div>
-        <p className="mb-2 text-xs font-bold uppercase tracking-wider text-[var(--muted)]">Location / City</p>
+        <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.14em] text-[var(--muted)]">Location / City</p>
         <select
-          className="field text-xs"
+          className="field !rounded-xl text-sm"
           value={area}
           onChange={(e) => updateParams({ area: e.target.value || null })}
         >
@@ -183,9 +190,9 @@ function FilterPanel({
 
       {/* Working Arrangement */}
       <div>
-        <p className="mb-2 text-xs font-bold uppercase tracking-wider text-[var(--muted)]">Work Schedule</p>
+        <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.14em] text-[var(--muted)]">Work Schedule</p>
         <select
-          className="field text-xs"
+          className="field !rounded-xl text-sm"
           value={availabilityType ?? ""}
           onChange={(e) => updateParams({ availability: e.target.value || null })}
         >
@@ -200,7 +207,7 @@ function FilterPanel({
 
       {/* Experience Range */}
       <div>
-        <p className="mb-2 text-xs font-bold uppercase tracking-wider text-[var(--muted)]">Experience</p>
+        <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.14em] text-[var(--muted)]">Experience</p>
         <div className="space-y-1.5">
           {EXP_OPTIONS.map((o) => (
             <label key={o.id} className="flex items-center gap-2 text-xs cursor-pointer">
@@ -228,7 +235,7 @@ function FilterPanel({
 
       {/* Gender */}
       <div>
-        <p className="mb-2 text-xs font-bold uppercase tracking-wider text-[var(--muted)]">Gender Preference</p>
+        <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.14em] text-[var(--muted)]">Gender Preference</p>
         <div className="flex gap-2">
           {(["female", "male"] as Gender[]).map((g) => {
             const active = gender === g;
@@ -266,7 +273,7 @@ function FilterPanel({
 
       {/* Languages */}
       <div>
-        <p className="mb-2 text-xs font-bold uppercase tracking-wider text-[var(--muted)]">Languages Spoken</p>
+        <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.14em] text-[var(--muted)]">Languages Spoken</p>
         <div className="flex flex-wrap gap-1.5">
           {languages.map((lang) => {
             const active = selectedLanguages.includes(lang);
@@ -478,74 +485,82 @@ const [categories, setCategories] = useState(() => getCategories());
   return (
     <div className="min-h-screen bg-[var(--surface-muted)] pb-16">
       {/* Hero Header with Search Bar */}
-      <section className="border-b py-8" style={{ borderColor: "var(--line)", background: "var(--gradient-hero)" }}>
-        <div className="container-page space-y-6">
-          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <div>
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-[var(--primary-soft)] px-3 py-0.5 text-xs font-bold text-[var(--primary)] uppercase tracking-wider">
-                <Icon name="check-circle" className="h-3.5 w-3.5" /> 100% Pre-Screened Talent
+      <section className="relative overflow-hidden border-b pb-6 pt-10 sm:pt-14" style={{ borderColor: "var(--line)", background: "var(--gradient-hero)" }}>
+        <div aria-hidden className="pointer-events-none absolute -right-24 -top-24 h-80 w-80 rounded-full opacity-60 blur-3xl" style={{ background: "radial-gradient(circle, rgba(59,130,246,0.30), transparent 70%)" }} />
+        <div className="container-page relative space-y-8">
+          <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
+            <div className="max-w-2xl">
+              <span className="inline-flex items-center gap-2 rounded-full border bg-white px-3.5 py-1.5 text-xs font-bold uppercase tracking-[0.12em] shadow-sm" style={{ borderColor: "var(--line)", color: "var(--ink-light)" }}>
+                <span className="flex h-5 w-5 items-center justify-center rounded-full text-white" style={{ background: "var(--primary)" }}>
+                  <Icon name="check" className="h-3 w-3" />
+                </span>
+                100% pre-screened talent
               </span>
-              <h1 className="font-display text-2xl font-extrabold sm:text-3xl mt-2" style={{ color: "var(--ink)" }}>
-                Find Trusted Professionals Across India
+              <h1 className="font-display text-display mt-4 !text-4xl sm:!text-5xl">
+                Find trusted <span style={{ color: "var(--primary)" }}>professionals</span> across India
               </h1>
-              <p className="mt-1 text-xs sm:text-sm" style={{ color: "var(--muted)" }}>
-                Connect directly with verified maids, cooks, nannies, drivers, and skilled professionals across all Indian cities with 0% commission.
+              <p className="mt-3 max-w-xl text-base leading-relaxed" style={{ color: "var(--muted)" }}>
+                Connect directly with verified maids, cooks, nannies, drivers and skilled professionals in your city — 0% commission.
               </p>
             </div>
 
             {/* Quick Live Search Bar */}
             <form
               onSubmit={handleSearchSubmit}
-              className="flex w-full md:w-auto md:min-w-[340px] items-center rounded-2xl border border-[var(--line)] bg-white p-1.5 shadow-md transition-all focus-within:border-[var(--primary)] focus-within:ring-2 focus-within:ring-[var(--primary-soft)]"
+              className="flex w-full items-center rounded-full border bg-white p-2 shadow-xl transition-all focus-within:ring-4 focus-within:ring-[var(--primary-soft)] lg:max-w-md"
+              style={{ borderColor: "var(--line)" }}
             >
-              <div className="flex flex-1 items-center gap-2 px-3">
-                <Icon name="search" className="h-4 w-4 text-[var(--muted)] shrink-0" />
+              <div className="flex flex-1 items-center gap-3 px-4">
+                <Icon name="search" className="h-5 w-5 shrink-0 text-[var(--muted)]" />
                 <input
                   type="text"
                   placeholder="Search maid, cook, skill..."
                   value={searchInput}
                   onChange={(e) => setSearchInput(e.target.value)}
-                  className="w-full bg-transparent text-xs sm:text-sm text-[var(--ink)] placeholder:text-[var(--muted)] border-0 outline-none focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0"
+                  className="w-full border-0 bg-transparent text-sm font-medium text-[var(--ink)] outline-none placeholder:text-[var(--muted)] focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0"
                 />
               </div>
-              <button
-                type="submit"
-                className="btn btn-primary btn-sm rounded-xl px-4 text-xs font-semibold"
-              >
+              <button type="submit" className="btn btn-primary px-6 font-bold">
                 Search
               </button>
             </form>
           </div>
 
           {/* Quick Category Tabs Bar */}
-          <div className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 pt-1 sm:mx-0 sm:px-0">
+          <div className="no-scrollbar -mx-4 flex gap-2.5 overflow-x-auto px-4 pb-1 sm:mx-0 sm:px-0">
             <button
               type="button"
               onClick={() => updateParams({ category: null })}
-              className={`inline-flex shrink-0 items-center gap-1.5 rounded-full px-4 py-2 text-xs font-semibold transition-all ${
+              className={`inline-flex shrink-0 items-center gap-2 rounded-full py-2 pl-2 pr-5 text-sm font-bold transition-all ${
                 categoryIds.length === 0
-                  ? "bg-[var(--primary)] text-white shadow-sm font-bold"
-                  : "border border-[var(--line)] bg-white text-[var(--ink-secondary)] hover:border-[var(--muted)]"
+                  ? "text-white shadow-lg"
+                  : "border bg-white text-[var(--ink-secondary)] hover:-translate-y-0.5 hover:shadow-md"
               }`}
+              style={categoryIds.length === 0 ? { background: "var(--gradient-primary)" } : { borderColor: "var(--line)" }}
             >
-              🌟 All Professionals ({(liveProviders ?? []).length})
+              <span className={`flex h-8 w-8 items-center justify-center rounded-full ${categoryIds.length === 0 ? "bg-white/25" : "bg-[var(--primary-soft)] text-[var(--primary)]"}`}>
+                <Icon name="grid" className="h-4 w-4" />
+              </span>
+              All ({(liveProviders ?? []).length})
             </button>
-            {categories.map((c) => {
+            {categories.map((c, i) => {
               const active = categoryIds.includes(c.id) || categoryIds.includes(c.slug);
-              const emoji = emojiForService(c.name);
               return (
                 <button
                   key={c.id}
                   type="button"
                   onClick={() => updateParams({ category: active ? null : c.id })}
-                  className={`inline-flex shrink-0 items-center gap-1.5 rounded-full px-4 py-2 text-xs font-semibold transition-all ${
+                  className={`inline-flex shrink-0 items-center gap-2 rounded-full py-2 pl-2 pr-5 text-sm font-bold transition-all ${
                     active
-                      ? "bg-[var(--primary)] text-white shadow-sm font-bold"
-                      : "border border-[var(--line)] bg-white text-[var(--ink-secondary)] hover:border-[var(--muted)]"
+                      ? "text-white shadow-lg"
+                      : "border bg-white text-[var(--ink-secondary)] hover:-translate-y-0.5 hover:shadow-md"
                   }`}
+                  style={active ? { background: "var(--gradient-primary)" } : { borderColor: "var(--line)" }}
                 >
-                  <span>{emoji}</span>
-                  <span>{c.name}</span>
+                  <span className="flex h-8 w-8 items-center justify-center rounded-full text-white" style={{ background: active ? "rgba(255,255,255,0.25)" : serviceGradient(i) }}>
+                    <ServiceGlyph name={c.name} className="h-4 w-4" />
+                  </span>
+                  {c.name}
                 </button>
               );
             })}
@@ -614,12 +629,12 @@ const [categories, setCategories] = useState(() => getCategories());
         <div className="grid gap-8 lg:grid-cols-[280px_1fr]">
           {/* Desktop Filter Sidebar */}
           <aside className="hidden lg:block">
-            <div className="sticky top-24 rounded-2xl border border-[var(--line)] bg-white p-5 shadow-sm">
+            <div className="sticky top-24 rounded-3xl border border-[var(--line)] bg-white p-6 shadow-md">
               <div className="flex items-center justify-between pb-4 border-b border-[var(--line-light)] mb-4">
                 <div className="flex items-center gap-2">
                   <Icon name="filter" className="h-4 w-4 text-[var(--primary)]" />
                   <span className="font-display text-sm font-bold" style={{ color: "var(--ink)" }}>
-                    Filter Candidates
+                    Filters
                   </span>
                 </div>
                 {activeCount > 0 && (
@@ -635,9 +650,9 @@ const [categories, setCategories] = useState(() => getCategories());
           {/* Results Area */}
           <div>
             {/* Top Toolbar */}
-            <div className="mb-5 hidden items-center justify-between rounded-2xl border border-[var(--line)] bg-white p-4 shadow-sm sm:flex">
+            <div className="mb-5 hidden items-center justify-between rounded-3xl border border-[var(--line)] bg-white px-5 py-4 shadow-sm sm:flex">
               <p className="text-sm font-semibold" style={{ color: "var(--ink)" }}>
-                Showing <span className="text-[var(--primary)] font-bold">{result.total}</span> verified candidates
+                Showing <span className="text-[var(--primary)] font-bold">{result.total}</span> professionals
                 {location && (
                   <span className="font-normal" style={{ color: "var(--muted)" }}>
                     {" "}{radiusKm ? `within ${radiusKm} km of` : "near"} {location.city || "you"}
@@ -754,6 +769,23 @@ const [categories, setCategories] = useState(() => getCategories());
                       <ProviderCard provider={p} viewMode={viewMode} />
                     </ScrollStaggerItem>
                   ))}
+                  {viewMode === "grid" && page === result.totalPages && (
+                    <ScrollStaggerItem>
+                      <div className="relative flex h-full min-h-[320px] flex-col justify-between overflow-hidden rounded-3xl p-7 text-white shadow-lg" style={{ background: "var(--gradient-dark)" }}>
+                        <div aria-hidden className="absolute -right-16 -top-16 h-52 w-52 rounded-full opacity-60 blur-2xl" style={{ background: "radial-gradient(circle, rgba(59,130,246,0.7), transparent 70%)" }} />
+                        <div className="relative">
+                          <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/15 backdrop-blur">
+                            <Icon name="briefcase" className="h-6 w-6" />
+                          </span>
+                          <p className="font-display mt-5 text-2xl font-extrabold leading-snug">Are you a professional?</p>
+                          <p className="mt-2 text-sm leading-relaxed text-white/70">Register free, get verified and be found by families looking for trusted help. Keep 100% of your earnings.</p>
+                        </div>
+                        <Link href="/register-provider" className="btn relative mt-6 w-full bg-white font-bold" style={{ color: "var(--primary-dark)" }}>
+                          Register as Provider <Icon name="arrow-right" className="h-4 w-4" />
+                        </Link>
+                      </div>
+                    </ScrollStaggerItem>
+                  )}
                 </ScrollStagger>
 
                 {/* Pagination Controls */}
