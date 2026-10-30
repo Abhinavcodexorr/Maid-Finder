@@ -3,7 +3,9 @@
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+import { BatteryFull, Signal, Wifi } from "lucide-react";
 import { Icon } from "@/components/ui/icon";
+import { ServiceGlyph } from "@/components/ui/service-glyph";
 import { getCategoryById } from "@/lib/services";
 import type { Provider } from "@/types/marketplace";
 
@@ -20,23 +22,25 @@ function initialsOf(p: Provider): string {
   return `${p.firstName[0] ?? ""}${p.lastName[0] ?? ""}`.toUpperCase();
 }
 
-/** A face on the blurred side cards, or initials when the provider has no photo. */
-function SideCard({ provider, side }: { provider: Provider; side: "left" | "right" }) {
+/**
+ * Blurred card peeking out behind the phone. It shows the neighbouring
+ * professional's photo, or — when they have none or there are too few
+ * professionals — a decorative service photo, purely for atmosphere.
+ */
+function SideCard({ image, side }: { image: string; side: "left" | "right" }) {
   return (
     <div
       aria-hidden
-      className={`absolute top-1/2 hidden h-[420px] w-48 -translate-y-1/2 overflow-hidden rounded-3xl opacity-80 blur-[3px] sm:block ${side === "left" ? "left-0 lg:-left-6" : "right-0 lg:-right-6"}`}
-      style={{ background: "var(--gradient-primary)" }}
+      className={`absolute top-1/2 hidden h-[440px] w-52 -translate-y-1/2 overflow-hidden rounded-[2rem] opacity-90 blur-[3px] sm:block ${side === "left" ? "left-0 -rotate-3" : "right-0 rotate-3"}`}
     >
-      {provider.photo ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img src={provider.photo} alt="" className="h-full w-full object-cover" />
-      ) : (
-        <div className="flex h-full w-full items-center justify-center text-5xl font-bold text-white">{initialsOf(provider)}</div>
-      )}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src={image} alt="" className="h-full w-full object-cover" />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
     </div>
   );
 }
+
+const DECOR_PHOTOS = ["/images/services/cleaning.jpg", "/images/services/nanny.jpg", "/images/services/cooking.jpg", "/images/services/elderly.jpg"];
 
 /**
  * "Browse verified profiles": a phone frame that auto-rotates through real
@@ -59,8 +63,10 @@ export function ProfileShowcase({ providers }: { providers: Provider[] }) {
   if (count === 0) return null;
 
   const current = providers[index];
-  const prev = count > 1 ? providers[(index - 1 + count) % count] : null;
-  const next = count > 2 ? providers[(index + 1) % count] : null;
+  const prevProvider = count > 1 ? providers[(index - 1 + count) % count] : null;
+  const nextProvider = count > 2 ? providers[(index + 1) % count] : null;
+  const leftImage = prevProvider?.photo ?? DECOR_PHOTOS[index % DECOR_PHOTOS.length];
+  const rightImage = nextProvider?.photo ?? DECOR_PHOTOS[(index + 2) % DECOR_PHOTOS.length];
   const category = getCategoryById(current.categoryId)?.name ?? current.skills[0] ?? "Professional";
 
   return (
@@ -107,18 +113,22 @@ export function ProfileShowcase({ providers }: { providers: Provider[] }) {
           onMouseLeave={() => setPaused(false)}
           onTouchStart={() => setPaused(true)}
         >
-          {prev && <SideCard provider={prev} side="left" />}
-          {next && <SideCard provider={next} side="right" />}
+          {/* Soft stage behind the phone */}
+          <div aria-hidden className="absolute inset-x-2 inset-y-0 rounded-[3rem]" style={{ background: "linear-gradient(160deg, var(--primary-soft), #fff 70%)" }} />
+          <div aria-hidden className="absolute left-1/2 top-1/2 h-80 w-80 -translate-x-1/2 -translate-y-1/2 rounded-full blur-3xl" style={{ background: "radial-gradient(circle, rgba(59,130,246,0.35), transparent 70%)" }} />
+          <SideCard image={leftImage} side="left" />
+          <SideCard image={rightImage} side="right" />
 
           {/* Phone */}
-          <div className="relative z-10 w-[300px] rounded-[3rem] border-[10px] bg-white shadow-2xl" style={{ borderColor: "#12182b" }}>
+          <div className="relative z-10 w-[310px] rounded-[3rem] border-[10px] bg-white shadow-[0_40px_80px_-20px_rgba(15,23,42,0.45)]" style={{ borderColor: "#12182b" }}>
             <div aria-hidden className="absolute left-1/2 top-2.5 z-20 h-6 w-24 -translate-x-1/2 rounded-full" style={{ background: "#12182b" }} />
             <div className="overflow-hidden rounded-[2.2rem]">
               <div className="flex items-center justify-between px-6 pb-1 pt-3 text-xs font-bold">
                 <span>9:41</span>
-                <span className="flex gap-1" aria-hidden>
-                  <span className="h-2 w-3 rounded-sm bg-[var(--ink)]" />
-                  <span className="h-2 w-4 rounded-sm bg-[var(--ink)]" />
+                <span className="flex items-center gap-1" aria-hidden>
+                  <Signal className="h-3.5 w-3.5" strokeWidth={2.5} />
+                  <Wifi className="h-3.5 w-3.5" strokeWidth={2.5} />
+                  <BatteryFull className="h-4 w-4" strokeWidth={2} />
                 </span>
               </div>
 
@@ -136,7 +146,14 @@ export function ProfileShowcase({ providers }: { providers: Provider[] }) {
                       // eslint-disable-next-line @next/next/no-img-element
                       <img src={current.photo} alt={`${current.firstName} ${current.lastName}`} className="h-full w-full object-cover" />
                     ) : (
-                      <div className="flex h-full w-full items-center justify-center text-6xl font-bold text-white">{initialsOf(current)}</div>
+                      <div className="relative flex h-full w-full items-center justify-center">
+                        <span aria-hidden className="absolute -left-10 -top-10 h-44 w-44 rounded-full bg-white/10" />
+                        <span aria-hidden className="absolute -bottom-12 -right-8 h-52 w-52 rounded-full bg-white/10" />
+                        <ServiceGlyph name={category} className="absolute bottom-3 right-3 h-24 w-24 text-white/15" />
+                        <span className="relative flex h-28 w-28 items-center justify-center rounded-full border-4 border-white/70 bg-white/20 text-4xl font-extrabold text-white shadow-xl backdrop-blur">
+                          {initialsOf(current)}
+                        </span>
+                      </div>
                     )}
                     <span className="absolute left-3 top-3 rounded-full bg-white px-3 py-1 text-xs font-semibold shadow">{category}</span>
                     {current.verified && (
