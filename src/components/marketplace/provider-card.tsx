@@ -8,6 +8,7 @@ import { useAuth } from "@/context/AuthContext";
 import { ServiceGlyph } from "@/components/ui/service-glyph";
 import { getCategoryById, getCachedFavouriteIds, toggleFavouriteCached } from "@/lib/services";
 import { maskProvider } from "@/lib/services/providers";
+import { ProviderVideo } from "@/components/ui/provider-video";
 import { Icon } from "@/components/ui/icon";
 import { toast } from "@/components/ui/toaster";
 import { formatDistance } from "@/lib/geo";
@@ -86,7 +87,7 @@ export function ProviderCard({
         className="card card-hover group flex flex-col sm:flex-row gap-5 overflow-hidden p-5 transition-all"
       >
         <div className="relative h-44 sm:h-36 sm:w-36 shrink-0 overflow-hidden rounded-xl bg-[var(--line-light)]">
-          {!imgLoaded && !imgFailed && (
+          {provider.photo && !imgLoaded && !imgFailed && (
             <div className="absolute inset-0 shimmer z-0" />
           )}
           {provider.photo && !imgFailed ? (
@@ -100,6 +101,8 @@ export function ProviderCard({
                 imgLoaded ? "opacity-100" : "opacity-0"
               }`}
             />
+          ) : provider.introVideoUrl ? (
+            <ProviderVideo src={provider.introVideoUrl} size="sm" className="h-full w-full" />
           ) : (
             <div
               className="flex h-full w-full items-center justify-center text-3xl font-bold text-white"
@@ -230,7 +233,7 @@ export function ProviderCard({
         style={{ borderColor: "var(--line)" }}
       >
         <div className="relative aspect-[4/3] w-full overflow-hidden bg-[var(--surface-muted)]">
-          {!imgLoaded && !imgFailed && <div className="shimmer absolute inset-0 z-0" />}
+          {provider.photo && !imgLoaded && !imgFailed && <div className="shimmer absolute inset-0 z-0" />}
           {provider.photo && !imgFailed ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
@@ -240,6 +243,8 @@ export function ProviderCard({
               onError={() => setImgFailed(true)}
               className={`h-full w-full object-cover transition-all duration-500 group-hover:scale-105 ${imgLoaded ? "opacity-100" : "opacity-0"}`}
             />
+          ) : provider.introVideoUrl ? (
+            <ProviderVideo src={provider.introVideoUrl} className="h-full w-full" />
           ) : (
             <div className="relative flex h-full w-full items-center justify-center" style={{ background: catColor.gradient }}>
               <span aria-hidden className="absolute -left-8 -top-8 h-36 w-36 rounded-full bg-white/10" />

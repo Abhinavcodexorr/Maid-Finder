@@ -13,6 +13,7 @@ import { toast } from "@/components/ui/toaster";
 import { colorForCategory } from "@/lib/category-colors";
 import type { Provider } from "@/types/marketplace";
 import { Shimmer } from "@/components/ui/shimmer";
+import { ProviderVideo } from "@/components/ui/provider-video";
 import { ServiceGlyph } from "@/components/ui/service-glyph";
 
 const titleCase = (value: string) => value.toLowerCase().replace(/(^|[\s-])([a-z])/g, (_, sep: string, ch: string) => sep + ch.toUpperCase());
@@ -230,6 +231,13 @@ export default function ProviderProfilePage({ params }: { params: Promise<{ id: 
       {/* Content Grid */}
       <section className="container-page grid gap-8 py-10 lg:grid-cols-[1fr_360px]">
         <div className="space-y-6">
+          {provider.introVideoUrl && (
+            <motion.div {...fadeUp(0.08)} className={card} style={cardStyle}>
+              <h2 className="font-display text-h3 mb-4">Video introduction</h2>
+              <ProviderVideo src={provider.introVideoUrl} size="lg" rounded="rounded-2xl" controlsWhenPlaying className="aspect-video w-full" />
+            </motion.div>
+          )}
+
           {provider.about.trim() && (
             <motion.div {...fadeUp(0.1)} className={card} style={cardStyle}>
               <h2 className="font-display text-h3 mb-3">About</h2>
@@ -308,13 +316,6 @@ export default function ProviderProfilePage({ params }: { params: Promise<{ id: 
                   </p>
                 </div>
               </div>
-            </motion.div>
-          )}
-
-          {provider.introVideoUrl && (
-            <motion.div {...fadeUp(0.35)} className={card} style={cardStyle}>
-              <h2 className="font-display text-h3 mb-4">Video introduction</h2>
-              <video src={provider.introVideoUrl} controls playsInline preload="metadata" className="max-h-[28rem] w-full rounded-2xl bg-black" />
             </motion.div>
           )}
 
