@@ -7,6 +7,7 @@ import { HoverMenu } from "@/components/layout/hover-menu";
 import { fetchCatalogServices } from "@/lib/services";
 import type { CatalogService } from "@/lib/services";
 import { ServiceGlyph, serviceImage } from "@/components/ui/service-glyph";
+import { Shimmer } from "@/components/ui/shimmer";
 
 /** "Services" nav item: opens a list of every service, each linking to that service's professionals. */
 export function ServicesMenu({ active }: { active: boolean }) {
@@ -24,7 +25,13 @@ export function ServicesMenu({ active }: { active: boolean }) {
     <HoverMenu label="Services" href="/services" active={active} width="min(760px,92vw)">
       {(close) => (
         <>
-          {services === null && <p className="p-4 text-sm" style={{ color: "var(--muted)" }}>Loading services…</p>}
+          {services === null && (
+            <div className="grid grid-cols-2 gap-2 p-2 lg:grid-cols-3" aria-busy="true">
+              {Array.from({ length: 9 }).map((_, i) => (
+                <Shimmer key={i} className="h-11 rounded-2xl" />
+              ))}
+            </div>
+          )}
           {services !== null && services.length === 0 && (
             <p className="p-4 text-sm" style={{ color: "var(--muted)" }}>Services are unavailable right now.</p>
           )}

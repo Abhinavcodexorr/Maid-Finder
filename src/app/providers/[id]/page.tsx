@@ -12,6 +12,7 @@ import { Avatar } from "@/components/ui/avatar";
 import { toast } from "@/components/ui/toaster";
 import { colorForCategory } from "@/lib/category-colors";
 import type { Provider } from "@/types/marketplace";
+import { Shimmer } from "@/components/ui/shimmer";
 
 const fadeUp = (delay = 0) => ({
   initial: { opacity: 0, y: 14 },
@@ -63,8 +64,14 @@ export default function ProviderProfilePage({ params }: { params: Promise<{ id: 
 
   if (provider === undefined) {
     return (
-      <div className="container-page py-16 text-center text-sm" style={{ color: "var(--muted)" }}>
-        Loading profile…
+      <div className="container-page grid gap-6 py-10 lg:grid-cols-[1fr_2fr]" aria-busy="true">
+        <Shimmer className="h-96 rounded-3xl" />
+        <div className="space-y-4">
+          <Shimmer className="h-10 w-2/3" />
+          <Shimmer className="h-5 w-1/3" />
+          <Shimmer className="h-40 rounded-2xl" />
+          <Shimmer className="h-40 rounded-2xl" />
+        </div>
       </div>
     );
   }

@@ -9,6 +9,7 @@ import { fetchCatalogServices, fetchLiveProviders, getCategoryById } from "@/lib
 import { getFeaturedProvidersFrom } from "@/lib/services/providers";
 import { colorForCategory } from "@/lib/category-colors";
 import type { Provider } from "@/types/marketplace";
+import { Shimmer } from "@/components/ui/shimmer";
 
 const MENU_PROFESSIONALS = 6;
 
@@ -34,7 +35,13 @@ export function ProfessionalsMenu({ active }: { active: boolean }) {
     <HoverMenu label="Find Professionals" href="/providers" active={active} onOpen={load}>
       {(close) => (
         <>
-          {providers === null && <p className="p-4 text-sm" style={{ color: "var(--muted)" }}>Loading professionals…</p>}
+          {providers === null && (
+            <div className="grid grid-cols-2 gap-2 p-2" aria-busy="true">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <Shimmer key={i} className="h-14 rounded-2xl" />
+              ))}
+            </div>
+          )}
           {providers !== null && providers.length === 0 && (
             <p className="p-4 text-sm" style={{ color: "var(--muted)" }}>No professionals listed yet.</p>
           )}

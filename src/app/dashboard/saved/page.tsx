@@ -8,6 +8,7 @@ import { Icon } from "@/components/ui/icon";
 import { Avatar } from "@/components/ui/avatar";
 import { toast } from "@/components/ui/toaster";
 import type { Provider } from "@/types/marketplace";
+import { ProviderCardSkeleton } from "@/components/ui/shimmer";
 
 const CATEGORY_EMOJIS: Record<string, string> = {
   "cat-cook": "🍳",
@@ -68,8 +69,10 @@ export default function SavedProfessionalsPage() {
   if (!user) return null;
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-20 text-sm" style={{ color: "var(--muted)" }}>
-        Loading saved professionals…
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3" aria-busy="true">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <ProviderCardSkeleton key={i} />
+        ))}
       </div>
     );
   }

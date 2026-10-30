@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { Icon } from "@/components/ui/icon";
+import { Shimmer } from "@/components/ui/shimmer";
 
 const DASHBOARD_NAV = [
   { label: "Overview", href: "/dashboard", icon: "grid", exact: true },
@@ -32,10 +33,12 @@ export default function DashboardLayout({
 
   if (loading) {
     return (
-      <div className="container-page flex min-h-[60vh] items-center justify-center py-20">
-        <div className="flex flex-col items-center gap-3">
-          <div className="h-8 w-8 animate-spin rounded-full border-2 border-current border-t-transparent" style={{ color: "var(--primary)" }} />
-          <p className="text-sm font-medium" style={{ color: "var(--muted)" }}>Loading dashboard...</p>
+      <div className="container-page grid gap-6 py-10 lg:grid-cols-[16rem_1fr]" aria-busy="true">
+        <Shimmer className="h-80 rounded-3xl" />
+        <div className="space-y-4">
+          <Shimmer className="h-12 w-1/2" />
+          <Shimmer className="h-40 rounded-2xl" />
+          <Shimmer className="h-40 rounded-2xl" />
         </div>
       </div>
     );

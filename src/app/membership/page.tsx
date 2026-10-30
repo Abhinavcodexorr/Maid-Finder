@@ -10,6 +10,7 @@ import { PageHeader } from "@/components/layout/page-header";
 import { PlanCards } from "@/components/sections/plan-cards";
 import { ScrollReveal, ScrollStagger, ScrollStaggerItem } from "@/components/ui/scroll-reveal";
 import type { Plan } from "@/types/marketplace";
+import { Shimmer } from "@/components/ui/shimmer";
 
 function MembershipContent() {
   const router = useRouter();
@@ -64,7 +65,11 @@ function MembershipContent() {
       {/* Plans Grid */}
       <section className="container-page py-12">
         {loading ? (
-          <div className="py-16 text-center text-sm" style={{ color: "var(--muted)" }}>Loading plans…</div>
+          <div className="grid gap-6 md:grid-cols-3" aria-busy="true">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <Shimmer key={i} className="h-96 rounded-3xl" />
+            ))}
+          </div>
         ) : plans.length === 0 ? (
           <div className="mx-auto max-w-md py-16 text-center text-sm" style={{ color: "var(--muted)" }}>
             No membership plans are available right now. Please check back shortly.

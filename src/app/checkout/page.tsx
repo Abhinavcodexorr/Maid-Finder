@@ -8,6 +8,7 @@ import { Icon } from "@/components/ui/icon";
 import { Logo } from "@/components/ui/logo";
 import { toast } from "@/components/ui/toaster";
 import type { Plan } from "@/types/marketplace";
+import { Shimmer } from "@/components/ui/shimmer";
 
 function CheckoutContent() {
   const router = useRouter();
@@ -34,8 +35,9 @@ function CheckoutContent() {
 
   if (plan === undefined) {
     return (
-      <div className="container-page py-16 text-center text-sm" style={{ color: "var(--muted)" }}>
-        Loading plan…
+      <div className="container-page grid gap-6 py-12 lg:grid-cols-[1.4fr_1fr]" aria-busy="true">
+        <Shimmer className="h-96 rounded-3xl" />
+        <Shimmer className="h-72 rounded-3xl" />
       </div>
     );
   }
