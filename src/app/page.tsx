@@ -189,13 +189,20 @@ export default function HomePage() {
             </motion.ul>
           </div>
 
-          {/* Brand hero image in an arch frame */}
-          <motion.div {...heroAnim(0.2)} className="relative mx-auto w-full max-w-sm lg:max-w-[28rem]">
-            <div className="relative overflow-hidden rounded-t-[999px] rounded-b-[2rem] shadow-2xl" style={{ background: "var(--primary-dark)" }}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/images/helpzone-hero.webp" alt="HelpZone — find cleaning, plumbing, electrical and beauty professionals from your phone" className="block aspect-[5/6] w-full object-cover object-[88%_center]" />
-              <div className="pointer-events-none absolute inset-3 rounded-t-[999px] rounded-b-[1.4rem] border border-white/70" />
-            </div>
+          {/* Hero artwork: blue arch with family, verified seal and stat cards */}
+          <motion.div {...heroAnim(0.2)} className="relative mx-auto w-full max-w-sm lg:max-w-[34rem]">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/images/helpzone-hero-arch.webp"
+              alt="A caregiver with a happy family, with a verified background-checked seal"
+              className="block h-auto w-full"
+              style={{
+                WebkitMaskImage: "linear-gradient(to right, transparent, #000 4%, #000 96%, transparent), linear-gradient(to bottom, transparent, #000 4%, #000 96%, transparent)",
+                WebkitMaskComposite: "source-in",
+                maskImage: "linear-gradient(to right, transparent, #000 4%, #000 96%, transparent), linear-gradient(to bottom, transparent, #000 4%, #000 96%, transparent)",
+                maskComposite: "intersect",
+              }}
+            />
           </motion.div>
         </div>
       </section>
