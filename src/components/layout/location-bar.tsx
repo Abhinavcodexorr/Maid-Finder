@@ -39,8 +39,8 @@ export function LocationBar() {
 
   return (
     <div className="border-b" style={{ background: showForm ? "var(--primary-soft)" : "var(--surface)", borderColor: "var(--line)" }}>
-      <div className="container-page flex flex-wrap items-center gap-x-4 gap-y-2 py-2.5 text-sm">
-        <span className="flex items-center gap-2 font-semibold" style={{ color: "var(--ink)" }}>
+      <div className="container-page flex flex-wrap items-center gap-x-2 gap-y-2 py-2 text-sm sm:gap-x-4 sm:py-2.5">
+        <span className={`items-center gap-2 font-semibold ${showForm ? "hidden sm:flex" : "flex"}`} style={{ color: "var(--ink)" }}>
           <Icon name="map-pin" className="h-4 w-4 shrink-0" style={{ color: "var(--primary)" }} />
           {showForm ? (
             "See professionals near you"
@@ -57,7 +57,7 @@ export function LocationBar() {
               <Icon name="compass" className="h-3.5 w-3.5" />
               {busy ? "Locating…" : "Use my location"}
             </button>
-            <span className="text-xs" style={{ color: "var(--muted)" }}>or</span>
+            <span className="hidden text-xs sm:inline" style={{ color: "var(--muted)" }}>or</span>
             <form
               className="flex items-center gap-2"
               onSubmit={(e) => {
@@ -71,7 +71,7 @@ export function LocationBar() {
                 inputMode="numeric"
                 placeholder="Enter pincode"
                 aria-label="Pincode"
-                className="field !w-36 !py-1.5 text-sm"
+                className="field !w-28 !py-1.5 text-sm sm:!w-36"
               />
               <button type="submit" disabled={busy || pincode.length !== 6} className="btn btn-outline btn-sm">
                 Go

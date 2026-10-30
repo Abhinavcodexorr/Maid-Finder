@@ -2,7 +2,8 @@
 
 import { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
-import { getCategories, fetchLiveProviders } from "@/lib/services";
+import { getCategories, fetchLiveProviders, fetchCatalogServices } from "@/lib/services";
+import { emojiForService } from "@/lib/service-emoji";
 import { Icon } from "@/components/ui/icon";
 import { TiltCard } from "@/components/ui/tilt-card";
 import { PageHeader } from "@/components/layout/page-header";
@@ -76,7 +77,30 @@ const CATEGORY_DETAILS: Record<
 
 export default function ServicesPage() {
   const [searchQuery, setSearchQuery] = useState("");
-  const categories = useMemo(() => getCategories(), []);
+  // Services come from the admin-managed catalog (what providers register
+  // under); the bundled list is only the fallback if it can't be loaded.
+  const [categories, setCategories] = useState(() => getCategories());
+  useEffect(() => {
+    let cancelled = false;
+    fetchCatalogServices()
+      .then((services) => {
+        if (cancelled || services.length === 0) return;
+        setCategories(
+          services.map((svc) => ({
+            id: svc.key,
+            slug: svc.key.replace(/^cat-/, ""),
+            name: svc.name,
+            icon: "briefcase",
+            shortDescription: "",
+            skills: [],
+          }))
+        );
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
   const [allProviders, setAllProviders] = useState<Provider[]>([]);
   useEffect(() => {
     let cancelled = false;
@@ -142,7 +166,7 @@ export default function ServicesPage() {
 
           <Link href="/providers" className="btn btn-secondary btn-sm text-xs shrink-0">
             <Icon name="search" className="h-3.5 w-3.5" />
-            View All {allProviders.length} Candidates
+            View All Professionals
           </Link>
         </div>
 
@@ -166,11 +190,12 @@ export default function ServicesPage() {
         ) : (
           <ScrollStagger className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {filteredCategories.map((cat) => {
-              const details = CATEGORY_DETAILS[cat.id] ?? {
-                emoji: "🧹",
-                startingPrice: "₹4,000/mo",
-                popularSkills: cat.skills.slice(0, 4),
-                highlights: ["Identity checked", "Direct contact", "Free trial"],
+              const known = CATEGORY_DETAILS[cat.id];
+              const details = known ?? {
+                emoji: emojiForService(cat.name),
+                startingPrice: "",
+                popularSkills: ["Identity checked", "Direct contact", "0% commission"],
+                highlights: [],
               };
 
               // Count providers in this category
@@ -188,7 +213,7 @@ export default function ServicesPage() {
                       </div>
 
                       <span className="pill pill-primary text-xs font-semibold">
-                        {count} Verified Available
+                        {count} Available
                       </span>
                     </div>
 
@@ -198,22 +223,24 @@ export default function ServicesPage() {
                         {cat.name}
                       </h3>
                       <p className="mt-1 text-xs sm:text-sm text-[var(--muted)] line-clamp-2 leading-relaxed">
-                        {cat.shortDescription}
+                        {cat.shortDescription || `Verified ${cat.name.toLowerCase()} professionals you can contact directly.`}
                       </p>
                     </div>
 
                     {/* Pricing Benchmark */}
+                    {details.startingPrice && (
                     <div className="mt-4 rounded-xl bg-[var(--surface-muted)] p-3 border border-[var(--line-light)]">
                       <div className="flex items-center justify-between text-xs">
                         <span className="font-medium text-[var(--muted)]">Market Salary / Rate:</span>
                         <span className="font-bold text-[var(--primary)]">{details.startingPrice}</span>
                       </div>
                     </div>
+                    )}
 
                     {/* Popular Skills */}
                     <div className="mt-4">
                       <span className="text-[11px] font-bold uppercase tracking-wider text-[var(--muted)]">
-                        Specialties:
+                        {known ? "Specialties:" : "Why Help Zone:"}
                       </span>
                       <div className="mt-1.5 flex flex-wrap gap-1.5">
                         {details.popularSkills.map((sk) => (
@@ -231,7 +258,7 @@ export default function ServicesPage() {
                   {/* Bottom Action */}
                   <div className="mt-6 border-t border-[var(--line-light)] pt-4">
                     <Link
-                      href={`/services/${cat.slug}`}
+                      href={`/providers?category=${cat.id}`}
                       className="btn btn-primary w-full text-xs font-bold group-hover:shadow-md"
                     >
                       Browse {cat.name} Profiles ({count})
@@ -329,28 +356,28 @@ export default function ServicesPage() {
               Why Hire Through Help Zone?
             </h2>
             <p className="mt-3 text-sm sm:text-base text-white/90 leading-relaxed">
-              Traditional placement agencies charge you 1 to 2 months of helper salary (₹15,000 to ₹35,000) every time you hire. With Help Zone, you pay an affordable one-time pass and connect with candidates directly.
+              Traditional placement agencies charge you 1 to 2 months of salary (₹15,000 to ₹35,000) every time you hire. With Help Zone, you pay an affordable one-time pass and connect with candidates directly.
             </p>
           </div>
 
           <div className="grid gap-4 sm:grid-cols-3 mt-8 pt-6 border-t border-white/20">
             <div>
               <div className="font-display text-2xl font-bold text-white mb-1">0% Brokerage</div>
-              <p className="text-xs text-white/80">Every rupee of the agreed salary goes straight to your helper.</p>
+              <p className="text-xs text-white/80">Every rupee of the agreed salary goes straight to the professional.</p>
             </div>
             <div>
               <div className="font-display text-2xl font-bold text-white mb-1">ID Verified</div>
               <p className="text-xs text-white/80">National Aadhaar, address, and reference checks conducted upfront.</p>
             </div>
             <div>
-              <div className="font-display text-2xl font-bold text-white mb-1">Free Replacements</div>
-              <p className="text-xs text-white/80">Browse and interview replacements at no extra charge during your pass.</p>
+              <div className="font-display text-2xl font-bold text-white mb-1">Direct Contact</div>
+              <p className="text-xs text-white/80">Call or WhatsApp professionals yourself and agree terms directly.</p>
             </div>
           </div>
 
           <div className="mt-8 flex flex-wrap gap-3">
             <Link href="/providers" className="btn btn-lg bg-white text-[var(--primary)] font-bold hover:bg-white/90">
-              Browse 1,200+ Candidates
+              Browse Professionals
             </Link>
             <Link href="/membership" className="btn btn-lg border border-white/30 text-white hover:bg-white/10">
               View Membership Plans

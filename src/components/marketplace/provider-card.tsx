@@ -68,7 +68,7 @@ export function ProviderCard({
       const next = await toggleFavouriteCached(provider.id, saved);
       setSaved(next);
       toast({
-        title: next ? "Helper Saved" : "Helper Removed",
+        title: next ? "Professional Saved" : "Professional Removed",
         description: next
           ? `${provider.firstName} ${provider.lastName} added to your shortlist.`
           : `${provider.firstName} ${provider.lastName} removed from your shortlist.`,
@@ -162,7 +162,7 @@ export function ProviderCard({
               <button
                 type="button"
                 onClick={onToggleSave}
-                aria-label={saved ? "Remove from saved" : "Save helper"}
+                aria-label={saved ? "Remove from saved" : "Save professional"}
                 className={`rounded-xl p-2 transition-colors ${
                   saved
                     ? "bg-[var(--error-soft)] text-[var(--error)]"
@@ -270,7 +270,7 @@ export function ProviderCard({
             <button
               type="button"
               onClick={onToggleSave}
-              aria-label={saved ? "Remove from saved" : "Save helper"}
+              aria-label={saved ? "Remove from saved" : "Save professional"}
               className={`flex h-8 w-8 items-center justify-center rounded-full shadow-md transition-transform active:scale-90 ${
                 saved ? "bg-white text-[var(--error)]" : "bg-white/95 text-[var(--muted)] hover:text-[var(--error)]"
               }`}

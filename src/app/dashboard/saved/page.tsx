@@ -20,7 +20,7 @@ const CATEGORY_EMOJIS: Record<string, string> = {
   "cat-elderly-care": "👵",
 };
 
-export default function SavedHelpersPage() {
+export default function SavedProfessionalsPage() {
   const { user, isSubscribed } = useAuth();
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [savedProviders, setSavedProviders] = useState<Provider[]>([]);
@@ -61,7 +61,7 @@ export default function SavedHelpersPage() {
         variant: "info",
       });
     } catch (err) {
-      toast({ title: "Couldn't remove helper", description: err instanceof Error ? err.message : undefined, variant: "error" });
+      toast({ title: "Couldn't remove professional", description: err instanceof Error ? err.message : undefined, variant: "error" });
     }
   };
 
@@ -69,7 +69,7 @@ export default function SavedHelpersPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20 text-sm" style={{ color: "var(--muted)" }}>
-        Loading saved helpers…
+        Loading saved professionals…
       </div>
     );
   }
@@ -80,7 +80,7 @@ export default function SavedHelpersPage() {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="font-display text-2xl font-bold" style={{ color: "var(--ink)" }}>
-            Saved Helpers ({savedProviders.length})
+            Saved Professionals ({savedProviders.length})
           </h1>
           <p className="mt-1 text-sm" style={{ color: "var(--muted)" }}>
             Shortlist and compare candidates you are interested in hiring.
@@ -89,7 +89,7 @@ export default function SavedHelpersPage() {
 
         <Link href="/providers" className="btn btn-secondary shrink-0">
           <Icon name="search" className="h-4 w-4" />
-          Browse More Helpers
+          Browse More Professionals
         </Link>
       </div>
 
@@ -129,14 +129,14 @@ export default function SavedHelpersPage() {
         </div>
       )}
 
-      {/* Helper Grid or Empty State */}
+      {/* Professional Grid or Empty State */}
       {filteredProviders.length === 0 ? (
         <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-[var(--line)] bg-white py-16 px-4 text-center">
           <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-[var(--surface-muted)] text-[var(--muted)] mb-4">
             <Icon name="heart" className="h-8 w-8" />
           </div>
           <h2 className="font-display text-lg font-bold" style={{ color: "var(--ink)" }}>
-            {savedProviders.length === 0 ? "You haven't saved any helpers yet" : "No helpers match this category"}
+            {savedProviders.length === 0 ? "You haven't saved any professionals yet" : "No professionals match this category"}
           </h2>
           <p className="mt-1 text-sm max-w-sm" style={{ color: "var(--muted)" }}>
             {savedProviders.length === 0
@@ -145,7 +145,7 @@ export default function SavedHelpersPage() {
           </p>
           <Link href="/providers" className="btn btn-primary mt-6">
             <Icon name="search" className="h-4 w-4" />
-            Discover Verified Helpers
+            Discover Verified Professionals
           </Link>
         </div>
       ) : (
@@ -182,7 +182,7 @@ export default function SavedHelpersPage() {
                           )}
                         </div>
                         <p className="text-xs font-medium" style={{ color: "var(--muted)" }}>
-                          {cat?.name ?? "Helper"} • {provider.experienceYears} yrs exp.
+                          {cat?.name ?? "Professional"} • {provider.experienceYears} yrs exp.
                         </p>
                       </div>
                     </div>

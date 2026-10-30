@@ -1,8 +1,8 @@
 const MESSAGES = [
   "Browse verified professionals across India",
-  "No agency fees — contact helpers directly",
+  "No agency fees — contact professionals directly",
   "One membership unlocks every profile",
-  "Every helper ID-checked before going live",
+  "Every professional ID-checked before going live",
 ];
 
 /** Slim dark strip above the navbar with scrolling highlights. */

@@ -3,7 +3,7 @@ import { PageHeader } from "@/components/layout/page-header";
 import { Icon } from "@/components/ui/icon";
 
 const STATS = [
-  { label: "ID Verified Helpers", value: "100%" },
+  { label: "ID Verified Professionals", value: "100%" },
   { label: "Service Categories", value: "12+" },
   { label: "Commission Charged", value: "0%" },
   { label: "To Browse Profiles", value: "Free" },
@@ -13,12 +13,12 @@ const VALUES = [
   {
     icon: "shield" as const,
     title: "Verification first",
-    body: "Every helper on Help Zone goes through identity verification — government ID checks and a photo match — before their profile goes live.",
+    body: "Every professional on Help Zone goes through identity verification — government ID checks and a photo match — before their profile goes live.",
   },
   {
     icon: "heart" as const,
     title: "Zero commission, always",
-    body: "Traditional agencies charge 1–2 months of salary as a placement fee. We don't. You pay helpers directly, and 100% of it reaches them.",
+    body: "Traditional agencies charge 1–2 months of salary as a placement fee. We don't. You pay professionals directly, and 100% of it reaches them.",
   },
   {
     icon: "zap" as const,
@@ -28,13 +28,13 @@ const VALUES = [
   {
     icon: "users" as const,
     title: "Built for both sides",
-    body: "Families get a vetted, searchable directory. Helpers get free listing and direct job requests — no agency cut out of their wages either.",
+    body: "Families get a vetted, searchable directory. Professionals get free listing and direct job requests — no agency cut out of their wages either.",
   },
 ];
 
 const STEPS = [
   { title: "Browse for free", body: "Search verified cooks, maids, babysitters, drivers and more by city, service and experience — no sign-up required to look." },
-  { title: "Become a member", body: "A one-time membership unlocks phone numbers and WhatsApp for every verified helper on the platform, not just one." },
+  { title: "Become a member", body: "A one-time membership unlocks phone numbers and WhatsApp for every verified professional on the platform, not just one." },
   { title: "Hire directly", body: "Call, chat, interview, and agree on terms yourself. We stay out of the negotiation — it's your hire, your relationship." },
 ];
 
@@ -53,9 +53,9 @@ export default function AboutPage() {
           <h2 className="font-display text-xl font-bold" style={{ color: "var(--ink)" }}>Our mission</h2>
           <p className="mt-3 text-sm leading-relaxed" style={{ color: "var(--ink-light)" }}>
             Finding a trustworthy cook, maid, babysitter, or driver in India usually means going through an
-            agency that charges a hefty placement fee, often a full month of the helper&apos;s wages, for a
+            agency that charges a hefty placement fee, often a full month of the professional&apos;s wages, for a
             single introduction. Help Zone exists to remove that cost on both sides: families get a free,
-            searchable directory of identity-verified professionals, and helpers get free, direct exposure to
+            searchable directory of identity-verified professionals, and professionals get free, direct exposure to
             job requests instead of losing a cut of their income to a middleman.
           </p>
         </div>

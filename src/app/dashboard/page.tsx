@@ -57,14 +57,14 @@ export default function DashboardOverviewPage() {
               <span className="text-2xl">👋</span>
             </div>
             <p className="text-sm" style={{ color: "var(--muted)" }}>
-              Manage your saved domestic helpers, track inquiries, and discover verified talent across India.
+              Manage your saved domestic professionals, track inquiries, and discover verified talent across India.
             </p>
           </div>
 
           <div className="flex shrink-0 items-center gap-3">
             <Link href="/providers" className="btn btn-primary">
               <Icon name="search" className="h-4 w-4" />
-              Find Helpers
+              Find Professionals
             </Link>
           </div>
         </div>
@@ -103,7 +103,7 @@ export default function DashboardOverviewPage() {
                 </h3>
                 <p className="mt-0.5 text-xs sm:text-sm" style={{ color: "var(--muted)" }}>
                   {isSubscribed
-                    ? `You have ${daysRemaining} days remaining of full contact access to all verified helpers.`
+                    ? `You have ${daysRemaining} days remaining of full contact access to all verified professionals.`
                     : "Free members can preview profiles. Subscribe to contact candidates directly with 0% brokerage."}
                 </p>
               </div>
@@ -144,7 +144,7 @@ export default function DashboardOverviewPage() {
           className="group rounded-2xl border border-[var(--line)] bg-white p-4 shadow-sm transition-all hover:border-[var(--primary)] sm:p-5"
         >
           <div className="flex items-center justify-between text-xs" style={{ color: "var(--muted)" }}>
-            <span>Saved Helpers</span>
+            <span>Saved Professionals</span>
             <Icon name="heart" className="h-4 w-4 transition-colors group-hover:text-[var(--error)]" />
           </div>
           <div className="mt-2 text-xl font-bold sm:text-2xl" style={{ color: "var(--ink)" }}>
@@ -215,15 +215,15 @@ export default function DashboardOverviewPage() {
         </div>
       </div>
 
-      {/* Two Column Layout: Saved Helpers & Recently Viewed */}
+      {/* Two Column Layout: Saved Professionals & Recently Viewed */}
       <div className="grid gap-6 lg:grid-cols-2">
-        {/* Saved Helpers Preview */}
+        {/* Saved Professionals Preview */}
         <div className="rounded-2xl border border-[var(--line)] bg-white p-6 shadow-sm">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <Icon name="heart" className="h-5 w-5" style={{ color: "var(--error)" }} />
               <h2 className="font-display text-lg font-bold" style={{ color: "var(--ink)" }}>
-                Saved Helpers ({savedProviders.length})
+                Saved Professionals ({savedProviders.length})
               </h2>
             </div>
             <Link href="/dashboard/saved" className="text-xs font-semibold text-[var(--primary)] hover:underline">
@@ -236,7 +236,7 @@ export default function DashboardOverviewPage() {
               <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--surface-muted)] text-[var(--muted)] mb-3">
                 <Icon name="heart" className="h-6 w-6" />
               </div>
-              <p className="text-sm font-semibold" style={{ color: "var(--ink)" }}>No saved helpers yet</p>
+              <p className="text-sm font-semibold" style={{ color: "var(--ink)" }}>No saved professionals yet</p>
               <p className="mt-1 text-xs max-w-xs" style={{ color: "var(--muted)" }}>
                 Bookmark candidates while browsing to review their credentials later.
               </p>
@@ -289,7 +289,7 @@ export default function DashboardOverviewPage() {
           )}
         </div>
 
-        {/* Recently Viewed Helpers Preview */}
+        {/* Recently Viewed Professionals Preview */}
         <div className="rounded-2xl border border-[var(--line)] bg-white p-6 shadow-sm">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
@@ -310,7 +310,7 @@ export default function DashboardOverviewPage() {
               </div>
               <p className="text-sm font-semibold" style={{ color: "var(--ink)" }}>No profile history yet</p>
               <p className="mt-1 text-xs max-w-xs" style={{ color: "var(--muted)" }}>
-                Start searching to view detailed helper bios, skillsets, and ratings.
+                Start searching to view detailed professional bios, skillsets, and ratings.
               </p>
               <Link href="/providers" className="btn btn-secondary btn-sm mt-4 text-xs">
                 Explore Directory

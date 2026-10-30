@@ -15,22 +15,13 @@ import {
 import { useLocation } from "@/context/LocationContext";
 import { ProviderCard } from "@/components/marketplace/provider-card";
 import { applyLocation } from "@/lib/geo";
+import { fetchCatalogServices } from "@/lib/services/provider-applications";
+import { emojiForService } from "@/lib/service-emoji";
 import { Icon } from "@/components/ui/icon";
 import { ProviderCardSkeleton } from "@/components/ui/shimmer";
 import { ScrollStagger, ScrollStaggerItem } from "@/components/ui/scroll-reveal";
 import type { AvailabilityType, Gender, Provider, ProviderFilters } from "@/types/marketplace";
 
-const CATEGORY_EMOJIS: Record<string, string> = {
-  "cat-cook": "🍳",
-  "cat-maid": "🧹",
-  "cat-plumber": "🔧",
-  "cat-electrician": "⚡",
-  "cat-carpenter": "🪚",
-  "cat-driver": "🚗",
-  "cat-babysitter": "👶",
-  "cat-elderly-care": "👵",
-  "cat-painter": "🎨",
-};
 
 const EXP_OPTIONS: { id: NonNullable<ProviderFilters["experience"]>; label: string }[] = [
   { id: "0-1", label: "0 – 1 years" },
@@ -117,7 +108,7 @@ function FilterPanel({
         <div className="space-y-1.5 max-h-56 overflow-y-auto pr-1">
           {categories.map((c) => {
             const checked = categoryIds.includes(c.id) || categoryIds.includes(c.slug);
-            const emoji = CATEGORY_EMOJIS[c.id] ?? "🧹";
+            const emoji = emojiForService(c.name);
             return (
               <label
                 key={c.id}
@@ -317,7 +308,30 @@ function ProvidersContent() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const categories = useMemo(() => getCategories(), []);
+  // The admin-managed catalog is the source of truth for service names/keys
+// (what providers register under); the bundled list is only the fallback.
+const [categories, setCategories] = useState(() => getCategories());
+  useEffect(() => {
+    let cancelled = false;
+    fetchCatalogServices()
+      .then((services) => {
+        if (cancelled || services.length === 0) return;
+        setCategories(
+          services.map((svc) => ({
+            id: svc.key,
+            slug: svc.key.replace(/^cat-/, ""),
+            name: svc.name,
+            icon: "briefcase",
+            shortDescription: "",
+            skills: [],
+          }))
+        );
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const [loading, setLoading] = useState(true);
   const [mobileFilters, setMobileFilters] = useState(false);
@@ -472,10 +486,10 @@ function ProvidersContent() {
                 <Icon name="check-circle" className="h-3.5 w-3.5" /> 100% Pre-Screened Talent
               </span>
               <h1 className="font-display text-2xl font-extrabold sm:text-3xl mt-2" style={{ color: "var(--ink)" }}>
-                Find Domestic Help Across India
+                Find Trusted Professionals Across India
               </h1>
               <p className="mt-1 text-xs sm:text-sm" style={{ color: "var(--muted)" }}>
-                Connect directly with verified housemaids, cooks, babysitters, and home helpers across all Indian cities with 0% commission.
+                Connect directly with verified maids, cooks, nannies, drivers, and skilled professionals across all Indian cities with 0% commission.
               </p>
             </div>
 
@@ -514,11 +528,11 @@ function ProvidersContent() {
                   : "border border-[var(--line)] bg-white text-[var(--ink-secondary)] hover:border-[var(--muted)]"
               }`}
             >
-              🌟 All Helpers ({(liveProviders ?? []).length})
+              🌟 All Professionals ({(liveProviders ?? []).length})
             </button>
             {categories.map((c) => {
               const active = categoryIds.includes(c.id) || categoryIds.includes(c.slug);
-              const emoji = CATEGORY_EMOJIS[c.id] ?? "🧹";
+              const emoji = emojiForService(c.name);
               return (
                 <button
                   key={c.id}
@@ -812,7 +826,7 @@ function ProvidersContent() {
                   <h3 className="font-display text-lg font-bold" style={{ color: "var(--ink)" }}>
                     Filter Candidates
                   </h3>
-                  <p className="text-xs text-[var(--muted)]">Narrow down verified domestic helpers</p>
+                  <p className="text-xs text-[var(--muted)]">Narrow down verified professionals</p>
                 </div>
                 <button
                   type="button"

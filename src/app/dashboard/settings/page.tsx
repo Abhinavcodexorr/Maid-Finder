@@ -192,7 +192,7 @@ export default function AccountSettingsPage() {
           <div className="flex items-center justify-between py-3.5">
             <div>
               <p className="text-sm font-semibold" style={{ color: "var(--ink)" }}>
-                WhatsApp Helper Matches
+                WhatsApp Professional Matches
               </p>
               <p className="text-xs" style={{ color: "var(--muted)" }}>
                 Get instant notifications when candidates matching your criteria join in your locality.
@@ -284,7 +284,7 @@ export default function AccountSettingsPage() {
                 Delete Account?
               </h3>
               <p className="mt-1 text-xs" style={{ color: "var(--muted)" }}>
-                This will wipe your active membership, saved helpers, and recent searches from this device. This cannot be undone.
+                This will wipe your active membership, saved professionals, and recent searches from this device. This cannot be undone.
               </p>
             </div>
             <div className="flex items-center gap-2 pt-2">

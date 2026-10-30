@@ -8,7 +8,7 @@ import { Icon } from "@/components/ui/icon";
 
 const DASHBOARD_NAV = [
   { label: "Overview", href: "/dashboard", icon: "grid", exact: true },
-  { label: "Saved Helpers", href: "/dashboard/saved", icon: "heart" },
+  { label: "Saved Professionals", href: "/dashboard/saved", icon: "heart" },
   { label: "Recently Viewed", href: "/dashboard/recent", icon: "clock" },
   { label: "Membership & Plan", href: "/dashboard/membership", icon: "award" },
   { label: "Profile Details", href: "/dashboard/profile", icon: "user" },

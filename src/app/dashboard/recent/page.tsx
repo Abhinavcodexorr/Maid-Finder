@@ -57,7 +57,7 @@ export default function RecentlyViewedPage() {
             No browsing history yet
           </h2>
           <p className="mt-1 text-sm max-w-sm" style={{ color: "var(--muted)" }}>
-            Whenever you inspect a helper profile, it will be automatically recorded here for quick reference.
+            Whenever you inspect a professional profile, it will be automatically recorded here for quick reference.
           </p>
           <Link href="/providers" className="btn btn-primary mt-6">
             <Icon name="search" className="h-4 w-4" />

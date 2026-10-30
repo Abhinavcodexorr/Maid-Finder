@@ -76,7 +76,7 @@ export default function DashboardMembershipPage() {
                     month: "long",
                     year: "numeric",
                   })}. You have unrestricted phone & WhatsApp access to all candidate listings.`
-                : "Free accounts can browse helper profiles, read ratings, and save favorites. Upgrade to get instant unmasked phone numbers and WhatsApp buttons."}
+                : "Free accounts can browse professional profiles, read ratings, and save favorites. Upgrade to get instant unmasked phone numbers and WhatsApp buttons."}
             </p>
           </div>
 
@@ -110,7 +110,7 @@ export default function DashboardMembershipPage() {
               "1-Click Direct WhatsApp Messaging",
               "0% Brokerage or Commission Fees",
               "Aadhaar & Police Verification Checks",
-              "Unlimited Helper Shortlists",
+              "Unlimited Professional Shortlists",
               "Dedicated Priority Customer Support",
             ].map((benefit) => (
               <div key={benefit} className="flex items-center gap-2 text-xs">

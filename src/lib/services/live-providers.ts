@@ -9,7 +9,7 @@
 // `availabilityType` enum — those are adapted/omitted rather than
 // fabricated. See `mapApiProviderToProvider` for every mapping decision.
 
-import { CATEGORIES } from "@/data/categories";
+import { getCategoryById } from "./categories";
 import type { AvailabilityType, Gender, Provider } from "@/types/marketplace";
 
 /** Shape returned by the live API for one provider document (trimmed to the fields we use). */
@@ -71,7 +71,7 @@ interface OneResponse {
 }
 
 function categoryName(id: string): string | undefined {
-  return CATEGORIES.find((c) => c.id === id)?.name;
+  return getCategoryById(id)?.name;
 }
 
 function mapAvailabilityType(duration?: string): AvailabilityType {

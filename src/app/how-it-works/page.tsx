@@ -9,18 +9,18 @@ import { PageHeader } from "@/components/layout/page-header";
 const FAQS = [
   {
     q: "Why do I need a membership to view contact details?",
-    a: "Unlike traditional agencies that charge 1 to 2 months of helper salary (₹15,000 to ₹30,000) every time you hire, we charge a modest one-time membership starting at ₹499. This covers background verification, platform maintenance, and protects helpers from unsolicited spam calls.",
+    a: "Unlike traditional agencies that charge 1 to 2 months of professional salary (₹15,000 to ₹30,000) every time you hire, we charge a modest one-time membership starting at ₹499. This covers background verification, platform maintenance, and protects professionals from unsolicited spam calls.",
   },
   {
-    q: "Are the helpers on Help Zone verified?",
+    q: "Are the professionals on Help Zone verified?",
     a: "Yes. Every candidate profile undergoes identity verification using Aadhaar/Govt ID, recent photograph check, and previous employment verification before being awarded the verified badge.",
   },
   {
     q: "Do I have to pay any commission when I hire someone?",
-    a: "Zero commission. Never. You negotiate salary and terms directly with the candidate. 100% of whatever wage you pay goes straight into the helper's hands.",
+    a: "Zero commission. Never. You negotiate salary and terms directly with the candidate. 100% of whatever wage you pay goes straight into the professional's hands.",
   },
   {
-    q: "What if a helper I hire leaves after a few weeks?",
+    q: "What if a professional I hire leaves after a few weeks?",
     a: "With our Standard and Premium passes, you have ongoing access to browse and contact as many replacement candidates as you need during your subscription period at no extra cost.",
   },
   {
@@ -43,7 +43,7 @@ export default function HowItWorksPage() {
         <div className="flex flex-wrap justify-center gap-3">
           <Link href="/providers" className="btn btn-primary btn-lg">
             <Icon name="search" className="h-4 w-4" />
-            Browse Verified Helpers
+            Browse Verified Professionals
           </Link>
           <Link href="/membership" className="btn btn-outline btn-lg">
             View Membership Plans
@@ -150,12 +150,12 @@ export default function HowItWorksPage() {
                 </tr>
                 <tr>
                   <td className="py-4 font-medium" style={{ color: "var(--ink)" }}>Contact Method</td>
-                  <td className="py-4 font-semibold text-[var(--ink)]">Direct Call & WhatsApp to helper</td>
+                  <td className="py-4 font-semibold text-[var(--ink)]">Direct Call & WhatsApp to professional</td>
                   <td className="py-4 text-[var(--muted)]">Through intermediate broker only</td>
                 </tr>
                 <tr>
                   <td className="py-4 font-medium" style={{ color: "var(--ink)" }}>Salary Transparency</td>
-                  <td className="py-4 font-semibold text-[var(--ink)]">Direct negotiation; helper keeps 100%</td>
+                  <td className="py-4 font-semibold text-[var(--ink)]">Direct negotiation; professional keeps 100%</td>
                   <td className="py-4 text-[var(--muted)]">Agencies often pocket a chunk of salary</td>
                 </tr>
                 <tr>
@@ -282,7 +282,7 @@ export default function HowItWorksPage() {
           style={{ background: "var(--gradient-primary)" }}
         >
           <h2 className="font-display text-2xl font-bold sm:text-4xl">
-            Ready to find your ideal household helper?
+            Ready to find your ideal household professional?
           </h2>
           <p className="mt-3 text-sm sm:text-base text-white/90 max-w-xl mx-auto">
             Browse verified maids, cooks, and nannies in your neighborhood right now.

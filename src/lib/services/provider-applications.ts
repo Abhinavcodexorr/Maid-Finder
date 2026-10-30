@@ -1,5 +1,6 @@
 "use client";
 
+import { rememberCatalogNames } from "./categories";
 import { ApiError } from "@/lib/api-client";
 import { writeJson, STORAGE_KEYS } from "@/lib/services/storage";
 
@@ -82,7 +83,9 @@ export async function fetchCatalogServices(): Promise<CatalogService[]> {
   if (!response.ok || !data?.success) {
     throw new ApiError(data?.message || "Couldn't load services", response.status, data);
   }
-  return data.data as CatalogService[];
+  const services = data.data as CatalogService[];
+  rememberCatalogNames(services);
+  return services;
 }
 
 /** Uploads an image or video to the backend's generic upload endpoint and returns its public URL. */

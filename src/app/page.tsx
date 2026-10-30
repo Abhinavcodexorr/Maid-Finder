@@ -6,7 +6,6 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Icon } from "@/components/ui/icon";
 import {
-  fetchLiveProviders,
   fetchCatalogServices,
   fetchLivePlans,
 } from "@/lib/services";
@@ -24,7 +23,7 @@ import { colorForIndex } from "@/lib/category-colors";
 import { TiltCard } from "@/components/ui/tilt-card";
 import { CountUp } from "@/components/ui/count-up";
 import { Underlined } from "@/components/ui/underlined";
-import type { Plan, Provider } from "@/types/marketplace";
+import type { Plan } from "@/types/marketplace";
 
 /* ================================================================
    CONSTANTS
@@ -75,7 +74,6 @@ export default function HomePage() {
   const [locationQuery, setLocationQuery] = useState("");
 
   const [catalog, setCatalog] = useState<CatalogService[] | null>(null);
-  const [liveProviders, setLiveProviders] = useState<Provider[] | null>(null);
   const [plans, setPlans] = useState<Plan[] | null>(null);
 
   useEffect(() => {
@@ -83,9 +81,6 @@ export default function HomePage() {
     fetchCatalogServices()
       .then((list) => { if (!cancelled) setCatalog(list); })
       .catch(() => { if (!cancelled) setCatalog([]); });
-    fetchLiveProviders()
-      .then((list) => { if (!cancelled) setLiveProviders(list); })
-      .catch(() => { if (!cancelled) setLiveProviders([]); });
     fetchLivePlans()
       .then((list) => { if (!cancelled) setPlans(list); })
       .catch(() => { if (!cancelled) setPlans([]); });
@@ -300,13 +295,13 @@ export default function HomePage() {
           </motion.h2>
           <div className="mt-10 grid grid-cols-2 gap-y-10 md:grid-cols-4 md:divide-x md:divide-white/15">
             {[
-              { value: liveProviders ? String(liveProviders.length) : "0", label: "Verified professionals available" },
-              { value: catalog ? String(catalog.length) : "0", label: "Services you can hire for" },
+              { value: "Free", label: "To browse every profile" },
+              { value: "Pan-India", label: "Cities and areas covered" },
               { value: "100%", label: "Profiles ID-verified" },
               { value: "0%", label: "Commission, always" },
             ].map((stat) => (
               <div key={stat.label} className="px-4">
-                <p className="font-display text-4xl font-extrabold sm:text-5xl">
+                <p className="font-display text-3xl font-extrabold sm:text-5xl">
                   <CountUp key={stat.value} value={stat.value} />
                 </p>
                 <p className="mx-auto mt-2 max-w-[11rem] text-sm text-white/70">{stat.label}</p>

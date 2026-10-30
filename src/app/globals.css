@@ -16,15 +16,15 @@
   --accent-soft: #fff7ed;
 
   /* ---- Neutrals ---- */
-  --bg: #f8fafc;
+  --bg: #faf7f2;
   --surface: #ffffff;
-  --ink: #0f172a;
-  --ink-light: #334155;
-  --muted: #64748b;
+  --ink: #12182b;
+  --ink-light: #3b4256;
+  --muted: #6a6f80;
   --faint: #94a3b8;
-  --line: #e2e8f0;
-  --line-light: #f1f5f9;
-  --surface-muted: #f4f7fb;
+  --line: #e8e1d5;
+  --line-light: #f2ede4;
+  --surface-muted: #f4efe7;
   --ink-secondary: #475569;
 
   /* ---- Semantic ---- */
@@ -68,8 +68,8 @@
 
   /* ---- Gradients ---- */
   --gradient-primary: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
-  --gradient-dark: linear-gradient(160deg, #0f172a 0%, #1e293b 100%);
-  --gradient-hero: linear-gradient(135deg, #eff6ff 0%, #f0f9ff 50%, #f8fafc 100%);
+  --gradient-dark: linear-gradient(160deg, #0d1530 0%, #16224a 100%);
+  --gradient-hero: linear-gradient(135deg, #f8f1e6 0%, #f7f3ec 55%, #eef3fc 100%);
   --gradient-locked: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
   --gradient-success: linear-gradient(135deg, #10b981 0%, #059669 100%);
   --gradient-warm: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
@@ -116,8 +116,8 @@
    TAILWIND THEME
    ================================================================ */
 @theme inline {
-  --font-sans: var(--font-inter);
-  --font-display: var(--font-outfit);
+  --font-sans: var(--font-jakarta);
+  --font-display: var(--font-jakarta);
 }
 
 /* ================================================================
@@ -170,14 +170,15 @@ button:focus-visible {
 body {
   background: var(--bg);
   color: var(--ink);
-  font-family: var(--font-inter), "Inter", system-ui, -apple-system, sans-serif;
+  font-family: var(--font-jakarta), "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
   line-height: 1.6;
 }
 
 h1, h2, h3, h4, .font-display {
-  font-family: var(--font-outfit), "Outfit", system-ui, sans-serif;
-  line-height: 1.2;
-  letter-spacing: -0.02em;
+  font-family: var(--font-jakarta), "Plus Jakarta Sans", system-ui, sans-serif;
+  line-height: 1.15;
+  letter-spacing: -0.03em;
+  font-weight: 800;
 }
 
 ::selection {
@@ -188,10 +189,10 @@ h1, h2, h3, h4, .font-display {
 /* ================================================================
    TYPOGRAPHY
    ================================================================ */
-.text-display { font-size: clamp(2.5rem, 5vw, 3.5rem); font-weight: 700; line-height: 1.08; letter-spacing: -0.03em; }
-.text-h1 { font-size: clamp(1.75rem, 3vw, 2.25rem); font-weight: 700; line-height: 1.15; letter-spacing: -0.025em; }
-.text-h2 { font-size: clamp(1.35rem, 2.5vw, 1.75rem); font-weight: 600; line-height: 1.25; letter-spacing: -0.015em; }
-.text-h3 { font-size: 1.125rem; font-weight: 600; line-height: 1.4; letter-spacing: -0.01em; }
+.text-display { font-size: clamp(2.6rem, 5.4vw, 4rem); font-weight: 800; line-height: 1.08; letter-spacing: -0.03em; }
+.text-h1 { font-size: clamp(1.9rem, 3.4vw, 2.6rem); font-weight: 800; line-height: 1.15; letter-spacing: -0.025em; }
+.text-h2 { font-size: clamp(1.5rem, 2.8vw, 2rem); font-weight: 800; line-height: 1.25; letter-spacing: -0.015em; }
+.text-h3 { font-size: 1.15rem; font-weight: 700; line-height: 1.4; letter-spacing: -0.01em; }
 .text-body { font-size: 0.9375rem; line-height: 1.65; }
 .text-small { font-size: 0.8125rem; line-height: 1.5; }
 .text-caption { font-size: 0.75rem; line-height: 1.4; }
@@ -386,7 +387,7 @@ h1, h2, h3, h4, .font-display {
   border-radius: var(--radius-md);
   background: var(--primary-soft);
   color: var(--primary-dark);
-  font-family: var(--font-outfit), sans-serif;
+  font-family: var(--font-jakarta), sans-serif;
 }
 
 .footer-link {

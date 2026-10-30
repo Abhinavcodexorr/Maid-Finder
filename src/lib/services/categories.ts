@@ -22,8 +22,26 @@ export function getCategoryBySlug(slug: string): Category | undefined {
   );
 }
 
+// Services created in the admin catalog (keys like "cat-cooking") aren't in
+// the bundled list. Names fetched from the live catalog are remembered here,
+// and a readable name is derived from the key if the catalog isn't loaded yet.
+const catalogNames = new Map<string, string>();
+
+export function rememberCatalogNames(services: { key: string; name: string }[]): void {
+  services.forEach((s) => catalogNames.set(s.key, s.name));
+}
+
 export function getCategoryById(id: string): Category | undefined {
-  return CATEGORIES.find((c) => c.id === id);
+  const bundled = CATEGORIES.find((c) => c.id === id);
+  if (bundled || !id.startsWith("cat-")) return bundled;
+  const name =
+    catalogNames.get(id) ??
+    id
+      .replace(/^cat-/, "")
+      .split("-")
+      .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+      .join(" ");
+  return { id, name, slug: id.replace(/^cat-/, ""), icon: "briefcase", shortDescription: "", skills: [] };
 }
 
 export function getSkillsForCategory(categoryId: string): string[] {
