@@ -478,17 +478,17 @@ const [categories, setCategories] = useState(() => getCategories());
   return (
     <div className="min-h-screen bg-[var(--surface-muted)] pb-16">
       {/* Hero Header with Search Bar */}
-      <section className="border-b py-8" style={{ borderColor: "var(--line)", background: "var(--gradient-hero)" }}>
+      <section className="py-8 text-white" style={{ background: "var(--gradient-dark)" }}>
         <div className="container-page space-y-6">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div>
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-[var(--primary-soft)] px-3 py-0.5 text-xs font-bold text-[var(--primary)] uppercase tracking-wider">
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs font-bold uppercase tracking-wider text-white">
                 <Icon name="check-circle" className="h-3.5 w-3.5" /> 100% Pre-Screened Talent
               </span>
-              <h1 className="font-display text-2xl font-extrabold sm:text-3xl mt-2" style={{ color: "var(--ink)" }}>
+              <h1 className="font-display text-2xl font-extrabold sm:text-3xl mt-2">
                 Find Trusted Professionals Across India
               </h1>
-              <p className="mt-1 text-xs sm:text-sm" style={{ color: "var(--muted)" }}>
+              <p className="mt-1 text-xs text-white/70 sm:text-sm">
                 Connect directly with verified maids, cooks, nannies, drivers, and skilled professionals across all Indian cities with 0% commission.
               </p>
             </div>

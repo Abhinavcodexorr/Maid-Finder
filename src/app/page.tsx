@@ -10,7 +10,6 @@ import {
   fetchLivePlans,
 } from "@/lib/services";
 import type { CatalogService } from "@/lib/services";
-import { emojiForService } from "@/lib/service-emoji";
 import { TESTIMONIALS } from "@/data/testimonials";
 import { FAQS } from "@/data/faqs";
 import { useAuth } from "@/context/AuthContext";
@@ -19,7 +18,7 @@ import { FaqList } from "@/components/sections/faq-list";
 import { PlanCards } from "@/components/sections/plan-cards";
 import { TestimonialsCarousel } from "@/components/sections/testimonials-carousel";
 import { ScrollReveal, ScrollStagger, ScrollStaggerItem } from "@/components/ui/scroll-reveal";
-import { colorForIndex } from "@/lib/category-colors";
+import { ServiceGlyph, serviceGradient } from "@/components/ui/service-glyph";
 import { TiltCard } from "@/components/ui/tilt-card";
 import { CountUp } from "@/components/ui/count-up";
 import { Underlined } from "@/components/ui/underlined";
@@ -105,94 +104,113 @@ export default function HomePage() {
   return (
     <>
       {/* ====== HERO ====== */}
-      <section className="relative overflow-hidden" style={{ background: "var(--gradient-hero)" }}>
-        <div
-          aria-hidden
-          className="blob-drift pointer-events-none absolute -right-24 -top-24 h-96 w-96 rounded-full opacity-60 blur-3xl"
-          style={{ background: "radial-gradient(circle, rgba(59,130,246,0.35), transparent 70%)" }}
-        />
-        <div
-          aria-hidden
-          className="blob-drift pointer-events-none absolute -bottom-32 -left-24 h-80 w-80 rounded-full opacity-50 blur-3xl"
-          style={{ background: "radial-gradient(circle, rgba(14,165,233,0.25), transparent 70%)" }}
-        />
+      <section className="relative overflow-hidden text-white" style={{ background: "var(--gradient-dark)" }}>
+        <div aria-hidden className="pointer-events-none absolute inset-0 opacity-[0.18]" style={{ backgroundImage: "radial-gradient(rgba(255,255,255,0.7) 1px, transparent 1px)", backgroundSize: "28px 28px", maskImage: "radial-gradient(ellipse at 70% 40%, black, transparent 70%)", WebkitMaskImage: "radial-gradient(ellipse at 70% 40%, black, transparent 70%)" }} />
+        <div aria-hidden className="blob-drift pointer-events-none absolute -right-32 -top-32 h-[34rem] w-[34rem] rounded-full opacity-70 blur-3xl" style={{ background: "radial-gradient(circle, rgba(59,130,246,0.55), transparent 65%)" }} />
+        <div aria-hidden className="blob-drift pointer-events-none absolute -bottom-40 left-1/4 h-[28rem] w-[28rem] rounded-full opacity-50 blur-3xl" style={{ background: "radial-gradient(circle, rgba(236,72,153,0.28), transparent 65%)" }} />
 
-        <div className="container-page relative grid items-center gap-12 py-14 lg:grid-cols-[1.05fr_0.95fr] lg:py-20">
+        <div className="container-page relative grid items-center gap-14 py-16 lg:grid-cols-[1.05fr_0.95fr] lg:py-24">
           <div>
-            <motion.p {...heroAnim(0)} className="eyebrow">India&apos;s trusted home-help platform</motion.p>
-            <motion.h1 {...heroAnim(0.08)} className="font-display text-display mt-4">
-              Hire verified <Underlined>professionals</Underlined> for every job
+            <motion.p {...heroAnim(0)} className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3.5 py-1.5 text-xs font-bold uppercase tracking-[0.14em] backdrop-blur">
+              <span className="h-2 w-2 rounded-full bg-emerald-400" /> India&apos;s trusted home-help platform
+            </motion.p>
+            <motion.h1 {...heroAnim(0.08)} className="font-display text-display mt-5">
+              Hire verified{" "}
+              <span style={{ background: "linear-gradient(90deg, #7dd3fc, #93c5fd 45%, #c4b5fd)", WebkitBackgroundClip: "text", backgroundClip: "text", color: "transparent" }}>
+                professionals
+              </span>{" "}
+              for every job
             </motion.h1>
-            <motion.p {...heroAnim(0.16)} className="mt-5 max-w-xl text-lg leading-relaxed" style={{ color: "var(--muted)" }}>
+            <motion.p {...heroAnim(0.16)} className="mt-5 max-w-xl text-lg leading-relaxed text-white/70">
               Maids, cooks, nannies, drivers and more — browse free, then connect directly with 0% commission.
             </motion.p>
 
-            {/* Search card */}
-            <motion.div
-              {...heroAnim(0.24)}
-              className="mt-8 max-w-xl rounded-3xl border bg-white p-5 shadow-xl"
-              style={{ borderColor: "var(--line)" }}
-            >
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div>
-                  <label htmlFor="heroService" className="text-[11px] font-bold uppercase tracking-[0.12em]" style={{ color: "var(--muted)" }}>
+            {/* Search bar */}
+            <motion.div {...heroAnim(0.24)} className="mt-9 max-w-2xl rounded-[1.75rem] bg-white p-2.5 shadow-2xl sm:rounded-full">
+              <div className="flex flex-col gap-1 sm:flex-row sm:items-center">
+                <div className="flex-1 px-4 py-1.5 sm:border-r sm:border-[var(--line)]">
+                  <label htmlFor="heroService" className="block text-[10px] font-bold uppercase tracking-[0.14em]" style={{ color: "var(--muted)" }}>
                     Service
                   </label>
-                  <select id="heroService" className="field mt-1.5" value={serviceKey} onChange={(e) => setServiceKey(e.target.value)}>
-                    <option value="">{typedService ? `Try ${typedService}` : "Any service"}</option>
+                  <select
+                    id="heroService"
+                    className="w-full cursor-pointer bg-transparent text-sm font-semibold outline-none"
+                    style={{ color: "var(--ink)" }}
+                    value={serviceKey}
+                    onChange={(e) => setServiceKey(e.target.value)}
+                  >
+                    <option value="">{typedService || "Any service"}</option>
                     {(catalog ?? []).map((svc) => (
                       <option key={svc.key} value={svc.key}>{svc.name}</option>
                     ))}
                   </select>
                 </div>
-                <div>
-                  <label htmlFor="heroLocation" className="text-[11px] font-bold uppercase tracking-[0.12em]" style={{ color: "var(--muted)" }}>
+                <div className="flex-1 px-4 py-1.5">
+                  <label htmlFor="heroLocation" className="block text-[10px] font-bold uppercase tracking-[0.14em]" style={{ color: "var(--muted)" }}>
                     Location
                   </label>
                   <input
                     id="heroLocation"
-                    className="field mt-1.5"
+                    className="w-full bg-transparent text-sm font-semibold outline-none placeholder:font-medium"
+                    style={{ color: "var(--ink)" }}
                     placeholder="City or area"
                     value={locationQuery}
                     onChange={(e) => setLocationQuery(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && onSearch()}
                   />
                 </div>
+                <button type="button" onClick={onSearch} className="btn btn-primary btn-lg w-full sm:w-auto">
+                  <Icon name="search" className="h-4 w-4" />
+                  Find a professional
+                </button>
               </div>
-              <button type="button" onClick={onSearch} className="btn btn-primary btn-lg mt-4 w-full">
-                <Icon name="search" className="h-4 w-4" />
-                Find a professional
-              </button>
             </motion.div>
 
             <motion.div {...heroAnim(0.32)} className="mt-6 flex flex-wrap gap-2.5">
-              <Link href="/providers" className="btn btn-outline btn-sm">Search profiles</Link>
-              <Link href="/membership" className="btn btn-outline btn-sm">Buy access package</Link>
-              <Link href="/register-provider" className="btn btn-outline btn-sm">Register as Provider</Link>
+              {[
+                { href: "/providers", label: "Search profiles" },
+                { href: "/membership", label: "Buy access package" },
+                { href: "/register-provider", label: "Register as Provider" },
+              ].map((l) => (
+                <Link key={l.href} href={l.href} className="rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm font-semibold backdrop-blur transition-colors hover:bg-white/20">
+                  {l.label}
+                </Link>
+              ))}
             </motion.div>
 
-            <motion.ul {...heroAnim(0.4)} className="mt-6 flex flex-wrap gap-x-6 gap-y-2 text-sm font-medium" style={{ color: "var(--ink-light)" }}>
+            <motion.ul {...heroAnim(0.4)} className="mt-7 flex flex-wrap gap-x-6 gap-y-2 text-sm font-medium text-white/80">
               {["100% ID verified", "0% commission", "Free to browse"].map((item) => (
                 <li key={item} className="flex items-center gap-2">
-                  <Icon name="check-circle" className="h-4 w-4" style={{ color: "var(--success)" }} />
+                  <Icon name="check-circle" className="h-4 w-4 text-emerald-400" />
                   {item}
                 </li>
               ))}
             </motion.ul>
           </div>
 
-          {/* Hero photo */}
+          {/* Service constellation — every tile is a real link into search */}
           <motion.div {...heroAnim(0.2)} className="relative mx-auto hidden w-full max-w-md lg:block">
-            <div className="absolute -inset-5 rounded-[3rem] opacity-40 blur-2xl" style={{ background: "var(--gradient-primary)" }} />
-            <div className="relative overflow-hidden rounded-[2.5rem] border-[6px] border-white shadow-2xl">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src="/images/auth-service-hero.jpg"
-                alt="A smiling home-help professional in a bright kitchen"
-                className="h-[540px] w-full object-cover object-top"
-              />
+            <div className="grid grid-cols-2 gap-4">
+              {(catalog ?? []).slice(0, 6).map((svc, i) => (
+                <Link
+                  key={svc.key}
+                  href={`/providers?category=${svc.key}`}
+                  className={`group relative overflow-hidden rounded-3xl p-5 text-white shadow-2xl transition-transform duration-300 hover:-translate-y-1.5 ${i % 2 === 1 ? "mt-8" : ""} ${i === 0 || i === 3 ? "h-52" : "h-44"}`}
+                  style={{ background: serviceGradient(i) }}
+                >
+                  <ServiceGlyph name={svc.name} className="absolute -bottom-5 -right-5 h-28 w-28 opacity-25 transition-transform duration-500 group-hover:scale-110 group-hover:-rotate-6" />
+                  <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/20 backdrop-blur">
+                    <ServiceGlyph name={svc.name} className="h-6 w-6" />
+                  </span>
+                  <p className="absolute bottom-5 left-5 right-5 font-display text-lg font-extrabold leading-tight">{svc.name}</p>
+                </Link>
+              ))}
+              {catalog === null &&
+                Array.from({ length: 6 }).map((_, i) => (
+                  <div key={i} className={`shimmer rounded-3xl ${i % 2 === 1 ? "mt-8" : ""} h-44`} />
+                ))}
             </div>
-            <div className="float-depth absolute -left-6 top-14 flex items-center gap-3 rounded-2xl bg-white p-3.5 shadow-xl" style={{ border: "1px solid var(--line)" }}>
+            <div className="float-depth absolute -left-10 top-1/2 flex items-center gap-3 rounded-2xl bg-white p-3.5 shadow-2xl" style={{ color: "var(--ink)" }}>
               <span className="flex h-11 w-11 items-center justify-center rounded-xl" style={{ background: "var(--success-soft)", color: "var(--success)" }}>
                 <Icon name="shield" className="h-5 w-5" />
               </span>
@@ -201,14 +219,11 @@ export default function HomePage() {
                 <p className="text-xs" style={{ color: "var(--muted)" }}>Aadhaar &amp; PAN checked</p>
               </div>
             </div>
-            <div className="float-depth-delay absolute -right-3 bottom-16 flex items-center gap-3 rounded-2xl bg-white p-3.5 shadow-xl" style={{ border: "1px solid var(--line)" }}>
-              <span className="flex h-11 w-11 items-center justify-center rounded-xl" style={{ background: "var(--primary-soft)", color: "var(--primary)" }}>
-                <Icon name="phone" className="h-5 w-5" />
+            <div className="float-depth-delay absolute -right-4 -top-5 flex items-center gap-2 rounded-full bg-white px-4 py-2.5 text-sm font-bold shadow-2xl" style={{ color: "var(--ink)" }}>
+              <span className="flex h-7 w-7 items-center justify-center rounded-full text-white" style={{ background: "var(--gradient-primary)" }}>
+                <Icon name="phone" className="h-3.5 w-3.5" />
               </span>
-              <div>
-                <p className="text-sm font-bold">Call directly</p>
-                <p className="text-xs" style={{ color: "var(--muted)" }}>No agency in between</p>
-              </div>
+              0% commission
             </div>
           </motion.div>
         </div>
@@ -243,9 +258,9 @@ export default function HomePage() {
         </motion.div>
 
         {catalog === null && (
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
+          <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
             {Array.from({ length: HOME_SERVICE_COUNT }).map((_, i) => (
-              <div key={i} className="card shimmer h-[74px]" />
+              <div key={i} className="shimmer h-44 rounded-3xl" />
             ))}
           </div>
         )}
@@ -256,34 +271,27 @@ export default function HomePage() {
           </div>
         )}
 
-        <ScrollStagger className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
-          {(catalog ?? []).slice(0, HOME_SERVICE_COUNT).map((svc, i) => {
-            const swatch = colorForIndex(i);
-            return (
-              <ScrollStaggerItem key={svc.key}>
-                <TiltCard maxTilt={8} scale={1.03} className="h-full">
-                  <Link
-                    href={`/providers?category=${svc.key}`}
-                    className="card card-hover flex h-full items-center gap-3 !p-3 sm:gap-4 sm:!p-4"
-                  >
-                    <span
-                      className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl text-2xl"
-                      style={{ background: swatch.soft }}
-                    >
-                      {svc.imageUrl ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img src={svc.imageUrl} alt="" className="h-full w-full object-cover" />
-                      ) : (
-                        emojiForService(svc.name)
-                      )}
-                    </span>
-                    <span className="flex-1 text-sm font-semibold">{svc.name}</span>
-                    <Icon name="arrow-right" className="hidden h-4 w-4 shrink-0 sm:block" style={{ color: "var(--faint)" }} />
-                  </Link>
-                </TiltCard>
-              </ScrollStaggerItem>
-            );
-          })}
+        <ScrollStagger className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+          {(catalog ?? []).slice(0, HOME_SERVICE_COUNT).map((svc, i) => (
+            <ScrollStaggerItem key={svc.key}>
+              <Link
+                href={`/providers?category=${svc.key}`}
+                className="group relative flex h-44 flex-col justify-between overflow-hidden rounded-3xl p-5 text-white shadow-lg transition-all duration-300 hover:-translate-y-1.5 hover:shadow-2xl sm:h-52"
+                style={{ background: serviceGradient(i + 3) }}
+              >
+                <ServiceGlyph name={svc.name} className="absolute -bottom-6 -right-6 h-32 w-32 opacity-20 transition-transform duration-500 group-hover:scale-110 group-hover:-rotate-6 sm:h-36 sm:w-36" />
+                <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/20 backdrop-blur">
+                  <ServiceGlyph name={svc.name} className="h-6 w-6" />
+                </span>
+                <div className="relative flex items-end justify-between gap-2">
+                  <p className="font-display text-lg font-extrabold leading-tight sm:text-xl">{svc.name}</p>
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/25 transition-transform group-hover:translate-x-1">
+                    <Icon name="arrow-right" className="h-4 w-4" />
+                  </span>
+                </div>
+              </Link>
+            </ScrollStaggerItem>
+          ))}
         </ScrollStagger>
       </section>
 

@@ -45,7 +45,7 @@ export default function HowItWorksPage() {
             <Icon name="search" className="h-4 w-4" />
             Browse Verified Professionals
           </Link>
-          <Link href="/membership" className="btn btn-outline btn-lg">
+          <Link href="/membership" className="btn btn-lg !border !border-white/30 !bg-white/10 !text-white hover:!bg-white/20">
             View Membership Plans
           </Link>
         </div>
