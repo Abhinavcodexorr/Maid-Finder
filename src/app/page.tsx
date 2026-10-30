@@ -111,7 +111,7 @@ export default function HomePage() {
     <>
       {/* ====== HERO ====== */}
       <section className="relative overflow-hidden" style={{ background: "var(--gradient-hero)" }}>
-        <div className="container-page relative grid items-center gap-12 py-12 lg:grid-cols-[1.05fr_0.95fr] lg:py-20">
+        <div className="container-page relative grid items-center gap-12 py-12 lg:grid-cols-[0.92fr_1.08fr] lg:py-20">
           <div>
             <motion.p {...heroAnim(0)} className="inline-flex items-center gap-2 rounded-full border bg-white px-3.5 py-1.5 text-xs font-bold uppercase tracking-[0.12em] shadow-sm" style={{ borderColor: "var(--line)", color: "var(--ink-light)" }}>
               <span className="flex h-5 w-5 items-center justify-center rounded-full text-white" style={{ background: "var(--primary)" }}>
@@ -189,40 +189,11 @@ export default function HomePage() {
             </motion.ul>
           </div>
 
-          {/* Arch photo with a verified seal */}
-          <motion.div {...heroAnim(0.2)} className="relative mx-auto hidden w-full max-w-md lg:block">
-            <div className="relative overflow-hidden rounded-t-[14rem] rounded-b-[2rem] shadow-2xl" style={{ background: "var(--primary-dark)" }}>
+          {/* Brand hero image */}
+          <motion.div {...heroAnim(0.2)} className="relative mx-auto w-full max-w-2xl">
+            <div className="overflow-hidden rounded-[2rem] border bg-white shadow-2xl" style={{ borderColor: "var(--line)" }}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/images/services/elderly.jpg" alt="A smiling caregiver with an elderly woman at home" className="h-[560px] w-full object-cover object-[30%_center]" />
-            </div>
-            <svg viewBox="0 0 120 120" className="absolute -right-6 -top-4 h-28 w-28 drop-shadow-lg" aria-hidden>
-              <defs>
-                <path id="seal-circle" d="M60,60 m-44,0 a44,44 0 1,1 88,0 a44,44 0 1,1 -88,0" />
-              </defs>
-              <circle cx="60" cy="60" r="58" fill="#fff" />
-              <circle cx="60" cy="60" r="31" fill="var(--primary)" />
-              <text fontSize="9.5" fontWeight="800" letterSpacing="2.4" fill="var(--primary-dark)">
-                <textPath href="#seal-circle">VERIFIED · BACKGROUND · CHECKED ·</textPath>
-              </text>
-              <path d="M46 61l10 10 19-21" fill="none" stroke="#fff" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-            <div className="float-depth absolute -left-8 bottom-24 flex items-center gap-3 rounded-2xl bg-white p-3.5 shadow-xl" style={{ border: "1px solid var(--line)" }}>
-              <span className="flex h-11 w-11 items-center justify-center rounded-xl" style={{ background: "var(--success-soft)", color: "var(--success)" }}>
-                <Icon name="shield" className="h-5 w-5" />
-              </span>
-              <div>
-                <p className="text-sm font-bold">Identity verified</p>
-                <p className="text-xs" style={{ color: "var(--muted)" }}>Aadhaar &amp; PAN checked</p>
-              </div>
-            </div>
-            <div className="float-depth-delay absolute -right-4 bottom-6 flex items-center gap-3 rounded-2xl bg-white p-3.5 shadow-xl" style={{ border: "1px solid var(--line)" }}>
-              <span className="flex h-11 w-11 items-center justify-center rounded-xl" style={{ background: "var(--primary-soft)", color: "var(--primary)" }}>
-                <Icon name="phone" className="h-5 w-5" />
-              </span>
-              <div>
-                <p className="text-sm font-bold">Call directly</p>
-                <p className="text-xs" style={{ color: "var(--muted)" }}>0% commission</p>
-              </div>
+              <img src="/images/helpzone-hero.webp" alt="HelpZone — find cleaning, plumbing, electrical and beauty professionals from your phone" className="block aspect-[3/2] w-full object-cover" />
             </div>
           </motion.div>
         </div>
