@@ -111,7 +111,7 @@ export default function HomePage() {
     <>
       {/* ====== HERO ====== */}
       <section className="relative overflow-hidden" style={{ background: "var(--gradient-hero)" }}>
-        <div className="container-page relative grid items-center gap-12 py-12 lg:grid-cols-[0.92fr_1.08fr] lg:py-20">
+        <div className="container-page relative grid items-center gap-12 py-12 lg:grid-cols-[1.05fr_0.95fr] lg:py-20">
           <div>
             <motion.p {...heroAnim(0)} className="inline-flex items-center gap-2 rounded-full border bg-white px-3.5 py-1.5 text-xs font-bold uppercase tracking-[0.12em] shadow-sm" style={{ borderColor: "var(--line)", color: "var(--ink-light)" }}>
               <span className="flex h-5 w-5 items-center justify-center rounded-full text-white" style={{ background: "var(--primary)" }}>
@@ -189,11 +189,12 @@ export default function HomePage() {
             </motion.ul>
           </div>
 
-          {/* Brand hero image */}
-          <motion.div {...heroAnim(0.2)} className="relative mx-auto w-full max-w-2xl">
-            <div className="overflow-hidden rounded-[2rem] border bg-white shadow-2xl" style={{ borderColor: "var(--line)" }}>
+          {/* Brand hero image in an arch frame */}
+          <motion.div {...heroAnim(0.2)} className="relative mx-auto w-full max-w-sm lg:max-w-[28rem]">
+            <div className="relative overflow-hidden rounded-t-[999px] rounded-b-[2rem] shadow-2xl" style={{ background: "var(--primary-dark)" }}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/images/helpzone-hero.webp" alt="HelpZone — find cleaning, plumbing, electrical and beauty professionals from your phone" className="block aspect-[3/2] w-full object-cover" />
+              <img src="/images/helpzone-hero.webp" alt="HelpZone — find cleaning, plumbing, electrical and beauty professionals from your phone" className="block aspect-[5/6] w-full object-cover object-[88%_center]" />
+              <div className="pointer-events-none absolute inset-3 rounded-t-[999px] rounded-b-[1.4rem] border border-white/70" />
             </div>
           </motion.div>
         </div>
