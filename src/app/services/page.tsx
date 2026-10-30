@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
 import { getCategories, fetchLiveProviders, fetchCatalogServices } from "@/lib/services";
-import { emojiForService } from "@/lib/service-emoji";
+import { ServiceGlyph, serviceImage } from "@/components/ui/service-glyph";
 import { Icon } from "@/components/ui/icon";
 import { TiltCard } from "@/components/ui/tilt-card";
 import { PageHeader } from "@/components/layout/page-header";
@@ -79,12 +79,21 @@ export default function ServicesPage() {
   const [searchQuery, setSearchQuery] = useState("");
   // Services come from the admin-managed catalog (what providers register
   // under); the bundled list is only the fallback if it can't be loaded.
-  const [categories, setCategories] = useState(() => getCategories());
+  const [categories, setCategories] = useState<ReturnType<typeof getCategories>>([]);
+  const [loaded, setLoaded] = useState(false);
+  // Admin-managed extras per service key; many services have no photo or sub-categories yet.
+  const [catalogExtras, setCatalogExtras] = useState<Record<string, { imageUrl?: string; subCategories: string[] }>>({});
   useEffect(() => {
     let cancelled = false;
     fetchCatalogServices()
       .then((services) => {
-        if (cancelled || services.length === 0) return;
+        if (cancelled) return;
+        if (services.length === 0) {
+          setCategories(getCategories());
+          setLoaded(true);
+          return;
+        }
+        setLoaded(true);
         setCategories(
           services.map((svc) => ({
             id: svc.key,
@@ -95,8 +104,13 @@ export default function ServicesPage() {
             skills: [],
           }))
         );
+        setCatalogExtras(Object.fromEntries(services.map((svc) => [svc.key, { imageUrl: svc.imageUrl, subCategories: (svc.subCategories ?? []).map((sc) => sc.name) }])));
       })
-      .catch(() => {});
+      .catch(() => {
+        if (cancelled) return;
+        setCategories(getCategories());
+        setLoaded(true);
+      });
     return () => {
       cancelled = true;
     };
@@ -170,7 +184,13 @@ export default function ServicesPage() {
           </Link>
         </div>
 
-        {filteredCategories.length === 0 ? (
+        {!loaded ? (
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="shimmer h-80 rounded-3xl" />
+            ))}
+          </div>
+        ) : filteredCategories.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-[var(--line)] bg-white p-12 text-center">
             <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-[var(--surface-muted)] text-[var(--muted)]">
               <Icon name="search" className="h-7 w-7" />
@@ -191,12 +211,16 @@ export default function ServicesPage() {
           <ScrollStagger className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {filteredCategories.map((cat) => {
               const known = CATEGORY_DETAILS[cat.id];
+              const extras = catalogExtras[cat.id];
+              const subs = extras?.subCategories ?? [];
               const details = known ?? {
-                emoji: emojiForService(cat.name),
+                emoji: "",
                 startingPrice: "",
                 popularSkills: ["Identity checked", "Direct contact", "0% commission"],
                 highlights: [],
               };
+              const skills = subs.length > 0 ? subs : details.popularSkills;
+              const photo = serviceImage({ name: cat.name, imageUrl: extras?.imageUrl });
 
               // Count providers in this category
               const count = allProviders.filter((p) => p.categoryId === cat.id).length;
@@ -206,19 +230,24 @@ export default function ServicesPage() {
                   <TiltCard maxTilt={6} scale={1.02} className="h-full">
                   <div className="card group flex flex-col justify-between overflow-hidden p-6 bg-white transition-all hover:shadow-lg hover:border-[var(--primary)] h-full">
                   <div>
-                    {/* Top Row: Emoji Icon + Count Pill */}
-                    <div className="flex items-center justify-between">
-                      <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[var(--primary-soft)] text-3xl shadow-sm transition-transform group-hover:scale-110">
-                        {details.emoji}
+                    {/* Top: service photo (or icon) + availability pill */}
+                    {photo ? (
+                      <div className="relative -mx-6 -mt-6 mb-0 h-36 overflow-hidden">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={photo} alt="" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                        <span className="pill pill-primary absolute right-4 top-4 bg-white text-xs font-semibold shadow-sm">{count} Available</span>
                       </div>
-
-                      <span className="pill pill-primary text-xs font-semibold">
-                        {count} Available
-                      </span>
-                    </div>
+                    ) : (
+                      <div className="flex items-center justify-between">
+                        <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[var(--primary-soft)] text-[var(--primary)] shadow-sm transition-transform group-hover:scale-110">
+                          <ServiceGlyph name={cat.name} className="h-7 w-7" />
+                        </div>
+                        <span className="pill pill-primary text-xs font-semibold">{count} Available</span>
+                      </div>
+                    )}
 
                     {/* Title & Description */}
-                    <div className="mt-5">
+                    <div className="mt-4">
                       <h3 className="font-display text-xl font-bold group-hover:text-[var(--primary)] transition-colors" style={{ color: "var(--ink)" }}>
                         {cat.name}
                       </h3>
@@ -240,10 +269,10 @@ export default function ServicesPage() {
                     {/* Popular Skills */}
                     <div className="mt-4">
                       <span className="text-[11px] font-bold uppercase tracking-wider text-[var(--muted)]">
-                        {known ? "Specialties:" : "Why Help Zone:"}
+                        {known || subs.length > 0 ? "Specialties:" : "Why Help Zone:"}
                       </span>
                       <div className="mt-1.5 flex flex-wrap gap-1.5">
-                        {details.popularSkills.map((sk) => (
+                        {skills.map((sk) => (
                           <span
                             key={sk}
                             className="rounded-md bg-[var(--surface-muted)] px-2 py-0.5 text-[11px] font-medium text-[var(--ink-secondary)]"

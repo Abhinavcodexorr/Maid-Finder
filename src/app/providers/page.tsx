@@ -316,12 +316,16 @@ function ProvidersContent() {
   const searchParams = useSearchParams();
   // The admin-managed catalog is the source of truth for service names/keys
 // (what providers register under); the bundled list is only the fallback.
-const [categories, setCategories] = useState(() => getCategories());
+const [categories, setCategories] = useState<ReturnType<typeof getCategories>>([]);
   useEffect(() => {
     let cancelled = false;
     fetchCatalogServices()
       .then((services) => {
-        if (cancelled || services.length === 0) return;
+        if (cancelled) return;
+        if (services.length === 0) {
+          setCategories(getCategories());
+          return;
+        }
         setCategories(
           services.map((svc) => ({
             id: svc.key,
@@ -333,7 +337,9 @@ const [categories, setCategories] = useState(() => getCategories());
           }))
         );
       })
-      .catch(() => {});
+      .catch(() => {
+        if (!cancelled) setCategories(getCategories());
+      });
     return () => {
       cancelled = true;
     };

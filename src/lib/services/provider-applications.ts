@@ -49,6 +49,7 @@ export interface CatalogService {
   key: string;
   name: string;
   imageUrl?: string;
+  subCategories?: Array<{ key: string; name: string }>;
 }
 
 async function postJson<T>(url: string, body: unknown): Promise<T> {

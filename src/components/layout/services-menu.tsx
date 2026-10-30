@@ -6,7 +6,7 @@ import { Icon } from "@/components/ui/icon";
 import { HoverMenu } from "@/components/layout/hover-menu";
 import { fetchCatalogServices } from "@/lib/services";
 import type { CatalogService } from "@/lib/services";
-import { emojiForService } from "@/lib/service-emoji";
+import { ServiceGlyph, serviceImage } from "@/components/ui/service-glyph";
 
 /** "Services" nav item: opens a list of every service, each linking to that service's professionals. */
 export function ServicesMenu({ active }: { active: boolean }) {
@@ -39,11 +39,11 @@ export function ServicesMenu({ active }: { active: boolean }) {
                 className="flex items-center gap-3 rounded-2xl p-2.5 text-sm font-semibold transition-colors hover:bg-[var(--primary-soft)] hover:text-[var(--primary)]"
               >
                 <span className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-[var(--line-light)] text-lg">
-                  {svc.imageUrl ? (
+                  {serviceImage(svc) ? (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img src={svc.imageUrl} alt="" className="h-full w-full object-cover" />
+                    <img src={serviceImage(svc)!} alt="" className="h-full w-full object-cover" />
                   ) : (
-                    emojiForService(svc.name)
+                    <ServiceGlyph name={svc.name} className="h-4 w-4 text-[var(--primary)]" />
                   )}
                 </span>
                 {svc.name}
