@@ -250,7 +250,7 @@ export default function HomePage() {
           </div>
         )}
 
-        <ScrollStagger className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+        <ScrollStagger key={catalog === null ? "loading" : "loaded"} className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
           {pickShowcaseServices(catalog ?? [], HOME_SERVICE_COUNT).map((svc) => {
             const photo = serviceImage(svc);
             return (

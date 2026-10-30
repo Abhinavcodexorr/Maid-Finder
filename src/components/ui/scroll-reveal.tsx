@@ -85,7 +85,7 @@ export function ScrollStagger({
     <motion.div
       initial="hidden"
       whileInView="visible"
-      viewport={{ once, margin: "-40px" }}
+      viewport={{ once, margin: "-20px" }}
       variants={{
         hidden: {},
         visible: {
@@ -94,6 +94,11 @@ export function ScrollStagger({
           },
         },
       }}
+      // CSS fallback: if the whileInView animation never fires (race
+      // condition when content renders after the viewport check), the
+      // container and its children remain fully visible via CSS opacity.
+      // Framer Motion overrides this with its own opacity when it runs.
+      style={{ opacity: 1 }}
       className={className}
     >
       {children}
@@ -127,6 +132,10 @@ export function ScrollStaggerItem({
           },
         },
       }}
+      // Ensure the element is never stuck invisible — if the animation
+      // doesn't fire (e.g. section already in viewport on mount before
+      // JS hydrates), the item is still fully visible and interactive.
+      style={{ opacity: 1 }}
       className={className}
     >
       {children}
