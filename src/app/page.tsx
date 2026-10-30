@@ -22,6 +22,7 @@ import { ScrollReveal, ScrollStagger, ScrollStaggerItem } from "@/components/ui/
 import { ServiceGlyph, pickShowcaseServices, serviceGradient, serviceImage } from "@/components/ui/service-glyph";
 import { CountUp } from "@/components/ui/count-up";
 import { Underlined } from "@/components/ui/underlined";
+import { ServiceMarquee } from "@/components/sections/service-marquee";
 import { ProfileShowcase } from "@/components/sections/profile-showcase";
 import type { Plan, Provider } from "@/types/marketplace";
 
@@ -228,18 +229,7 @@ export default function HomePage() {
       </section>
 
       {/* ====== SERVICE MARQUEE ====== */}
-      {marqueeWords.length > 0 && (
-        <section className="marquee overflow-hidden border-b bg-white py-6" style={{ borderColor: "var(--line)" }} aria-label="Services">
-          <div className="marquee-track flex w-max">
-            {[...marqueeWords, ...marqueeWords, ...marqueeWords, ...marqueeWords].map((word, i) => (
-              <span key={i} className="flex shrink-0 items-center gap-8 px-4 font-display text-3xl font-bold sm:text-4xl" aria-hidden={i >= marqueeWords.length}>
-                <span style={{ color: i % 3 === 1 ? "transparent" : "var(--ink)", WebkitTextStroke: i % 3 === 1 ? "1.5px var(--primary)" : undefined }}>{word}</span>
-                <span style={{ color: "var(--primary)" }}>✦</span>
-              </span>
-            ))}
-          </div>
-        </section>
-      )}
+      <ServiceMarquee services={catalog ?? []} />
 
       {/* ====== SERVICES ====== */}
       <section className="container-page py-16 lg:py-20">

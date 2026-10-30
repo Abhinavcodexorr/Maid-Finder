@@ -601,7 +601,8 @@ input[type="radio"] {
    ================================================================ */
 /* Big scrolling words between sections; the track holds two identical halves so -50% loops seamlessly */
 @keyframes marqueeSlide { from { transform: translateX(0); } to { transform: translateX(-50%); } }
-.marquee-track { animation: marqueeSlide 40s linear infinite; }
+.marquee-track { animation: marqueeSlide 55s linear infinite; }
+.marquee-reverse .marquee-track { animation-direction: reverse; animation-duration: 65s; }
 .marquee:hover .marquee-track { animation-play-state: paused; }
 
 @media (prefers-reduced-motion: reduce) {
