@@ -43,6 +43,11 @@ export interface Provider {
   /** Absent for live providers — the real API has no rating/review system yet. */
   rating?: number;
   joinedDate: string;
+  /** Optional live-API extras; the profile page only shows the ones that are present. */
+  education?: string;
+  nationality?: string;
+  introVideoUrl?: string;
+  previousWork?: { title?: string; city?: string; years?: string; familySize?: string };
 }
 
 /** Provider shape after masking — price/phone absent unless the viewer has access. */

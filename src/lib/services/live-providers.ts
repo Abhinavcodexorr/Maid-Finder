@@ -39,6 +39,9 @@ export interface ApiProvider {
   age?: number;
   languages?: string[];
   duration?: string;
+  education?: string;
+  introVideoUrl?: string;
+  lastWorkingExperience?: { jobTitle?: string; workingCity?: string; duration?: string; familySize?: string };
   applicationStatus?: "pending" | "approved" | "rejected";
   profileComplete?: boolean;
   isActive?: boolean;
@@ -117,6 +120,17 @@ export function mapApiProviderToProvider(raw: ApiProvider): Provider {
     // No rating field on the real API — left undefined rather than faked.
     rating: undefined,
     joinedDate: raw.createdAt || new Date().toISOString(),
+    education: raw.education || undefined,
+    nationality: raw.nationality || undefined,
+    introVideoUrl: raw.introVideoUrl || undefined,
+    previousWork: raw.lastWorkingExperience && (raw.lastWorkingExperience.jobTitle || raw.lastWorkingExperience.workingCity)
+      ? {
+          title: raw.lastWorkingExperience.jobTitle || undefined,
+          city: raw.lastWorkingExperience.workingCity || undefined,
+          years: raw.lastWorkingExperience.duration || undefined,
+          familySize: raw.lastWorkingExperience.familySize || undefined,
+        }
+      : undefined,
   };
 }
 
