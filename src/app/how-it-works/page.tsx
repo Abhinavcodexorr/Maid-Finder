@@ -170,7 +170,7 @@ export default function HowItWorksPage() {
       </section>
 
       {/* Verification Standard Section */}
-      <section className="container-page pb-16">
+      <section id="verification" className="container-page scroll-mt-24 pb-16">
         <div className="rounded-3xl p-8 sm:p-12 text-white shadow-lg" style={{ background: "var(--gradient-dark)" }}>
           <div className="max-w-2xl">
             <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-white">

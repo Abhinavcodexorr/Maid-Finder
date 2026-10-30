@@ -1,5 +1,5 @@
-import { SimplePage } from "@/components/sections/simple-page";
+import { redirect } from "next/navigation";
 
 export default function TestimonialsPage() {
-  return <SimplePage title="Testimonials" subtitle="Verified stories from happy customers." />;
+  redirect("/reviews");
 }

@@ -18,6 +18,8 @@ export function HoverMenu({
   href,
   active,
   onOpen,
+  width = "min(560px,90vw)",
+  align = "left",
   children,
 }: {
   label: string;
@@ -25,6 +27,10 @@ export function HoverMenu({
   active: boolean;
   /** Called each time the panel opens — handy for loading its content lazily. */
   onOpen?: () => void;
+  /** CSS width of the panel; wider menus pass their own. */
+  width?: string;
+  /** Which edge of the nav item the panel lines up with. */
+  align?: "left" | "right";
   children: (close: () => void) => ReactNode;
 }) {
   const [open, setOpen] = useState(false);
@@ -47,7 +53,7 @@ export function HoverMenu({
         onClick={close}
         aria-haspopup="menu"
         aria-expanded={open}
-        className="relative flex items-center gap-1 rounded-lg px-3 py-2 text-sm font-medium transition-colors"
+        className="relative flex items-center gap-1 whitespace-nowrap rounded-lg px-3 py-2 text-sm font-medium transition-colors"
         style={{ color: active || open ? "var(--primary)" : "var(--ink-light)" }}
       >
         {label}
@@ -62,7 +68,8 @@ export function HoverMenu({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 8 }}
             transition={{ duration: 0.18 }}
-            className="absolute left-0 top-full z-50 w-[min(560px,90vw)] pt-3"
+            className={`absolute top-full z-50 pt-3 ${align === "right" ? "right-0" : "left-0"}`}
+            style={{ width }}
           >
             <div className="rounded-3xl border bg-white p-3 shadow-2xl" style={{ borderColor: "var(--line)" }}>
               {children(close)}

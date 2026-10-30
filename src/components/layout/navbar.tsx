@@ -9,18 +9,21 @@ import { Icon } from "@/components/ui/icon";
 import { Logo } from "@/components/ui/logo";
 import { ServicesMenu } from "@/components/layout/services-menu";
 import { ProfessionalsMenu } from "@/components/layout/professionals-menu";
+import { ResourcesMenu, RESOURCE_GUIDES, RESOURCE_LEARN_MORE } from "@/components/layout/resources-menu";
 
 const NAV_LINKS = [
   { label: "Services", href: "/services" },
   { label: "Find Professionals", href: "/providers" },
   { label: "How It Works", href: "/how-it-works" },
   { label: "Membership", href: "/membership" },
+  { label: "Resources", href: "/blog" },
 ];
 
 const AUTH_NAV_LINKS = [
   { label: "Services", href: "/services" },
   { label: "Find Professionals", href: "/providers" },
   { label: "Saved", href: "/dashboard/saved" },
+  { label: "Resources", href: "/blog" },
 ];
 
 const PROFILE_LINKS = [
@@ -79,16 +82,20 @@ export function Navbar() {
           </Link>
 
           {/* Desktop Nav Links */}
-          <div className="hidden items-center gap-1 md:flex">
+          <div className="hidden items-center gap-1 lg:flex">
             {navLinks.map((item) => {
               const active = pathname === item.href || pathname.startsWith(item.href + "/");
               if (item.href === "/services") return <ServicesMenu key={item.href} active={active} />;
               if (item.href === "/providers") return <ProfessionalsMenu key={item.href} active={active} />;
+              if (item.label === "Resources") {
+                const resourceActive = [...RESOURCE_GUIDES, ...RESOURCE_LEARN_MORE].some((r) => pathname === r.href.split("#")[0]);
+                return <ResourcesMenu key={item.label} active={resourceActive} />;
+              }
               return (
                 <Link
                   key={item.href}
                   href={item.href}
-                  className="relative rounded-lg px-3 py-2 text-sm font-medium transition-colors"
+                  className="relative whitespace-nowrap rounded-lg px-3 py-2 text-sm font-medium transition-colors"
                   style={{
                     color: active ? "var(--primary)" : "var(--ink-light)",
                   }}
@@ -121,14 +128,14 @@ export function Navbar() {
                 {/* Notifications bell */}
                 <button
                   type="button"
-                  className="relative hidden rounded-lg p-2 transition-colors hover:bg-[var(--line-light)] md:block"
+                  className="relative hidden rounded-lg p-2 transition-colors hover:bg-[var(--line-light)] lg:block"
                   aria-label="Notifications"
                 >
                   <Icon name="bell" className="h-5 w-5" style={{ color: "var(--muted)" }} />
                 </button>
 
                 {/* Profile dropdown */}
-                <div className="relative hidden md:block" ref={menuRef}>
+                <div className="relative hidden lg:block" ref={menuRef}>
                   <button
                     type="button"
                     onClick={() => setMenuOpen((o) => !o)}
@@ -192,7 +199,7 @@ export function Navbar() {
                 </div>
               </>
             ) : (
-              <div className="hidden items-center gap-2 md:flex">
+              <div className="hidden items-center gap-2 lg:flex">
                 <Link href="/login" className="btn btn-ghost text-sm">
                   Log in
                 </Link>
@@ -206,7 +213,7 @@ export function Navbar() {
             <button
               type="button"
               onClick={() => setMobileOpen(true)}
-              className="rounded-lg p-2 transition-colors hover:bg-[var(--line-light)] md:hidden"
+              className="rounded-lg p-2 transition-colors hover:bg-[var(--line-light)] lg:hidden"
               aria-label="Open menu"
             >
               <Icon name="menu" className="h-5 w-5" />
@@ -222,7 +229,7 @@ export function Navbar() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[60] bg-black/40 md:hidden"
+            className="fixed inset-0 z-[60] bg-black/40 lg:hidden"
             onClick={() => setMobileOpen(false)}
           >
             <motion.div
@@ -255,6 +262,18 @@ export function Navbar() {
               <nav className="flex-1 overflow-y-auto py-2">
                 {navLinks.map((item) => {
                   const active = pathname === item.href;
+                  if (item.label === "Resources") {
+                    return (
+                      <div key={item.label}>
+                        <p className="px-5 pb-1 pt-4 text-[11px] font-bold uppercase tracking-[0.14em]" style={{ color: "var(--muted)" }}>Resources</p>
+                        {[...RESOURCE_GUIDES.map((r) => ({ label: r.label, href: r.href })), ...RESOURCE_LEARN_MORE].map((r) => (
+                          <Link key={r.href} href={r.href} className="flex items-center px-5 py-2.5 text-sm font-medium transition-colors hover:bg-[var(--line-light)]" style={{ color: "var(--ink)" }}>
+                            {r.label}
+                          </Link>
+                        ))}
+                      </div>
+                    );
+                  }
                   return (
                     <Link
                       key={item.href}
