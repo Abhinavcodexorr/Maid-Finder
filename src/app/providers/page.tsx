@@ -105,7 +105,7 @@ function FilterPanel({
             </button>
           )}
         </div>
-        <div className="max-h-72 space-y-0.5 overflow-y-auto pr-1">
+        <div className="space-y-0.5">
           {categories.map((c) => {
             const checked = categoryIds.includes(c.id) || categoryIds.includes(c.slug);
             return (
@@ -588,7 +588,7 @@ const [categories, setCategories] = useState(() => getCategories());
         <div className="grid gap-8 lg:grid-cols-[280px_1fr]">
           {/* Desktop Filter Sidebar */}
           <aside className="hidden lg:block">
-            <div className="sticky top-24 rounded-3xl border border-[var(--line)] bg-white p-6 shadow-md">
+            <div className="sticky top-24 max-h-[calc(100vh-7rem)] overflow-y-auto rounded-3xl border border-[var(--line)] bg-white p-6 shadow-md">
               <div className="flex items-center justify-between pb-4 border-b border-[var(--line-light)] mb-4">
                 <div className="flex items-center gap-2">
                   <Icon name="filter" className="h-4 w-4 text-[var(--primary)]" />
