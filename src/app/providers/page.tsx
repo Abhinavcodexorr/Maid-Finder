@@ -1,7 +1,6 @@
 "use client";
 
 import { Suspense, useMemo, useState, useEffect } from "react";
-import Link from "next/link";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -652,7 +651,7 @@ const [categories, setCategories] = useState(() => getCategories());
             {/* Top Toolbar */}
             <div className="mb-5 hidden items-center justify-between rounded-3xl border border-[var(--line)] bg-white px-5 py-4 shadow-sm sm:flex">
               <p className="text-sm font-semibold" style={{ color: "var(--ink)" }}>
-                Showing <span className="text-[var(--primary)] font-bold">{result.total}</span> professionals
+                Showing <span className="text-[var(--primary)] font-bold">{result.total}</span> {result.total === 1 ? "professional" : "professionals"}
                 {location && (
                   <span className="font-normal" style={{ color: "var(--muted)" }}>
                     {" "}{radiusKm ? `within ${radiusKm} km of` : "near"} {location.city || "you"}
@@ -769,23 +768,6 @@ const [categories, setCategories] = useState(() => getCategories());
                       <ProviderCard provider={p} viewMode={viewMode} />
                     </ScrollStaggerItem>
                   ))}
-                  {viewMode === "grid" && page === result.totalPages && (
-                    <ScrollStaggerItem>
-                      <div className="relative flex h-full min-h-[320px] flex-col justify-between overflow-hidden rounded-3xl p-7 text-white shadow-lg" style={{ background: "var(--gradient-dark)" }}>
-                        <div aria-hidden className="absolute -right-16 -top-16 h-52 w-52 rounded-full opacity-60 blur-2xl" style={{ background: "radial-gradient(circle, rgba(59,130,246,0.7), transparent 70%)" }} />
-                        <div className="relative">
-                          <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/15 backdrop-blur">
-                            <Icon name="briefcase" className="h-6 w-6" />
-                          </span>
-                          <p className="font-display mt-5 text-2xl font-extrabold leading-snug">Are you a professional?</p>
-                          <p className="mt-2 text-sm leading-relaxed text-white/70">Register free, get verified and be found by families looking for trusted help. Keep 100% of your earnings.</p>
-                        </div>
-                        <Link href="/register-provider" className="btn relative mt-6 w-full bg-white font-bold" style={{ color: "var(--primary-dark)" }}>
-                          Register as Provider <Icon name="arrow-right" className="h-4 w-4" />
-                        </Link>
-                      </div>
-                    </ScrollStaggerItem>
-                  )}
                 </ScrollStagger>
 
                 {/* Pagination Controls */}
