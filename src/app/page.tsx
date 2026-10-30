@@ -288,40 +288,6 @@ export default function HomePage() {
           })}
         </ScrollStagger>
 
-        {/* Every other service in the catalog, so nothing is hidden behind "All services" */}
-        {catalog !== null && catalog.length > HOME_SERVICE_COUNT && (
-          <div className="mt-8">
-            <p className="mb-4 text-sm font-bold uppercase tracking-[0.12em]" style={{ color: "var(--muted)" }}>
-              More services
-            </p>
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-              {(() => {
-                const shown = new Set(pickShowcaseServices(catalog, HOME_SERVICE_COUNT).map((svc) => svc.key));
-                return catalog
-                  .filter((svc) => !shown.has(svc.key))
-                  .map((svc) => (
-                    <Link
-                      key={svc.key}
-                      href={`/providers?category=${svc.key}`}
-                      className="group flex items-center gap-3 rounded-2xl border bg-white p-3 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
-                      style={{ borderColor: "var(--line)" }}
-                    >
-                      <span className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl" style={{ background: "var(--primary-soft)", color: "var(--primary)" }}>
-                        {serviceImage(svc) ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img src={serviceImage(svc)!} alt="" className="h-full w-full object-cover" />
-                        ) : (
-                          <ServiceGlyph name={svc.name} className="h-5 w-5" />
-                        )}
-                      </span>
-                      <span className="min-w-0 flex-1 text-sm font-bold leading-tight">{svc.name}</span>
-                      <Icon name="arrow-right" className="h-4 w-4 shrink-0 text-[var(--muted)] transition-transform group-hover:translate-x-1" />
-                    </Link>
-                  ));
-              })()}
-            </div>
-          </div>
-        )}
       </section>
 
       {/* ====== VERIFIED PROFILES ====== */}
