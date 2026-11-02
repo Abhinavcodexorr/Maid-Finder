@@ -3,6 +3,7 @@
 // favourites/route.ts for the Bearer-token forwarding this also does.
 import { NextRequest, NextResponse } from "next/server";
 import { API_BASE_URL } from "@/lib/api-client";
+import { cleanBody } from "@/lib/api-proxy";
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ maidId: string }> }) {
   const { maidId } = await params;
@@ -16,7 +17,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       headers: { Authorization: authorization },
     });
     const data = await upstream.json();
-    return NextResponse.json(data, { status: upstream.status });
+    return NextResponse.json(cleanBody(data), { status: upstream.status });
   } catch {
     return NextResponse.json(
       { success: false, message: "Could not reach the customer service." },
@@ -37,7 +38,7 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
       headers: { Authorization: authorization },
     });
     const data = await upstream.json();
-    return NextResponse.json(data, { status: upstream.status });
+    return NextResponse.json(cleanBody(data), { status: upstream.status });
   } catch {
     return NextResponse.json(
       { success: false, message: "Could not reach the customer service." },

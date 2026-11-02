@@ -2,10 +2,14 @@
 // see src/app/api/providers/list/route.ts for why this exists (CORS).
 import { NextRequest, NextResponse } from "next/server";
 import { API_BASE_URL } from "@/lib/api-client";
+import { cleanBody } from "@/lib/api-proxy";
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
+    if (typeof body.mobileNumber !== "string" || !/^[6-9]\d{9}$/.test(body.mobileNumber.trim())) {
+      return NextResponse.json({ success: false, message: "Enter a valid 10-digit mobile number." }, { status: 400 });
+    }
     const upstream = await fetch(`${API_BASE_URL}/api/v1/providers/send-otp`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -15,7 +19,7 @@ export async function POST(request: NextRequest) {
     // devOtp is a dev-mode convenience the backend includes while SMS delivery
     // is stubbed; it must never reach the browser.
     delete data.devOtp;
-    return NextResponse.json(data, { status: upstream.status });
+    return NextResponse.json(cleanBody(data), { status: upstream.status });
   } catch {
     return NextResponse.json(
       { success: false, message: "Could not reach the provider service." },

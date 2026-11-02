@@ -2,6 +2,7 @@
 // src/app/api/providers/list/route.ts for why this exists (CORS).
 import { NextRequest, NextResponse } from "next/server";
 import { API_BASE_URL } from "@/lib/api-client";
+import { cleanBody } from "@/lib/api-proxy";
 
 export async function POST(request: NextRequest) {
   try {
@@ -12,7 +13,7 @@ export async function POST(request: NextRequest) {
       body,
     });
     const data = await upstream.json();
-    return NextResponse.json(data, { status: upstream.status });
+    return NextResponse.json(cleanBody(data), { status: upstream.status });
   } catch {
     return NextResponse.json(
       { success: false, message: "Could not reach the customer service." },

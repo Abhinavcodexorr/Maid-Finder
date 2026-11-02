@@ -1,14 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { changePassword } from "@/lib/services/auth";
 import { Icon } from "@/components/ui/icon";
 import { toast } from "@/components/ui/toaster";
 
 export default function AccountSettingsPage() {
-  const router = useRouter();
   const { user, logout } = useAuth();
 
   // Password state
@@ -55,7 +53,7 @@ export default function AccountSettingsPage() {
       setConfirmPassword("");
       toast({
         title: "Password Changed",
-        description: "Your account password has been updated securely.",
+        description: "Your password has been updated on this device.",
         variant: "success",
       });
     } catch (err) {
@@ -71,20 +69,22 @@ export default function AccountSettingsPage() {
 
   const handleExportData = () => {
     toast({
-      title: "Export Initiated",
-      description: "A JSON copy of your account profile has been compiled.",
-      variant: "success",
+      title: "Export not available yet",
+      description: "Contact our team and we'll send you a copy of your data.",
+      variant: "info",
     });
   };
 
   const handleDeleteAccount = () => {
+    // The backend has no delete-account endpoint yet, so deletion is handled by the team on request.
     logout();
     toast({
-      title: "Account Closed",
-      description: "Your session and account data have been wiped from this device.",
+      title: "Signed out",
+      description: "Tell our team you want your account deleted and we'll remove your data.",
       variant: "info",
     });
-    router.push("/");
+    // A full navigation, so the dashboard's own "signed out → login" redirect can't override it.
+    window.location.assign("/contact");
   };
 
   if (!user) return null;
@@ -267,7 +267,7 @@ export default function AccountSettingsPage() {
             className="btn btn-sm text-xs text-[var(--error)] border border-[var(--error-soft)] bg-[var(--error-soft)]/30 hover:bg-[var(--error-soft)]"
           >
             <Icon name="trash" className="h-3.5 w-3.5" />
-            Delete Account
+            Request Account Deletion
           </button>
         </div>
       </div>
@@ -281,10 +281,10 @@ export default function AccountSettingsPage() {
             </div>
             <div className="text-center">
               <h3 className="font-display text-lg font-bold" style={{ color: "var(--ink)" }}>
-                Delete Account?
+                Request account deletion?
               </h3>
               <p className="mt-1 text-xs" style={{ color: "var(--muted)" }}>
-                This will wipe your active membership, saved professionals, and recent searches from this device. This cannot be undone.
+                We&apos;ll sign you out now and take you to our contact page, where you can ask the team to permanently delete your account and data.
               </p>
             </div>
             <div className="flex items-center gap-2 pt-2">
@@ -301,7 +301,7 @@ export default function AccountSettingsPage() {
                 className="btn flex-1 text-xs text-white"
                 style={{ background: "var(--error)" }}
               >
-                Yes, Delete
+                Sign out &amp; contact
               </button>
             </div>
           </div>

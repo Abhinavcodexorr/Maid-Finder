@@ -2,6 +2,7 @@
 // see src/app/api/providers/list/route.ts for why this exists (CORS).
 import { NextResponse } from "next/server";
 import { API_BASE_URL } from "@/lib/api-client";
+import { cleanBody } from "@/lib/api-proxy";
 
 export async function GET() {
   try {
@@ -9,7 +10,7 @@ export async function GET() {
       cache: "no-store",
     });
     const data = await upstream.json();
-    return NextResponse.json(data, { status: upstream.status });
+    return NextResponse.json(cleanBody(data), { status: upstream.status });
   } catch {
     return NextResponse.json(
       { success: false, message: "Could not reach the services catalog." },

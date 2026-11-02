@@ -1,6 +1,7 @@
 // Same-origin proxy for one live provider by id — see list/route.ts for why.
 import { NextRequest, NextResponse } from "next/server";
 import { API_BASE_URL } from "@/lib/api-client";
+import { cleanBody } from "@/lib/api-proxy";
 
 export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -9,7 +10,7 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
       cache: "no-store",
     });
     const data = await upstream.json();
-    return NextResponse.json(data, { status: upstream.status });
+    return NextResponse.json(cleanBody(data), { status: upstream.status });
   } catch {
     return NextResponse.json(
       { success: false, message: "Could not reach the provider service." },

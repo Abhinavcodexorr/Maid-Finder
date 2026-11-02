@@ -232,7 +232,7 @@ function SignupContent() {
               </div>
               <label className="flex items-start gap-2 text-sm sm:col-span-2">
                 <input type="checkbox" className="mt-1" {...register("agree")} />
-                <span>I agree to the <Link href="/faqs" className="underline">Terms</Link> and <Link href="/faqs" className="underline">Privacy Policy</Link>.</span>
+                <span>I agree to the <Link href="/terms" className="underline">Terms</Link> and <Link href="/privacy" className="underline">Privacy Policy</Link>.</span>
               </label>
               {errors.agree && <p className="-mt-2 text-xs sm:col-span-2" style={{ color: "var(--error)" }}>{errors.agree.message}</p>}
               <button type="submit" disabled={isSubmitting} className="btn btn-primary btn-lg sm:col-span-2">

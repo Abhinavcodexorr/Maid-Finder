@@ -522,8 +522,8 @@ export default function RegisterProviderPage() {
             <p className="mt-3 text-center text-xs" style={{ color: "var(--muted)" }}>A verification code will be sent to your mobile number.</p>
             <p className="mt-6 text-center text-xs" style={{ color: "var(--muted)" }}>
               By continuing you agree to our{" "}
-              <Link href="/faqs" className="font-semibold" style={{ color: "var(--primary)" }}>Terms of use</Link> and{" "}
-              <Link href="/faqs" className="font-semibold" style={{ color: "var(--primary)" }}>Privacy Policy</Link>.
+              <Link href="/terms" className="font-semibold" style={{ color: "var(--primary)" }}>Terms of use</Link> and{" "}
+              <Link href="/privacy" className="font-semibold" style={{ color: "var(--primary)" }}>Privacy Policy</Link>.
             </p>
           </>
         )}

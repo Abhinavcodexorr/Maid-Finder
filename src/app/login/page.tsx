@@ -30,6 +30,10 @@ function LoginContent() {
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(identifier.trim())) {
+      setError("Enter the email address you signed up with.");
+      return;
+    }
     setSubmitting(true);
     try {
       await login(identifier, password);
@@ -61,17 +65,19 @@ function LoginContent() {
           <form className="mt-8" onSubmit={onSubmit}>
             <div>
               <label className="mb-1.5 block text-sm font-semibold" htmlFor="login-id">
-                Email or mobile number
+                Email address
               </label>
               <div className="relative">
                 <Icon name="mail" className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2" style={{ color: "var(--faint)" }} />
                 <input
                   id="login-id"
                   className="field !rounded-full !py-3.5 !pl-11"
-                  placeholder="you@example.com or 9876543210"
+                  placeholder="you@example.com"
                   value={identifier}
                   onChange={(e) => setIdentifier(e.target.value)}
                   autoComplete="email"
+                  type="email"
+                  inputMode="email"
                 />
               </div>
             </div>
