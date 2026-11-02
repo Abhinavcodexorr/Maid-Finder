@@ -8,6 +8,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { API_BASE_URL } from "@/lib/api-client";
 import { cleanBody } from "@/lib/api-proxy";
+import { sanitizeProviders, viewerIsMember } from "@/lib/provider-privacy";
 
 export async function GET(request: NextRequest) {
   const qs = request.nextUrl.search;
@@ -16,7 +17,8 @@ export async function GET(request: NextRequest) {
       cache: "no-store",
     });
     const data = await upstream.json();
-    return NextResponse.json(cleanBody(data), { status: upstream.status });
+    const member = await viewerIsMember(request.headers.get("authorization"));
+    return NextResponse.json(sanitizeProviders(cleanBody(data), member), { status: upstream.status });
   } catch {
     return NextResponse.json(
       { success: false, message: "Could not reach the provider service." },

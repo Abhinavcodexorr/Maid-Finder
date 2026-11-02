@@ -10,7 +10,14 @@
 // fabricated. See `mapApiProviderToProvider` for every mapping decision.
 
 import { getCategoryById } from "./categories";
+import { getCustomerToken } from "./live-customer-auth";
 import type { AvailabilityType, Gender, Provider } from "@/types/marketplace";
+
+/** The customer's token, so the server can tell a member (who may see contact numbers) from a visitor. */
+function memberHeaders(): HeadersInit | undefined {
+  const token = typeof window === "undefined" ? null : getCustomerToken();
+  return token ? { Authorization: `Bearer ${token}` } : undefined;
+}
 
 /** Shape returned by the live API for one provider document (trimmed to the fields we use). */
 export interface ApiProvider {
@@ -144,7 +151,7 @@ export async function fetchLiveProviders(): Promise<Provider[]> {
   // Goes through our own /api/providers/list route (src/app/api/providers/list/route.ts),
   // not the external API directly — same-origin, so no CORS dependency on the
   // backend's allowlist.
-  const response = await fetch("/api/providers/list?limit=500", { cache: "no-store" });
+  const response = await fetch("/api/providers/list?limit=500", { cache: "no-store", headers: memberHeaders() });
   const res: ListResponse = await response.json();
   if (!res.success) throw new Error("Could not load providers.");
   return (res.data || []).filter(isPubliclyVisible).map(mapApiProviderToProvider);
@@ -152,7 +159,7 @@ export async function fetchLiveProviders(): Promise<Provider[]> {
 
 export async function fetchLiveProviderById(id: string): Promise<Provider | null> {
   try {
-    const response = await fetch(`/api/providers/${id}`, { cache: "no-store" });
+    const response = await fetch(`/api/providers/${id}`, { cache: "no-store", headers: memberHeaders() });
     if (!response.ok) return null;
     const res: OneResponse = await response.json();
     if (!res.success || !res.data || !isPubliclyVisible(res.data)) return null;
