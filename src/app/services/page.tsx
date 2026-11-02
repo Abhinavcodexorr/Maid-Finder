@@ -185,7 +185,7 @@ export default function ServicesPage() {
         </div>
 
         {!loaded ? (
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {Array.from({ length: 6 }).map((_, i) => (
               <div key={i} className="shimmer h-80 rounded-3xl" />
             ))}
@@ -208,7 +208,7 @@ export default function ServicesPage() {
             </button>
           </div>
         ) : (
-          <ScrollStagger className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <ScrollStagger className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {filteredCategories.map((cat) => {
               const known = CATEGORY_DETAILS[cat.id];
               const extras = catalogExtras[cat.id];
