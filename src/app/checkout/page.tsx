@@ -15,7 +15,7 @@ function CheckoutContent() {
   const searchParams = useSearchParams();
   const planId = searchParams.get("plan") || "";
   const redirect = searchParams.get("redirect") || "/providers";
-  const { user, refresh } = useAuth();
+  const { user, loading, refresh } = useAuth();
 
   const [plan, setPlan] = useState<Plan | null | undefined>(undefined);
   const [processing, setProcessing] = useState(false);
@@ -28,12 +28,15 @@ function CheckoutContent() {
     return () => { cancelled = true; };
   }, [planId]);
 
-  if (!user) {
-    router.push(`/login?redirect=${encodeURIComponent(`/checkout?plan=${planId}&redirect=${encodeURIComponent(redirect)}`)}`);
-    return null;
-  }
+  // Wait for the stored session to load before deciding the visitor is signed out,
+  // otherwise a signed-in user is bounced to login on a refresh.
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push(`/login?redirect=${encodeURIComponent(`/checkout?plan=${planId}&redirect=${encodeURIComponent(redirect)}`)}`);
+    }
+  }, [loading, user, router, planId, redirect]);
 
-  if (plan === undefined) {
+  if (loading || !user || plan === undefined) {
     return (
       <div className="container-page grid gap-6 py-12 lg:grid-cols-[1.4fr_1fr]" aria-busy="true">
         <Shimmer className="h-96 rounded-3xl" />
@@ -59,6 +62,21 @@ function CheckoutContent() {
   const total = plan.price + gst;
 
   const onPay = async () => {
+    // Demo checkout, but still refuse an empty or malformed card so it behaves like a real form.
+    const val = (id: string) => (document.getElementById(id) as HTMLInputElement | null)?.value.trim() ?? "";
+    const digits = val("card-number").replace(/\D/g, "");
+    const expiry = val("expiry").match(/^(\d{2})\s*\/\s*(\d{2})$/);
+    const now = new Date();
+    const expired = !expiry || Number(expiry[1]) < 1 || Number(expiry[1]) > 12 || 2000 + Number(expiry[2]) < now.getFullYear() || (2000 + Number(expiry[2]) === now.getFullYear() && Number(expiry[1]) < now.getMonth() + 1);
+    const problem = !val("card-name") ? "Enter the name on the card."
+      : digits.length < 13 || digits.length > 19 ? "Enter a valid card number."
+      : expired ? "Enter a valid expiry date (MM / YY)."
+      : !/^\d{3,4}$/.test(val("cvc")) ? "Enter the 3 or 4 digit CVC."
+      : null;
+    if (problem) {
+      toast({ title: "Check your card details", description: problem, variant: "error" });
+      return;
+    }
     setProcessing(true);
     try {
       // Simulate payment delay

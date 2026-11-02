@@ -15,6 +15,7 @@ import type { Provider } from "@/types/marketplace";
 import { Shimmer } from "@/components/ui/shimmer";
 import { ProviderVideo } from "@/components/ui/provider-video";
 import { ServiceGlyph } from "@/components/ui/service-glyph";
+import { intlPhone } from "@/lib/phone";
 
 const titleCase = (value: string) => value.toLowerCase().replace(/(^|[\s-])([a-z])/g, (_, sep: string, ch: string) => sep + ch.toUpperCase());
 
@@ -108,7 +109,7 @@ export default function ProviderProfilePage({ params }: { params: Promise<{ id: 
     }
   };
 
-  const whatsappHref = masked.phone ? `https://wa.me/${masked.phone.replace(/\D/g, "")}` : undefined;
+  const whatsappHref = masked.phone ? `https://wa.me/${intlPhone(masked.phone)}` : undefined;
   const fullName = titleCase(`${provider.firstName} ${provider.lastName}`.trim());
   const availability = provider.availabilityType.replace("-", " ");
   const location = [provider.area, provider.city].filter((v, i, arr) => v && arr.indexOf(v) === i).join(", ");
@@ -353,7 +354,7 @@ export default function ProviderProfilePage({ params }: { params: Promise<{ id: 
                 </div>
               </div>
               <div className="mt-5 grid grid-cols-2 gap-2">
-                <a href={`tel:${masked.phone}`} className="btn" style={{ background: "white", color: "var(--primary)" }}>
+                <a href={`tel:+${intlPhone(masked.phone ?? "")}`} className="btn" style={{ background: "white", color: "var(--primary)" }}>
                   <Icon name="phone" className="h-4 w-4" /> Call
                 </a>
                 <a href={whatsappHref} target="_blank" rel="noreferrer" className="btn" style={{ background: "#25D366", color: "white" }}>

@@ -6,6 +6,7 @@ import { useAuth } from "@/context/AuthContext";
 import { getRecentlyViewed, getCategories } from "@/lib/services";
 import { Icon } from "@/components/ui/icon";
 import { Avatar } from "@/components/ui/avatar";
+import { intlPhone } from "@/lib/phone";
 
 function formatRelativeTime(dateString: string): string {
   const diffMs = Date.now() - new Date(dateString).getTime();
@@ -108,14 +109,14 @@ export default function RecentlyViewedPage() {
                   {isSubscribed ? (
                     <>
                       <a
-                        href={`tel:${item.phone}`}
+                        href={`tel:+${intlPhone(item.phone)}`}
                         className="btn btn-primary btn-sm text-xs"
                       >
                         <Icon name="phone" className="h-3.5 w-3.5" />
                         Call
                       </a>
                       <a
-                        href={`https://wa.me/${item.phone.replace(/\D/g, "")}`}
+                        href={`https://wa.me/${intlPhone(item.phone)}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="btn btn-sm text-xs text-white"

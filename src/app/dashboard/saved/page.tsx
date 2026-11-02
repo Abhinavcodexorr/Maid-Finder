@@ -9,6 +9,7 @@ import { Avatar } from "@/components/ui/avatar";
 import { toast } from "@/components/ui/toaster";
 import type { Provider } from "@/types/marketplace";
 import { ProviderCardSkeleton } from "@/components/ui/shimmer";
+import { intlPhone } from "@/lib/phone";
 
 const CATEGORY_EMOJIS: Record<string, string> = {
   "cat-cook": "🍳",
@@ -226,14 +227,14 @@ export default function SavedProfessionalsPage() {
                     {isSubscribed ? (
                       <>
                         <a
-                          href={`tel:${provider.phone}`}
+                          href={`tel:+${intlPhone(provider.phone)}`}
                           className="btn btn-primary btn-sm flex-1 text-xs"
                         >
                           <Icon name="phone" className="h-3.5 w-3.5" />
                           Call Now
                         </a>
                         <a
-                          href={`https://wa.me/${provider.phone.replace(/\D/g, "")}`}
+                          href={`https://wa.me/${intlPhone(provider.phone)}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="btn btn-sm flex-1 text-xs text-white"
