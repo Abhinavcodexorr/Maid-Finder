@@ -196,7 +196,7 @@ export default function DashboardLayout({
                       href="/membership"
                       className="mt-2 inline-flex items-center justify-center rounded-xl bg-white px-4 py-2 text-xs font-bold text-[var(--primary)] transition-transform hover:scale-[1.02] shadow-sm"
                     >
-                      View Plans from ₹499
+                      View membership plans
                     </Link>
                   </div>
                 </div>

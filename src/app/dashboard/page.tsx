@@ -116,7 +116,7 @@ export default function DashboardOverviewPage() {
                 </Link>
               ) : (
                 <Link href="/membership" className="btn btn-primary btn-sm text-xs">
-                  Upgrade for ₹499
+                  Upgrade your plan
                 </Link>
               )}
             </div>

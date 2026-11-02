@@ -8,7 +8,7 @@
 
 import { ApiError } from "@/lib/api-client";
 import { getCustomerToken } from "@/lib/services/live-customer-auth";
-import { mapApiProviderToProvider, type ApiProvider } from "@/lib/services/live-providers";
+import { fetchLiveProviders, mapApiProviderToProvider, type ApiProvider } from "@/lib/services/live-providers";
 import type { Provider } from "@/types/marketplace";
 
 interface ListResponse {
@@ -39,7 +39,15 @@ export async function fetchFavouriteProviders(): Promise<Provider[]> {
     throw new ApiError(data?.message || `Request failed with status ${response.status}`, response.status, data);
   }
   const res = data as ListResponse;
-  return (res.data || []).map(mapApiProviderToProvider);
+  const saved = (res.data || []).map(mapApiProviderToProvider);
+  // The favourites endpoint returns a trimmed provider (no services, experience, city…),
+  // so fill each one in from the full public listing where it is available.
+  try {
+    const full = new Map((await fetchLiveProviders()).map((p) => [p.id, p]));
+    return saved.map((p) => full.get(p.id) ?? p);
+  } catch {
+    return saved;
+  }
 }
 
 export async function addFavourite(providerId: string): Promise<void> {

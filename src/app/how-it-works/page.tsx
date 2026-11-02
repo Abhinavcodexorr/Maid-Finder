@@ -9,7 +9,7 @@ import { PageHeader } from "@/components/layout/page-header";
 const FAQS = [
   {
     q: "Why do I need a membership to view contact details?",
-    a: "Unlike traditional agencies that charge 1 to 2 months of professional salary (₹15,000 to ₹30,000) every time you hire, we charge a modest one-time membership starting at ₹499. This covers background verification, platform maintenance, and protects professionals from unsolicited spam calls.",
+    a: "Unlike traditional agencies that charge 1 to 2 months of professional salary (₹15,000 to ₹30,000) every time you hire, we charge a modest one-time membership — see the Membership page for current plans. This covers background verification, platform maintenance, and protects professionals from unsolicited spam calls.",
   },
   {
     q: "Are the professionals on Help Zone verified?",

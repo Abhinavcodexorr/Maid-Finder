@@ -6,8 +6,8 @@ const COLUMNS = [
   {
     title: "Services",
     links: [
-      { label: "Cleaning", href: "/providers?category=cat-maid" },
-      { label: "Cooking", href: "/providers?category=cat-cook" },
+      { label: "Cleaning", href: "/providers?category=cat-full-home-cleaning" },
+      { label: "Cooking", href: "/providers?category=cat-cooking" },
       { label: "Plumbing", href: "/providers?category=cat-plumber" },
       { label: "Electrical", href: "/providers?category=cat-electrician" },
       { label: "All Services", href: "/services" },
