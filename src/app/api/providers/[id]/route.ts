@@ -7,7 +7,9 @@ import { sanitizeProviders, viewerIsMember } from "@/lib/provider-privacy";
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   try {
+    const authorization = request.headers.get("authorization");
     const upstream = await fetch(`${API_BASE_URL}/api/v1/providers/${id}`, {
+      headers: authorization ? { Authorization: authorization } : undefined,
       cache: "no-store",
     });
     const data = await upstream.json();

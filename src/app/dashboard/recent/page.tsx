@@ -106,7 +106,7 @@ export default function RecentlyViewedPage() {
                 </div>
 
                 <div className="flex items-center gap-2 shrink-0">
-                  {isSubscribed ? (
+                  {isSubscribed && item.phone ? (
                     <>
                       <a
                         href={`tel:+${intlPhone(item.phone)}`}

@@ -335,7 +335,7 @@ export default function ProviderProfilePage({ params }: { params: Promise<{ id: 
 
         {/* Right Column — Contact Card */}
         <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.4, delay: 0.2 }} className="h-fit lg:sticky lg:top-24">
-          {isSubscribed ? (
+          {isSubscribed && masked.phone ? (
             <div className="overflow-hidden rounded-3xl p-6 text-white shadow-xl" style={{ background: "var(--gradient-primary)" }}>
               <div className="mb-4 flex items-center gap-2">
                 <Icon name="unlock" className="h-4 w-4 text-white/70" />

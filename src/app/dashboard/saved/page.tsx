@@ -224,7 +224,7 @@ export default function SavedProfessionalsPage() {
                 {/* Action Bar */}
                 <div className="mt-5 border-t border-[var(--line-light)] pt-4">
                   <div className="flex items-center gap-2">
-                    {isSubscribed ? (
+                    {isSubscribed && provider.phone ? (
                       <>
                         <a
                           href={`tel:+${intlPhone(provider.phone)}`}
