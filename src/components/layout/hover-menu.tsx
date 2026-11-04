@@ -53,8 +53,8 @@ export function HoverMenu({
         onClick={close}
         aria-haspopup="menu"
         aria-expanded={open}
-        className="relative flex items-center gap-1 whitespace-nowrap rounded-lg px-2 py-2 text-sm font-medium transition-colors xl:px-3"
-        style={{ color: active || open ? "var(--primary)" : "var(--ink-light)" }}
+        className="relative flex items-center gap-1 whitespace-nowrap rounded-lg px-2 py-2 text-[15px] font-semibold transition-colors xl:px-3.5"
+        style={{ color: active || open ? "var(--primary)" : "var(--ink)" }}
       >
         {label}
         <Icon name="chevron-down" className={`h-3.5 w-3.5 transition-transform ${open ? "rotate-180" : ""}`} />

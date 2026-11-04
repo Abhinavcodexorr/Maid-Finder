@@ -74,17 +74,17 @@ export function Navbar() {
   return (
     <>
       <header
-        className="sticky top-0 z-50 border-b bg-white/95 backdrop-blur-xl"
+        className="sticky top-0 z-50 border-b bg-white/95 shadow-[0_1px_0_rgba(15,23,42,0.03)] backdrop-blur-xl"
         style={{ borderColor: "var(--line)" }}
       >
-        <nav className="container-page flex h-16 items-center justify-between gap-4">
+        <nav className="container-page flex h-[72px] items-center justify-between gap-4">
           {/* Logo */}
           <Link href="/" className="shrink-0">
-            <Logo size={32} wordmarkClassName="text-lg" />
+            <Logo size={36} wordmarkClassName="text-xl" />
           </Link>
 
           {/* Desktop Nav Links */}
-          <div className="hidden items-center gap-1 xl:flex">
+          <div className="hidden flex-1 items-center justify-center gap-1 xl:flex">
             {navLinks.map((item) => {
               const active = pathname === item.href || pathname.startsWith(item.href + "/");
               if (item.href === "/services") return <ServicesMenu key={item.href} active={active} />;
@@ -97,16 +97,16 @@ export function Navbar() {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className="relative whitespace-nowrap rounded-lg px-2 py-2 text-sm font-medium transition-colors xl:px-3"
+                  className="relative whitespace-nowrap rounded-lg px-2 py-2 text-[15px] font-semibold transition-colors hover:text-[var(--primary)] xl:px-3.5"
                   style={{
-                    color: active ? "var(--primary)" : "var(--ink-light)",
+                    color: active ? "var(--primary)" : "var(--ink)",
                   }}
                 >
                   {item.label}
                   {active && (
                     <motion.span
                       layoutId="nav-indicator"
-                      className="absolute inset-x-3 -bottom-[17px] h-0.5 rounded-full"
+                      className="absolute inset-x-3 -bottom-[21px] h-0.5 rounded-full"
                       style={{ background: "var(--primary)" }}
                       transition={{ type: "spring", stiffness: 380, damping: 30 }}
                     />
@@ -201,11 +201,14 @@ export function Navbar() {
                 </div>
               </>
             ) : (
-              <div className="hidden items-center gap-2 xl:flex">
-                <Link href="/login" className="btn btn-ghost text-sm">
+              <div className="hidden items-center gap-3 xl:flex">
+                <Link href="/providers" aria-label="Search professionals" className="flex h-10 w-10 items-center justify-center rounded-full transition-colors hover:bg-[var(--line-light)]">
+                  <Icon name="search" className="h-[18px] w-[18px]" style={{ color: "var(--ink)" }} />
+                </Link>
+                <Link href="/login" className="px-2 text-[15px] font-semibold transition-colors hover:text-[var(--primary)]" style={{ color: "var(--ink)" }}>
                   Log in
                 </Link>
-                <Link href="/signup" className="btn btn-primary">
+                <Link href="/signup" className="btn btn-primary !rounded-full !px-6 shadow-md">
                   Register free
                 </Link>
               </div>
