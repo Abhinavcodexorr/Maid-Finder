@@ -13,6 +13,7 @@ import { toast } from "@/components/ui/toaster";
 import { colorForCategory } from "@/lib/category-colors";
 import type { Provider } from "@/types/marketplace";
 import { Shimmer } from "@/components/ui/shimmer";
+import { ProviderReviews } from "@/components/marketplace/provider-reviews";
 import { ProviderVideo } from "@/components/ui/provider-video";
 import { ServiceGlyph } from "@/components/ui/service-glyph";
 import { intlPhone } from "@/lib/phone";
@@ -379,6 +380,10 @@ export default function ProviderProfilePage({ params }: { params: Promise<{ id: 
               </div>
             </motion.div>
           )}
+
+          <motion.div {...fadeUp(0.28)}>
+            <ProviderReviews providerId={provider.id} providerName={provider.firstName} />
+          </motion.div>
 
           {provider.verified && (
             <motion.div {...fadeUp(0.3)} className="flex items-start gap-3 rounded-3xl p-5" style={{ background: "var(--success-soft)" }}>
