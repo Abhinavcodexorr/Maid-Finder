@@ -78,15 +78,25 @@ export async function verifyProviderOtp(mobileNumber: string, otp: string): Prom
 }
 
 /** The admin-managed service catalog — used for "What work do you do?" and the home page's service tiles. */
-export async function fetchCatalogServices(): Promise<CatalogService[]> {
-  const response = await fetch("/api/services");
-  const data = await response.json().catch(() => null);
-  if (!response.ok || !data?.success) {
-    throw new ApiError(data?.message || "Couldn't load services", response.status, data);
-  }
-  const services = data.data as CatalogService[];
-  rememberCatalogNames(services);
-  return services;
+// The catalog changes rarely and several components read it on every page: share one request.
+const CATALOG_TTL_MS = 5 * 60_000;
+let catalogCache: { at: number; promise: Promise<CatalogService[]> } | null = null;
+
+export function fetchCatalogServices(): Promise<CatalogService[]> {
+  if (catalogCache && Date.now() - catalogCache.at < CATALOG_TTL_MS) return catalogCache.promise;
+  const promise = (async () => {
+    const response = await fetch("/api/services");
+    const data = await response.json().catch(() => null);
+    if (!response.ok || !data?.success) {
+      throw new ApiError(data?.message || "Couldn't load services", response.status, data);
+    }
+    const services = data.data as CatalogService[];
+    rememberCatalogNames(services);
+    return services;
+  })();
+  catalogCache = { at: Date.now(), promise };
+  promise.catch(() => { if (catalogCache?.promise === promise) catalogCache = null; });
+  return promise;
 }
 
 /** Uploads an image or video to the backend's generic upload endpoint and returns its public URL. */

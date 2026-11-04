@@ -7,14 +7,14 @@
 // working no matter which port `next dev` happens to pick locally.
 import { NextRequest, NextResponse } from "next/server";
 import { API_BASE_URL } from "@/lib/api-client";
-import { cleanBody } from "@/lib/api-proxy";
+import { cleanBody, fetchUpstream } from "@/lib/api-proxy";
 import { sanitizeProviders, viewerIsMember } from "@/lib/provider-privacy";
 
 export async function GET(request: NextRequest) {
   const qs = request.nextUrl.search;
   try {
     const authorization = request.headers.get("authorization");
-    const upstream = await fetch(`${API_BASE_URL}/api/v1/providers/list${qs}`, {
+    const upstream = await fetchUpstream(`${API_BASE_URL}/api/v1/providers/list${qs}`, {
       headers: authorization ? { Authorization: authorization } : undefined,
       cache: "no-store",
     });

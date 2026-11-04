@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import { PageHeader } from "@/components/layout/page-header";
 import { Icon } from "@/components/ui/icon";
@@ -15,26 +14,25 @@ export default function ReviewsPage() {
     <>
       <PageHeader eyebrow="Reviews" title="What our users" accent="say" subtitle="Stories from families who found trusted help through Help Zone." />
       <section className="container-page py-12">
-        <div className="columns-1 gap-6 space-y-6 md:columns-2 lg:columns-3">
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {TESTIMONIALS.map((t) => (
-            <figure key={t.id} className="card break-inside-avoid">
-              <div className="flex gap-0.5" aria-label={`${t.rating} out of 5 stars`}>
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <Icon key={i} name="star" className="h-4 w-4" style={{ color: i < t.rating ? "var(--accent)" : "var(--line)" }} />
-                ))}
+            <figure key={t.id} className="flex h-full flex-col rounded-3xl border bg-white p-7 shadow-sm transition-shadow hover:shadow-lg" style={{ borderColor: "var(--line)" }}>
+              <div className="flex items-center justify-between">
+                <div className="flex gap-1" aria-label={`${t.rating} out of 5 stars`}>
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <Icon key={i} name="star" className="h-5 w-5" style={{ color: i < t.rating ? "var(--accent)" : "var(--line)" }} />
+                  ))}
+                </div>
+                <span aria-hidden className="font-display text-5xl font-extrabold leading-none" style={{ color: "var(--primary-soft)" }}>&rdquo;</span>
               </div>
-              <blockquote className="mt-3 text-sm leading-relaxed" style={{ color: "var(--ink-light)" }}>&ldquo;{t.text}&rdquo;</blockquote>
-              <figcaption className="mt-4 flex items-center gap-3">
-                {t.avatar ? (
-                  <Image src={t.avatar} alt="" width={40} height={40} className="h-10 w-10 rounded-full" />
-                ) : (
-                  <span className="flex h-10 w-10 items-center justify-center rounded-full text-sm font-bold" style={{ background: "var(--primary-soft)", color: "var(--primary)" }}>
-                    {t.name[0]}
-                  </span>
-                )}
-                <span>
-                  <span className="block text-sm font-bold">{t.name}</span>
-                  <span className="block text-xs" style={{ color: "var(--muted)" }}>{t.area}</span>
+              <blockquote className="mt-4 flex-1 text-[15.5px] leading-[1.7]" style={{ color: "var(--ink-light)" }}>&ldquo;{t.text}&rdquo;</blockquote>
+              <figcaption className="mt-6 flex items-center gap-3.5 border-t pt-5" style={{ borderColor: "var(--line-light)" }}>
+                <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-base font-bold" style={{ background: "var(--primary-soft)", color: "var(--primary)" }}>
+                  {t.name[0]}
+                </span>
+                <span className="min-w-0">
+                  <span className="block truncate text-[15px] font-bold" style={{ color: "var(--ink)" }}>{t.name}</span>
+                  <span className="block truncate text-[13px]" style={{ color: "var(--muted)" }}>{t.area}</span>
                 </span>
               </figcaption>
             </figure>

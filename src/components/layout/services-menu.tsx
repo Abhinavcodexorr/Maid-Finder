@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Icon } from "@/components/ui/icon";
-import { HoverMenu } from "@/components/layout/hover-menu";
+import { HoverMenu, MenuHeading } from "@/components/layout/hover-menu";
 import { fetchCatalogServices } from "@/lib/services";
 import type { CatalogService } from "@/lib/services";
 import { ServiceGlyph, serviceImage } from "@/components/ui/service-glyph";
@@ -22,52 +22,55 @@ export function ServicesMenu({ active }: { active: boolean }) {
   }, []);
 
   return (
-    <HoverMenu label="Services" href="/services" active={active} width="min(760px,92vw)">
+    <HoverMenu label="Services" href="/services" active={active}>
       {(close) => (
-        <>
-          {services === null && (
-            <div className="grid grid-cols-2 gap-2 p-2 lg:grid-cols-3" aria-busy="true">
-              {Array.from({ length: 9 }).map((_, i) => (
-                <Shimmer key={i} className="h-11 rounded-2xl" />
+        <div className="grid gap-10 lg:grid-cols-[1fr_300px]">
+          <div>
+            <MenuHeading>All services</MenuHeading>
+            {services === null && (
+              <div className="grid grid-cols-2 gap-3 lg:grid-cols-3" aria-busy="true">
+                {Array.from({ length: 9 }).map((_, i) => (
+                  <Shimmer key={i} className="h-12 rounded-2xl" />
+                ))}
+              </div>
+            )}
+            {services !== null && services.length === 0 && (
+              <p className="text-sm" style={{ color: "var(--muted)" }}>Services are unavailable right now.</p>
+            )}
+            <div className="grid grid-cols-2 gap-x-8 gap-y-1 lg:grid-cols-3">
+              {(services ?? []).map((svc) => (
+                <Link
+                  key={svc.key}
+                  href={`/providers?category=${svc.key}`}
+                  role="menuitem"
+                  onClick={close}
+                  className="group flex items-center gap-3 py-2.5"
+                >
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-[var(--line-light)]">
+                    {serviceImage(svc) ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={serviceImage(svc)!} alt="" className="h-full w-full object-cover" />
+                    ) : (
+                      <ServiceGlyph name={svc.name} className="h-4 w-4 text-[var(--primary)]" />
+                    )}
+                  </span>
+                  <span className="text-[16px] font-semibold transition-colors group-hover:text-[var(--primary)]" style={{ color: "var(--ink)" }}>{svc.name}</span>
+                </Link>
               ))}
             </div>
-          )}
-          {services !== null && services.length === 0 && (
-            <p className="p-4 text-sm" style={{ color: "var(--muted)" }}>Services are unavailable right now.</p>
-          )}
-
-          <div className="grid max-h-[calc(100vh-11rem)] grid-cols-2 gap-1 overflow-y-auto lg:grid-cols-3">
-            {(services ?? []).map((svc) => (
-              <Link
-                key={svc.key}
-                href={`/providers?category=${svc.key}`}
-                role="menuitem"
-                onClick={close}
-                className="flex items-center gap-3 rounded-2xl p-2.5 text-sm font-semibold transition-colors hover:bg-[var(--primary-soft)] hover:text-[var(--primary)]"
-              >
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-[var(--line-light)] text-lg">
-                  {serviceImage(svc) ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={serviceImage(svc)!} alt="" className="h-full w-full object-cover" />
-                  ) : (
-                    <ServiceGlyph name={svc.name} className="h-4 w-4 text-[var(--primary)]" />
-                  )}
-                </span>
-                {svc.name}
-              </Link>
-            ))}
           </div>
 
-          <Link
-            href="/services"
-            onClick={close}
-            className="mt-2 flex items-center justify-between rounded-2xl px-4 py-3 text-sm font-bold"
-            style={{ background: "var(--primary-soft)", color: "var(--primary)" }}
-          >
-            View all services
-            <Icon name="arrow-right" className="h-4 w-4" />
+          <Link href="/services" onClick={close} className="flex flex-col justify-between rounded-3xl p-6" style={{ background: "var(--surface-muted)" }}>
+            <div>
+              <p className="text-[11px] font-bold uppercase tracking-[0.16em]" style={{ color: "var(--primary)" }}>Every home need</p>
+              <p className="font-display mt-2 text-xl font-extrabold leading-snug" style={{ color: "var(--ink)" }}>Verified help for every job at home</p>
+              <p className="mt-2 text-sm" style={{ color: "var(--muted)" }}>From cooking and cleaning to drivers and elder care — all ID-checked.</p>
+            </div>
+            <span className="mt-6 inline-flex items-center gap-1.5 text-sm font-bold" style={{ color: "var(--primary)" }}>
+              View all services <Icon name="arrow-right" className="h-4 w-4" />
+            </span>
           </Link>
-        </>
+        </div>
       )}
     </HoverMenu>
   );

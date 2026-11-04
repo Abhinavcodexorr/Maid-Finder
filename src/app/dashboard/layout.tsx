@@ -1,5 +1,6 @@
 "use client";
 
+import { LiveTimeLeft } from "@/components/ui/live-countdown";
 import { useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -23,7 +24,7 @@ export default function DashboardLayout({
 }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { user, loading, isSubscribed, daysRemaining, logout } = useAuth();
+  const { user, loading, isSubscribed, subscription, logout } = useAuth();
 
   useEffect(() => {
     if (!loading && !user) {
@@ -66,7 +67,7 @@ export default function DashboardLayout({
             </div>
             {isSubscribed ? (
               <span className="pill pill-success text-xs font-semibold">
-                <Icon name="check" className="h-3 w-3" /> {daysRemaining}d left
+                <Icon name="check" className="h-3 w-3" /> <LiveTimeLeft endDate={subscription?.endDate ?? ""} /> left
               </span>
             ) : (
               <Link href="/membership" className="btn btn-primary btn-sm text-xs">
@@ -126,7 +127,7 @@ export default function DashboardLayout({
                     </span>
                     {isSubscribed ? (
                       <span className="font-bold" style={{ color: "var(--success)" }}>
-                        {daysRemaining} days left
+                        <LiveTimeLeft endDate={subscription?.endDate ?? ""} /> left
                       </span>
                     ) : (
                       <Link href="/membership" className="underline font-bold" style={{ color: "var(--primary)" }}>

@@ -2,13 +2,12 @@
 
 import { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
-import { getCategories, fetchLiveProviders, fetchCatalogServices } from "@/lib/services";
+import { getCategories, fetchCatalogServices } from "@/lib/services";
 import { ServiceGlyph, serviceImage } from "@/components/ui/service-glyph";
 import { Icon } from "@/components/ui/icon";
 import { TiltCard } from "@/components/ui/tilt-card";
 import { PageHeader } from "@/components/layout/page-header";
 import { ScrollReveal, ScrollStagger, ScrollStaggerItem } from "@/components/ui/scroll-reveal";
-import type { Provider } from "@/types/marketplace";
 
 const CATEGORY_DETAILS: Record<
   string,
@@ -115,13 +114,6 @@ export default function ServicesPage() {
       cancelled = true;
     };
   }, []);
-  const [allProviders, setAllProviders] = useState<Provider[]>([]);
-  useEffect(() => {
-    let cancelled = false;
-    fetchLiveProviders().then((list) => { if (!cancelled) setAllProviders(list); }).catch(() => {});
-    return () => { cancelled = true; };
-  }, []);
-
   // Filter categories by search
   const filteredCategories = useMemo(() => {
     if (!searchQuery.trim()) return categories;
@@ -222,8 +214,6 @@ export default function ServicesPage() {
               const skills = subs.length > 0 ? subs : details.popularSkills;
               const photo = serviceImage({ name: cat.name, imageUrl: extras?.imageUrl });
 
-              // Count providers in this category
-              const count = allProviders.filter((p) => p.categoryId === cat.id).length;
 
               return (
                 <ScrollStaggerItem key={cat.id}>
@@ -235,14 +225,12 @@ export default function ServicesPage() {
                       <div className="relative -mx-6 -mt-6 mb-0 h-36 overflow-hidden">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img src={photo} alt="" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
-                        <span className="pill pill-primary absolute right-4 top-4 bg-white text-xs font-semibold shadow-sm">{count} Available</span>
                       </div>
                     ) : (
                       <div className="flex items-center justify-between">
                         <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[var(--primary-soft)] text-[var(--primary)] shadow-sm transition-transform group-hover:scale-110">
                           <ServiceGlyph name={cat.name} className="h-7 w-7" />
                         </div>
-                        <span className="pill pill-primary text-xs font-semibold">{count} Available</span>
                       </div>
                     )}
 
@@ -280,7 +268,7 @@ export default function ServicesPage() {
                       href={`/providers?category=${cat.id}`}
                       className="btn btn-primary w-full text-xs font-bold group-hover:shadow-md"
                     >
-                      Browse {cat.name} Profiles ({count})
+                      Browse {cat.name} Profiles
                       <Icon name="arrow-right" className="h-3.5 w-3.5 ml-1 transition-transform group-hover:translate-x-1" />
                     </Link>
                   </div>

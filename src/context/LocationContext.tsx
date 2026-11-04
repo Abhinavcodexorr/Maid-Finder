@@ -18,6 +18,8 @@ interface LocationContextValue {
   error: string;
   detectFromDevice: () => Promise<boolean>;
   setFromPincode: (pincode: string) => Promise<boolean>;
+  /** A 6-digit pincode or a place name such as "Hyderabad". */
+  setFromQuery: (text: string) => Promise<boolean>;
   setRadiusKm: (radius: number | null) => void;
   clear: () => void;
   dismissPrompt: () => void;
@@ -131,6 +133,34 @@ export function LocationProvider({ children }: { children: ReactNode }) {
     [lookup, save]
   );
 
+  const setFromQuery = useCallback(
+    async (text: string) => {
+      const value = text.trim();
+      if (/^\d{6}$/.test(value)) return setFromPincode(value);
+      setError("");
+      if (value.length < 3) {
+        setError("Enter a city, area or 6-digit pincode.");
+        return false;
+      }
+      setBusy(true);
+      try {
+        const place = await lookup(`q=${encodeURIComponent(`${value}, India`)}`);
+        if (!place.success || place.lat === undefined || place.lng === undefined) {
+          setError("We couldn't find that place.");
+          return false;
+        }
+        save({ lat: place.lat, lng: place.lng, city: place.city || value, state: place.state ?? "", pincode: place.pincode || undefined });
+        return true;
+      } catch {
+        setError("Couldn't look that up right now. Please try again.");
+        return false;
+      } finally {
+        setBusy(false);
+      }
+    },
+    [lookup, save, setFromPincode]
+  );
+
   const setRadiusKm = useCallback((km: number | null) => {
     setRadius(km);
     writeJson(RADIUS_KEY, { km });
@@ -152,8 +182,8 @@ export function LocationProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const value = useMemo(
-    () => ({ location, radiusKm, ready, promptDismissed, busy, error, detectFromDevice, setFromPincode, setRadiusKm, clear, dismissPrompt }),
-    [location, radiusKm, ready, promptDismissed, busy, error, detectFromDevice, setFromPincode, setRadiusKm, clear, dismissPrompt]
+    () => ({ location, radiusKm, ready, promptDismissed, busy, error, detectFromDevice, setFromPincode, setFromQuery, setRadiusKm, clear, dismissPrompt }),
+    [location, radiusKm, ready, promptDismissed, busy, error, detectFromDevice, setFromPincode, setFromQuery, setRadiusKm, clear, dismissPrompt]
   );
 
   return <LocationContext.Provider value={value}>{children}</LocationContext.Provider>;

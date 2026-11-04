@@ -1,5 +1,6 @@
 "use client";
 
+import { LiveTimeLeft } from "@/components/ui/live-countdown";
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
@@ -20,7 +21,7 @@ const CATEGORY_EMOJIS: Record<string, string> = {
 };
 
 export default function DashboardOverviewPage() {
-  const { user, isSubscribed, subscription, daysRemaining } = useAuth();
+  const { user, isSubscribed, subscription } = useAuth();
 
   const categories = useMemo(() => getCategories(), []);
 
@@ -103,7 +104,7 @@ export default function DashboardOverviewPage() {
                 </h3>
                 <p className="mt-0.5 text-xs sm:text-sm" style={{ color: "var(--muted)" }}>
                   {isSubscribed
-                    ? `You have ${daysRemaining} days remaining of full contact access to all verified professionals.`
+                    ? <>You have <strong><LiveTimeLeft endDate={subscription?.endDate ?? ""} /></strong> remaining of full contact access to all verified professionals.</>
                     : "Free members can preview profiles. Subscribe to contact candidates directly with 0% brokerage."}
                 </p>
               </div>
@@ -135,7 +136,7 @@ export default function DashboardOverviewPage() {
             {isSubscribed ? "Active" : "Free"}
           </div>
           <p className="mt-1 text-[11px]" style={{ color: isSubscribed ? "var(--success)" : "var(--muted)" }}>
-            {isSubscribed ? `${daysRemaining} days left` : "Basic browsing"}
+            {isSubscribed ? <><LiveTimeLeft endDate={subscription?.endDate ?? ""} /> left</> : "Basic browsing"}
           </p>
         </div>
 

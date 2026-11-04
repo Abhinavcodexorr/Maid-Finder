@@ -6,7 +6,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { useAuth } from "@/context/AuthContext";
 import { Icon } from "@/components/ui/icon";
-import { Logo } from "@/components/ui/logo";
+import { AuthShell } from "@/components/layout/auth-shell";
 import { toast } from "@/components/ui/toaster";
 
 const enter = (delay = 0) => ({
@@ -47,19 +47,20 @@ function LoginContent() {
   };
 
   return (
-    <div className="relative flex min-h-[calc(100vh-64px)] items-center justify-center overflow-hidden px-4 py-12" style={{ background: "var(--gradient-hero)" }}>
-      <div aria-hidden className="blob-drift pointer-events-none absolute -right-24 -top-24 h-96 w-96 rounded-full opacity-60 blur-3xl" style={{ background: "radial-gradient(circle, rgba(59,130,246,0.35), transparent 70%)" }} />
-      <div aria-hidden className="blob-drift pointer-events-none absolute -bottom-32 -left-24 h-80 w-80 rounded-full opacity-50 blur-3xl" style={{ background: "radial-gradient(circle, rgba(14,165,233,0.25), transparent 70%)" }} />
-
-      <div className="relative w-full max-w-md">
-        <motion.div {...enter(0)} className="rounded-[2rem] border bg-white p-8 shadow-2xl sm:p-10" style={{ borderColor: "var(--line)" }}>
-          <Link href="/" className="mb-8 flex justify-center">
-            <Logo size={34} />
+    <AuthShell
+      footer={
+        <p className="mt-5 text-center text-xs" style={{ color: "var(--muted)" }}>
+          Are you a provider?{" "}
+          <Link href="/register-provider" className="font-semibold" style={{ color: "var(--primary)" }}>
+            Register here
           </Link>
-
-          <h1 className="font-display text-center text-h1">Welcome back</h1>
-          <p className="mt-2 text-center text-sm" style={{ color: "var(--muted)" }}>
-            Log in to unlock contact details and pricing.
+        </p>
+      }
+    >
+      <motion.div {...enter(0)}>
+          <h1 className="font-display text-h1">Log in</h1>
+          <p className="mt-2 text-sm" style={{ color: "var(--muted)" }}>
+            Log in to unlock contact details and start your search.
           </p>
 
           <form className="mt-8" onSubmit={onSubmit}>
@@ -71,7 +72,7 @@ function LoginContent() {
                 <Icon name="mail" className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2" style={{ color: "var(--faint)" }} />
                 <input
                   id="login-id"
-                  className="field !rounded-full !py-3.5 !pl-11"
+                  className="field !rounded-full !py-4 !text-base !pl-11"
                   placeholder="you@example.com"
                   value={identifier}
                   onChange={(e) => setIdentifier(e.target.value)}
@@ -95,7 +96,7 @@ function LoginContent() {
                 <Icon name="lock" className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2" style={{ color: "var(--faint)" }} />
                 <input
                   id="login-pw"
-                  className="field !rounded-full !py-3.5 !pl-11 !pr-12"
+                  className="field !rounded-full !py-4 !text-base !pl-11 !pr-12"
                   type={showPassword ? "text" : "password"}
                   placeholder="Enter your password"
                   value={password}
@@ -141,25 +142,8 @@ function LoginContent() {
               Create an account
             </Link>
           </p>
-        </motion.div>
-
-        <motion.ul {...enter(0.15)} className="mt-6 flex flex-wrap justify-center gap-x-6 gap-y-2 text-xs font-medium" style={{ color: "var(--ink-light)" }}>
-          {["100% ID verified", "0% commission", "Direct contact"].map((item) => (
-            <li key={item} className="flex items-center gap-1.5">
-              <Icon name="check-circle" className="h-4 w-4" style={{ color: "var(--success)" }} />
-              {item}
-            </li>
-          ))}
-        </motion.ul>
-
-        <p className="mt-4 text-center text-xs" style={{ color: "var(--muted)" }}>
-          Are you a provider?{" "}
-          <Link href="/register-provider" className="font-semibold" style={{ color: "var(--primary)" }}>
-            Register here
-          </Link>
-        </p>
-      </div>
-    </div>
+      </motion.div>
+    </AuthShell>
   );
 }
 

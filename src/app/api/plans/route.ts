@@ -2,11 +2,11 @@
 // src/app/api/providers/list/route.ts for why this exists (CORS).
 import { NextResponse } from "next/server";
 import { API_BASE_URL } from "@/lib/api-client";
-import { cleanBody } from "@/lib/api-proxy";
+import { cleanBody, fetchUpstream } from "@/lib/api-proxy";
 
 export async function GET() {
   try {
-    const upstream = await fetch(`${API_BASE_URL}/api/v1/plans`, {
+    const upstream = await fetchUpstream(`${API_BASE_URL}/api/v1/plans`, {
       cache: "no-store",
     });
     const data = await upstream.json();

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useLocation } from "@/context/LocationContext";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Icon } from "@/components/ui/icon";
@@ -17,6 +18,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useTypewriter } from "@/lib/use-typewriter";
 import { FaqList } from "@/components/sections/faq-list";
 import { PlanCards } from "@/components/sections/plan-cards";
+import { ClosingCta } from "@/components/sections/closing-cta";
 import { TestimonialsCarousel } from "@/components/sections/testimonials-carousel";
 import { ScrollReveal, ScrollStagger, ScrollStaggerItem } from "@/components/ui/scroll-reveal";
 import { ServiceGlyph, pickShowcaseServices, serviceGradient, serviceImage } from "@/components/ui/service-glyph";
@@ -69,6 +71,7 @@ const heroAnim = (delay = 0) => ({
    ================================================================ */
 export default function HomePage() {
   const router = useRouter();
+  const { setFromQuery } = useLocation();
   const { user, isSubscribed } = useAuth();
 
   const [serviceKey, setServiceKey] = useState("");
@@ -94,10 +97,13 @@ export default function HomePage() {
 
   const marqueeWords = (catalog ?? []).map((svc) => svc.name);
 
-  const onSearch = () => {
+  const onSearch = async () => {
     const params = new URLSearchParams();
     if (serviceKey) params.set("category", serviceKey);
-    if (locationQuery.trim()) params.set("area", locationQuery.trim());
+    const place = locationQuery.trim();
+    // A typed place becomes the visitor's location, so results come back nearest-first inside the radius.
+    // If it can't be found, fall back to the old text match on the area.
+    if (place && !(await setFromQuery(place))) params.set("area", place);
     router.push(`/providers?${params.toString()}`);
   };
 
@@ -505,6 +511,8 @@ export default function HomePage() {
           </div>
         </ScrollReveal>
       </section>
+
+      <ClosingCta />
     </>
   );
 }

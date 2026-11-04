@@ -32,6 +32,7 @@ export default function ProviderProfilePage({ params }: { params: Promise<{ id: 
   const [provider, setProvider] = useState<Provider | null | undefined>(undefined);
   const [similar, setSimilar] = useState<Provider[]>([]);
   const [saved, setSaved] = useState(false);
+  const [videoOpen, setVideoOpen] = useState(false);
 
   // Live providers first (real backend IDs); falls back to the mock catalog
   // so any link into the original demo data keeps working too.
@@ -129,12 +130,20 @@ export default function ProviderProfilePage({ params }: { params: Promise<{ id: 
   };
 
   // Only facts the API actually returned are shown — empty ones are left out.
-  const facts: Array<{ icon: "briefcase" | "clock" | "award" | "user" | "globe" | "calendar"; label: string; value: string }> = [
-    provider.experienceYears > 0 ? { icon: "briefcase" as const, label: "Experience", value: `${provider.experienceYears} ${provider.experienceYears === 1 ? "year" : "years"}` } : null,
-    { icon: "clock" as const, label: "Availability", value: titleCase(availability) },
-    provider.education ? { icon: "award" as const, label: "Education", value: provider.education } : null,
-    provider.age > 0 ? { icon: "calendar" as const, label: "Age", value: `${provider.age} years` } : null,
-    provider.nationality ? { icon: "globe" as const, label: "Nationality", value: provider.nationality } : null,
+  // Nationality is deliberately never displayed.
+  const facts: Array<{ label: string; value: string }> = [
+    provider.experienceYears > 0 ? { label: "Experience", value: `${provider.experienceYears} ${provider.experienceYears === 1 ? "year" : "years"}` } : null,
+    location ? { label: "Location", value: location } : null,
+    { label: "Availability", value: titleCase(availability) },
+    provider.age > 0 ? { label: "Age", value: `${provider.age} years` } : null,
+    provider.education ? { label: "Education", value: provider.education } : null,
+  ].filter((f): f is NonNullable<typeof f> => f !== null);
+
+  const personal: Array<{ label: string; value: string }> = [
+    provider.age > 0 ? { label: "Age", value: `${provider.age} years old` } : null,
+    provider.education ? { label: "Education", value: provider.education } : null,
+    location ? { label: "Based in", value: location } : null,
+    { label: "Availability", value: titleCase(availability) },
   ].filter((f): f is NonNullable<typeof f> => f !== null);
 
   const card = "rounded-3xl border bg-white p-6 shadow-sm";
@@ -143,101 +152,152 @@ export default function ProviderProfilePage({ params }: { params: Promise<{ id: 
   return (
     <>
       {/* Breadcrumb */}
-      <div className="border-b" style={{ borderColor: "var(--line)" }}>
-        <div className="container-page py-3">
-          <Link href="/providers" className="inline-flex items-center gap-1 text-sm font-medium" style={{ color: "var(--muted)" }}>
-            <Icon name="arrow-left" className="h-4 w-4" /> Back to professionals
-          </Link>
-        </div>
+      <div className="container-page pt-5">
+        <nav aria-label="Breadcrumb" className="flex flex-wrap items-center gap-2 text-sm" style={{ color: "var(--muted)" }}>
+          <Link href="/" className="hover:text-[var(--primary)]">Home</Link>
+          <span aria-hidden>/</span>
+          <Link href="/providers" className="hover:text-[var(--primary)]">All professionals</Link>
+          <span aria-hidden>/</span>
+          <span className="font-semibold" style={{ color: "var(--ink)" }}>{fullName}</span>
+        </nav>
       </div>
 
-      {/* Profile Header */}
-      <section className="border-b" style={{ borderColor: "var(--line)", background: "var(--gradient-hero)" }}>
-        <div className="container-page py-10">
-          <div className="flex flex-col gap-6 md:flex-row md:items-center">
-            <motion.div initial={{ opacity: 0, scale: 0.92 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.5 }}>
-              <div className="relative h-36 w-36 shrink-0 overflow-hidden rounded-[2rem] border-4 border-white shadow-xl md:h-44 md:w-44">
-                {provider.photo ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={provider.photo} alt={fullName} className="h-full w-full object-cover" />
-                ) : (
-                  <Avatar
-                    initials={`${provider.firstName[0] ?? ""}${provider.lastName[0] ?? ""}`}
-                    className="h-full w-full text-5xl"
-                    rounded="rounded-none"
-                    color={catColor.color}
-                    soft={catColor.soft}
-                  />
-                )}
-              </div>
-            </motion.div>
+      <section className="container-page grid gap-6 py-6 lg:grid-cols-[380px_1fr] lg:items-start lg:gap-8 lg:py-8">
+        {/* Left — profile card + unlock card */}
+        <motion.aside {...fadeUp(0)} className="space-y-5 lg:sticky lg:top-24">
+          <div className="overflow-hidden rounded-3xl border bg-white p-3 shadow-sm" style={{ borderColor: "var(--line)" }}>
+            <div className="relative aspect-[4/4.2] w-full overflow-hidden rounded-2xl" style={{ background: "var(--surface-muted)" }}>
+              {provider.photo ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={provider.photo} alt={fullName} className="h-full w-full object-cover object-top" />
+              ) : provider.introVideoUrl ? (
+                <ProviderVideo src={provider.introVideoUrl} size="lg" controlsWhenPlaying className="h-full w-full" />
+              ) : (
+                <Avatar
+                  initials={`${provider.firstName[0] ?? ""}${provider.lastName[0] ?? ""}`}
+                  className="h-full w-full text-7xl"
+                  rounded="rounded-none"
+                  color={catColor.color}
+                  soft={catColor.soft}
+                />
+              )}
+              {provider.photo && provider.introVideoUrl && (
+                <button
+                  type="button"
+                  onClick={() => setVideoOpen(true)}
+                  aria-label="Play video introduction"
+                  className="absolute bottom-3 right-3 flex h-12 w-12 items-center justify-center rounded-full text-white shadow-lg transition-transform hover:scale-105"
+                  style={{ background: "var(--primary)" }}
+                >
+                  <svg viewBox="0 0 24 24" className="ml-0.5 h-5 w-5" fill="currentColor" aria-hidden><path d="M8 5v14l11-7z" /></svg>
+                </button>
+              )}
+              {provider.verified && (
+                <span className="absolute left-3 top-3 inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-bold text-white shadow-md" style={{ background: "var(--primary)" }}>
+                  <Icon name="check" className="h-3.5 w-3.5" /> Verified
+                </span>
+              )}
+            </div>
 
-            <motion.div {...fadeUp(0.05)} className="min-w-0 flex-1">
-              <div className="flex flex-wrap items-center gap-3">
-                <h1 className="font-display text-h1">{fullName}</h1>
-                {provider.verified && (
-                  <span className="pill pill-success">
-                    <Icon name="shield" className="h-3.5 w-3.5" /> Verified
-                  </span>
-                )}
-              </div>
-
+            <div className="px-3 pb-3 pt-5">
+              <h1 className="font-display text-3xl font-extrabold leading-tight" style={{ color: "var(--ink)" }}>{fullName}</h1>
               {category?.name && (
-                <p className="mt-1 text-base font-semibold" style={{ color: "var(--primary)" }}>
-                  {category.name}
-                  {services.length > 1 && <span className="font-medium" style={{ color: "var(--muted)" }}> · +{services.length - 1} more</span>}
-                </p>
+                <p className="mt-1 text-[12px] font-bold uppercase tracking-[0.1em]" style={{ color: "var(--primary)" }}>{category.name}</p>
               )}
 
-              <div className="mt-4 flex flex-wrap items-center gap-2 text-sm">
-                {provider.experienceYears > 0 && (
-                  <span className="inline-flex items-center gap-1.5 rounded-full border bg-white px-3 py-1.5 font-medium" style={{ borderColor: "var(--line)" }}>
-                    <Icon name="briefcase" className="h-4 w-4" style={{ color: "var(--primary)" }} />
-                    {provider.experienceYears} yrs experience
+              <div className="mt-4 flex flex-wrap gap-2 text-[13px] font-medium">
+                {provider.verified && (
+                  <span className="inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5" style={{ borderColor: "var(--line)" }}>
+                    <Icon name="shield" className="h-3.5 w-3.5" style={{ color: "var(--primary)" }} /> Verified profile
                   </span>
                 )}
-                {location && (
-                  <span className="inline-flex items-center gap-1.5 rounded-full border bg-white px-3 py-1.5 font-medium" style={{ borderColor: "var(--line)" }}>
-                    <Icon name="map-pin" className="h-4 w-4" style={{ color: "var(--primary)" }} />
-                    {location}
+                {provider.introVideoUrl && (
+                  <span className="inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5" style={{ borderColor: "var(--line)" }}>
+                    <Icon name="eye" className="h-3.5 w-3.5" style={{ color: "var(--primary)" }} /> Video introduction
                   </span>
                 )}
-                <span className="inline-flex items-center gap-1.5 rounded-full border bg-white px-3 py-1.5 font-medium capitalize" style={{ borderColor: "var(--line)" }}>
-                  <Icon name="clock" className="h-4 w-4" style={{ color: "var(--primary)" }} />
-                  {availability}
+                <span className="inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5" style={{ borderColor: "var(--line)" }}>
+                  <span className="h-2 w-2 rounded-full" style={{ background: "var(--success)" }} /> Available now
                 </span>
-                {typeof provider.rating === "number" && (
-                  <span className="inline-flex items-center gap-1.5 rounded-full border bg-white px-3 py-1.5 font-semibold" style={{ borderColor: "var(--line)" }}>
-                    <Icon name="star" className="h-4 w-4" style={{ color: "var(--accent)" }} />
-                    {provider.rating.toFixed(1)}
-                  </span>
-                )}
               </div>
 
-              <div className="mt-5 flex flex-wrap gap-2">
-                <button type="button" onClick={onToggleSave} className="btn btn-outline btn-sm !rounded-full !bg-white">
-                  <Icon name={saved ? "heart-filled" : "heart"} className="h-4 w-4" style={saved ? { color: "var(--error)" } : {}} />
-                  {saved ? "Saved" : "Save"}
-                </button>
-                <button type="button" onClick={onShare} className="btn btn-outline btn-sm !rounded-full !bg-white">
-                  <Icon name="share" className="h-4 w-4" />
-                  Share
-                </button>
+              {provider.price > 0 && (
+                <div className="mt-5 rounded-2xl px-4 py-3.5" style={{ background: "var(--primary-soft)" }}>
+                  <p className="font-display text-2xl font-extrabold" style={{ color: "var(--primary-dark)" }}>
+                    ₹{provider.price.toLocaleString("en-IN")}
+                    <span className="ml-1.5 text-sm font-medium" style={{ color: "var(--muted)" }}>/ month</span>
+                  </p>
+                </div>
+              )}
+
+              {isSubscribed && masked.phone ? (
+                <div className="mt-4 grid grid-cols-2 gap-3">
+                  <a href={whatsappHref} target="_blank" rel="noreferrer" className="btn btn-primary !rounded-full">
+                    <Icon name="chat" className="h-4 w-4" /> WhatsApp
+                  </a>
+                  <a href={`tel:+${intlPhone(masked.phone)}`} className="btn btn-outline !rounded-full">
+                    <Icon name="phone" className="h-4 w-4" /> Call
+                  </a>
+                </div>
+              ) : (
+                <div className="mt-4 grid grid-cols-2 gap-3">
+                  <button type="button" onClick={onUnlock} className="btn btn-primary !rounded-full">
+                    <Icon name="lock" className="h-4 w-4" /> WhatsApp
+                  </button>
+                  <button type="button" onClick={onUnlock} className="btn btn-outline !rounded-full">
+                    <Icon name="lock" className="h-4 w-4" /> Phone
+                  </button>
+                </div>
+              )}
+
+              <div className="mt-4 flex items-center justify-between border-t pt-4 text-sm" style={{ borderColor: "var(--line-light)" }}>
+                <Link href="/providers" className="inline-flex items-center gap-1.5 font-medium hover:text-[var(--primary)]" style={{ color: "var(--muted)" }}>
+                  <Icon name="arrow-left" className="h-4 w-4" /> Back to results
+                </Link>
+                <div className="flex items-center gap-1">
+                  <button type="button" onClick={onToggleSave} className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 font-medium transition-colors hover:bg-[var(--line-light)]" style={{ color: saved ? "var(--error)" : "var(--ink-light)" }}>
+                    <Icon name={saved ? "heart-filled" : "heart"} className="h-4 w-4" />
+                    {saved ? "Saved" : "Save"}
+                  </button>
+                  <button type="button" onClick={onShare} className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 font-medium transition-colors hover:bg-[var(--line-light)]" style={{ color: "var(--ink-light)" }}>
+                    <Icon name="share" className="h-4 w-4" /> Share
+                  </button>
+                </div>
               </div>
-            </motion.div>
+            </div>
           </div>
-        </div>
-      </section>
 
-      {/* Content Grid */}
-      <section className="container-page grid gap-8 py-10 lg:grid-cols-[1fr_360px]">
-        <div className="space-y-6">
-          {provider.introVideoUrl && (
-            <motion.div {...fadeUp(0.08)} className={card} style={cardStyle}>
-              <h2 className="font-display text-h3 mb-4">Video introduction</h2>
-              <ProviderVideo src={provider.introVideoUrl} size="lg" rounded="rounded-2xl" controlsWhenPlaying className="aspect-video w-full" />
-            </motion.div>
+          {isSubscribed ? (
+            <div className="rounded-3xl p-6 text-white shadow-lg" style={{ background: "var(--gradient-dark)" }}>
+              <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#93b4ff]">Membership active</p>
+              <p className="mt-2 font-display text-xl font-bold">Contact {provider.firstName} directly</p>
+              <p className="mt-1.5 text-sm leading-relaxed text-white/70">Your membership unlocks phone and WhatsApp for every professional on Help Zone.</p>
+            </div>
+          ) : (
+            <div className="rounded-3xl p-6 text-white shadow-lg" style={{ background: "var(--gradient-dark)" }}>
+              <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#93b4ff]">Unlock contact details</p>
+              <p className="mt-2 font-display text-xl font-bold">Talk to {provider.firstName} directly</p>
+              <p className="mt-1.5 text-sm leading-relaxed text-white/70">
+                Get phone and WhatsApp numbers for every professional on Help Zone — one membership, no commission.
+              </p>
+              <button type="button" onClick={onUnlock} className="btn mt-5 w-full !rounded-full" style={{ background: "white", color: "var(--primary-dark)" }}>
+                <Icon name="unlock" className="h-4 w-4" />
+                {user ? "View membership plans" : "Log in to unlock"}
+              </button>
+            </div>
           )}
+        </motion.aside>
+
+        {/* Right — details */}
+        <div className="space-y-6">
+          <motion.div {...fadeUp(0.05)} className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+            {facts.map((f) => (
+              <div key={f.label} className="rounded-2xl border bg-white p-4 shadow-sm" style={{ borderColor: "var(--line)" }}>
+                <p className="text-[11px] font-bold uppercase tracking-[0.12em]" style={{ color: "var(--muted)" }}>{f.label}</p>
+                <p className="mt-2 text-base font-bold leading-snug" style={{ color: "var(--ink)" }}>{f.value}</p>
+              </div>
+            ))}
+          </motion.div>
 
           {provider.about.trim() && (
             <motion.div {...fadeUp(0.1)} className={card} style={cardStyle}>
@@ -246,61 +306,53 @@ export default function ProviderProfilePage({ params }: { params: Promise<{ id: 
             </motion.div>
           )}
 
-          <motion.div {...fadeUp(0.15)} className={card} style={cardStyle}>
-            <h2 className="font-display text-h3 mb-4">At a glance</h2>
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              {facts.map((f) => (
-                <div key={f.label} className="flex items-center gap-3 rounded-2xl p-3" style={{ background: "var(--surface-muted)" }}>
-                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white" style={{ color: "var(--primary)" }}>
-                    <Icon name={f.icon} className="h-5 w-5" />
-                  </span>
-                  <div className="min-w-0">
-                    <p className="text-[11px] font-bold uppercase tracking-[0.12em]" style={{ color: "var(--muted)" }}>{f.label}</p>
-                    <p className="truncate text-sm font-semibold">{f.value}</p>
+          {(provider.languages.length > 0 || services.length > 0) && (
+            <motion.div {...fadeUp(0.15)} className={card} style={cardStyle}>
+              <h2 className="font-display text-h3 mb-5">Skills and expertise</h2>
+              <div className="grid gap-6 md:grid-cols-2">
+                {provider.languages.length > 0 && (
+                  <div>
+                    <h3 className="mb-3 text-sm font-bold">Languages</h3>
+                    <div className="space-y-2">
+                      {provider.languages.map((lang) => (
+                        <div key={lang} className="rounded-xl px-4 py-3 text-sm font-semibold" style={{ background: "var(--surface-muted)" }}>{lang}</div>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              ))}
-              {provider.price > 0 && (
-                <div className="flex items-center gap-3 rounded-2xl p-3" style={{ background: "var(--surface-muted)" }}>
-                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white" style={{ color: "var(--primary)" }}>
-                    <Icon name={isSubscribed ? "tag" : "lock"} className="h-5 w-5" />
-                  </span>
-                  <div className="min-w-0">
-                    <p className="text-[11px] font-bold uppercase tracking-[0.12em]" style={{ color: "var(--muted)" }}>Expected salary</p>
-                    <p className="truncate text-sm font-semibold">{masked.priceMasked}</p>
+                )}
+                {services.length > 0 && (
+                  <div>
+                    <h3 className="mb-3 text-sm font-bold">Key skills</h3>
+                    <div className="flex flex-wrap gap-2">
+                      {services.map((name) => (
+                        <span key={name} className="inline-flex items-center gap-1.5 rounded-full border px-3.5 py-2 text-sm font-medium" style={{ borderColor: "var(--line)", color: "var(--ink-light)" }}>
+                          <ServiceGlyph name={name} className="h-3.5 w-3.5 text-[var(--primary)]" />
+                          {name}
+                        </span>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              )}
-            </div>
-          </motion.div>
-
-          {services.length > 0 && (
-            <motion.div {...fadeUp(0.2)} className={card} style={cardStyle}>
-              <h2 className="font-display text-h3 mb-4">Services offered</h2>
-              <div className="flex flex-wrap gap-2.5">
-                {services.map((name) => (
-                  <span key={name} className="inline-flex items-center gap-2 rounded-full px-3.5 py-2 text-sm font-semibold" style={{ background: "var(--primary-soft)", color: "var(--primary-dark)" }}>
-                    <ServiceGlyph name={name} className="h-4 w-4" />
-                    {name}
-                  </span>
-                ))}
+                )}
               </div>
             </motion.div>
           )}
 
-          {provider.languages.length > 0 && (
-            <motion.div {...fadeUp(0.25)} className={card} style={cardStyle}>
-              <h2 className="font-display text-h3 mb-4">Languages</h2>
-              <div className="flex flex-wrap gap-2">
-                {provider.languages.map((lang) => (
-                  <span key={lang} className="rounded-full border px-3.5 py-1.5 text-sm font-medium" style={{ borderColor: "var(--line)" }}>{lang}</span>
+          {personal.length > 0 && (
+            <motion.div {...fadeUp(0.2)} className={card} style={cardStyle}>
+              <h2 className="font-display text-h3 mb-2">Personal information</h2>
+              <dl>
+                {personal.map((row) => (
+                  <div key={row.label} className="grid grid-cols-[130px_1fr] gap-4 border-b py-4 last:border-b-0 sm:grid-cols-[200px_1fr]" style={{ borderColor: "var(--line-light)" }}>
+                    <dt className="text-[12px] font-bold uppercase tracking-[0.1em]" style={{ color: "var(--muted)" }}>{row.label}</dt>
+                    <dd className="text-base font-semibold" style={{ color: "var(--ink)" }}>{row.value}</dd>
+                  </div>
                 ))}
-              </div>
+              </dl>
             </motion.div>
           )}
 
           {provider.previousWork && (
-            <motion.div {...fadeUp(0.3)} className={card} style={cardStyle}>
+            <motion.div {...fadeUp(0.25)} className={card} style={cardStyle}>
               <h2 className="font-display text-h3 mb-4">Previous work</h2>
               <div className="flex items-start gap-4">
                 <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl" style={{ background: "var(--primary-soft)", color: "var(--primary)" }}>
@@ -321,7 +373,7 @@ export default function ProviderProfilePage({ params }: { params: Promise<{ id: 
           )}
 
           {provider.verified && (
-            <motion.div {...fadeUp(0.4)} className="flex items-start gap-3 rounded-3xl p-5" style={{ background: "var(--success-soft)" }}>
+            <motion.div {...fadeUp(0.3)} className="flex items-start gap-3 rounded-3xl p-5" style={{ background: "var(--success-soft)" }}>
               <Icon name="shield" className="mt-0.5 h-5 w-5 shrink-0" style={{ color: "var(--success)" }} />
               <div>
                 <p className="text-sm font-bold" style={{ color: "var(--success)" }}>ID verified</p>
@@ -332,71 +384,19 @@ export default function ProviderProfilePage({ params }: { params: Promise<{ id: 
             </motion.div>
           )}
         </div>
-
-        {/* Right Column — Contact Card */}
-        <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.4, delay: 0.2 }} className="h-fit lg:sticky lg:top-24">
-          {isSubscribed && masked.phone ? (
-            <div className="overflow-hidden rounded-3xl p-6 text-white shadow-xl" style={{ background: "var(--gradient-primary)" }}>
-              <div className="mb-4 flex items-center gap-2">
-                <Icon name="unlock" className="h-4 w-4 text-white/70" />
-                <span className="text-xs font-semibold uppercase tracking-wider text-white/70">Contact details</span>
-              </div>
-              <div className="space-y-3">
-                {provider.price > 0 && (
-                  <div>
-                    <p className="text-xs text-white/60">Expected salary</p>
-                    <p className="font-display text-xl font-semibold">{masked.priceMasked}</p>
-                  </div>
-                )}
-                <div>
-                  <p className="text-xs text-white/60">Phone</p>
-                  <p className="text-lg font-semibold">{masked.phoneMasked}</p>
-                </div>
-              </div>
-              <div className="mt-5 grid grid-cols-2 gap-2">
-                <a href={`tel:+${intlPhone(masked.phone ?? "")}`} className="btn" style={{ background: "white", color: "var(--primary)" }}>
-                  <Icon name="phone" className="h-4 w-4" /> Call
-                </a>
-                <a href={whatsappHref} target="_blank" rel="noreferrer" className="btn" style={{ background: "#25D366", color: "white" }}>
-                  <Icon name="chat" className="h-4 w-4" /> WhatsApp
-                </a>
-              </div>
-              <div className="mt-4 rounded-xl bg-white/10 px-3 py-2 text-center text-xs text-white/70">
-                <Icon name="check" className="mr-1 inline h-3 w-3" />
-                Unlocked with your active membership
-              </div>
-            </div>
-          ) : (
-            <div className="overflow-hidden rounded-3xl border p-6 shadow-xl" style={{ background: "var(--locked-soft)", borderColor: "var(--line)" }}>
-              <div className="mb-4 flex items-center gap-2" style={{ color: "var(--locked)" }}>
-                <Icon name="lock" className="h-4 w-4" />
-                <span className="text-xs font-semibold uppercase tracking-wider">Contact details</span>
-              </div>
-              <div className="space-y-3">
-                {["Phone", "WhatsApp"].map((label) => (
-                  <div key={label} className="flex items-center justify-between rounded-xl border bg-white/60 p-3" style={{ borderColor: "var(--locked)", borderStyle: "dashed" }}>
-                    <span className="text-sm font-medium">{label}</span>
-                    <span className="flex items-center gap-1 text-sm font-semibold" style={{ color: "var(--locked)" }}>
-                      <Icon name="lock" className="h-3.5 w-3.5" /> Protected
-                    </span>
-                  </div>
-                ))}
-              </div>
-              <p className="mt-4 text-center text-sm" style={{ color: "var(--ink-light)" }}>
-                Contact details are available to members.
-              </p>
-              <button type="button" onClick={onUnlock} className="btn btn-locked mt-4 w-full">
-                <Icon name="unlock" className="h-4 w-4" />
-                Unlock contact details
-              </button>
-              <div className="mt-3 rounded-xl px-3 py-2 text-center text-xs" style={{ background: "var(--surface)", color: "var(--muted)" }}>
-                <Icon name="shield" className="mr-1 inline h-3 w-3" />
-                One membership unlocks all providers
-              </div>
-            </div>
-          )}
-        </motion.div>
       </section>
+
+      {videoOpen && provider.introVideoUrl && (
+        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/70 p-4" onClick={() => setVideoOpen(false)} role="dialog" aria-modal="true" aria-label="Video introduction">
+          <div className="relative w-full max-w-sm" onClick={(e) => e.stopPropagation()}>
+            <button type="button" onClick={() => setVideoOpen(false)} aria-label="Close video" className="absolute -top-11 right-0 flex h-9 w-9 items-center justify-center rounded-full bg-white/90">
+              <Icon name="x" className="h-4 w-4" />
+            </button>
+            {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
+            <video src={provider.introVideoUrl} controls autoPlay playsInline className="max-h-[80vh] w-full rounded-2xl bg-black" />
+          </div>
+        </div>
+      )}
 
       {/* Similar Providers */}
       {similar.length > 0 && (

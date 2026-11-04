@@ -92,14 +92,29 @@ function mapAvailabilityType(duration?: string): AvailabilityType {
   return "one-time";
 }
 
+/** Some records hold a whole list as one JSON string (e.g. '["Cooking","Cleaning"]'); expand those. */
+function flattenList(values?: string[]): string[] {
+  return (values ?? []).flatMap((v) => {
+    const t = typeof v === "string" ? v.trim() : "";
+    if (t.startsWith("[") && t.endsWith("]")) {
+      try {
+        const parsed = JSON.parse(t);
+        if (Array.isArray(parsed)) return parsed.map(String);
+      } catch { /* not JSON — keep as typed */ }
+    }
+    return t ? [t] : [];
+  });
+}
+
 /** Converts one raw API provider document into the frontend's `Provider` shape. */
 export function mapApiProviderToProvider(raw: ApiProvider): Provider {
   const id = raw.id || raw._id || "";
   const [firstName, ...rest] = (raw.fullName || "Help Zone Provider").trim().split(/\s+/);
   const lastName = rest.join(" ");
   const categoryIds = raw.categoryIds ?? [];
-  const skills = raw.skills && raw.skills.length > 0
-    ? raw.skills
+  const rawSkills = flattenList(raw.skills);
+  const skills = rawSkills.length > 0
+    ? rawSkills
     : categoryIds.map((c) => categoryName(c)).filter((n): n is string => Boolean(n));
 
   return {
@@ -112,7 +127,7 @@ export function mapApiProviderToProvider(raw: ApiProvider): Provider {
     experienceYears: raw.experienceYears ?? 0,
     gender: (raw.gender?.toLowerCase() as Gender) || "female",
     age: raw.age ?? 0,
-    languages: raw.languages ?? [],
+    languages: flattenList(raw.languages),
     area: raw.area || raw.emirate || raw.city || "",
     city: raw.city || raw.emirate || "",
     state: raw.state,
@@ -147,14 +162,28 @@ export function mapApiProviderToProvider(raw: ApiProvider): Provider {
  * see src/lib/services/providers.ts — so there's no need to page server-side
  * for a catalog this size).
  */
-export async function fetchLiveProviders(): Promise<Provider[]> {
+// Every page and menu asks for the full list; share one request between them for a short while.
+// Keyed by the customer token so a member never sees a visitor's copy (or the other way round).
+const LIST_TTL_MS = 30_000;
+let listCache: { key: string; at: number; promise: Promise<Provider[]> } | null = null;
+
+export function fetchLiveProviders(): Promise<Provider[]> {
+  const key = typeof window === "undefined" ? "" : getCustomerToken() ?? "";
+  if (listCache && listCache.key === key && Date.now() - listCache.at < LIST_TTL_MS) return listCache.promise;
+
   // Goes through our own /api/providers/list route (src/app/api/providers/list/route.ts),
   // not the external API directly — same-origin, so no CORS dependency on the
   // backend's allowlist.
-  const response = await fetch("/api/providers/list?limit=500", { cache: "no-store", headers: memberHeaders() });
-  const res: ListResponse = await response.json();
-  if (!res.success) throw new Error("Could not load providers.");
-  return (res.data || []).filter(isPubliclyVisible).map(mapApiProviderToProvider);
+  const promise = (async () => {
+    const response = await fetch("/api/providers/list?limit=500", { cache: "no-store", headers: memberHeaders() });
+    const res: ListResponse = await response.json();
+    if (!res.success) throw new Error("Could not load providers.");
+    return (res.data || []).filter(isPubliclyVisible).map(mapApiProviderToProvider);
+  })();
+  listCache = { key, at: Date.now(), promise };
+  // A failed request must not be served from the cache next time.
+  promise.catch(() => { if (listCache?.promise === promise) listCache = null; });
+  return promise;
 }
 
 export async function fetchLiveProviderById(id: string): Promise<Provider | null> {

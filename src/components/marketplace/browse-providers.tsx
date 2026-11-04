@@ -435,7 +435,7 @@ export function BrowseProviders({
           </select>
         </div>
 
-        <div className="grid gap-8 lg:grid-cols-[280px_1fr]">
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-[280px_minmax(0,1fr)]">
           {/* Desktop Filter Sidebar */}
           <aside className="hidden lg:block">
             <div className="sticky top-24 rounded-2xl border border-[var(--line)] bg-white p-5 shadow-sm">
@@ -507,7 +507,7 @@ export function BrowseProviders({
               <div
                 className={
                   viewMode === "grid"
-                    ? "grid gap-5 sm:grid-cols-2 xl:grid-cols-3"
+                    ? "grid grid-cols-1 gap-5 xl:grid-cols-2"
                     : "space-y-4"
                 }
               >
@@ -544,7 +544,7 @@ export function BrowseProviders({
                 <ScrollStagger
                   className={
                     viewMode === "grid"
-                      ? "grid gap-5 sm:grid-cols-2 xl:grid-cols-3"
+                      ? "grid grid-cols-1 gap-5 xl:grid-cols-2"
                       : "space-y-4"
                   }
                 >

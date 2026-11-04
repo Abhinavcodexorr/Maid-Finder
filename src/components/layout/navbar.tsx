@@ -7,6 +7,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useAuth } from "@/context/AuthContext";
 import { Icon } from "@/components/ui/icon";
 import { Logo } from "@/components/ui/logo";
+import { AnnouncementBar } from "@/components/layout/announcement-bar";
 import { ServicesMenu } from "@/components/layout/services-menu";
 import { ProfessionalsMenu } from "@/components/layout/professionals-menu";
 import { ResourcesMenu, RESOURCE_GUIDES, RESOURCE_LEARN_MORE } from "@/components/layout/resources-menu";
@@ -73,6 +74,7 @@ export function Navbar() {
 
   return (
     <>
+      <AnnouncementBar />
       <header
         className="sticky top-0 z-50 border-b bg-white/95 shadow-[0_1px_0_rgba(15,23,42,0.03)] backdrop-blur-xl"
         style={{ borderColor: "var(--line)" }}
@@ -90,7 +92,12 @@ export function Navbar() {
               if (item.href === "/services") return <ServicesMenu key={item.href} active={active} />;
               if (item.href === "/providers") return <ProfessionalsMenu key={item.href} active={active} />;
               if (item.label === "Resources") {
-                const resourceActive = [...RESOURCE_GUIDES, ...RESOURCE_LEARN_MORE].some((r) => pathname === r.href.split("#")[0]);
+                // Pages that already have their own nav item (How It Works, Membership, Contact) must not also light up Resources.
+                const ownNavPaths = NAV_LINKS.filter((l) => l.label !== "Resources").map((l) => l.href);
+                const resourceActive = [...RESOURCE_GUIDES, ...RESOURCE_LEARN_MORE].some((r) => {
+                  const path = r.href.split("#")[0];
+                  return !ownNavPaths.includes(path) && (pathname === path || pathname.startsWith(path + "/"));
+                });
                 return <ResourcesMenu key={item.label} active={resourceActive} />;
               }
               return (

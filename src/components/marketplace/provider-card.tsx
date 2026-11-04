@@ -7,34 +7,34 @@ import { motion } from "framer-motion";
 import { useAuth } from "@/context/AuthContext";
 import { ServiceGlyph } from "@/components/ui/service-glyph";
 import { getCategoryById, getCachedFavouriteIds, toggleFavouriteCached } from "@/lib/services";
-import { maskProvider } from "@/lib/services/providers";
-import { ProviderVideo } from "@/components/ui/provider-video";
 import { Icon } from "@/components/ui/icon";
 import { toast } from "@/components/ui/toaster";
 import { formatDistance } from "@/lib/geo";
 import { colorForCategory } from "@/lib/category-colors";
-import { TiltCard } from "@/components/ui/tilt-card";
 import type { Provider } from "@/types/marketplace";
 
 const AVAILABILITY_LABEL: Record<Provider["availabilityType"], string> = {
   "full-time": "Full time",
   "part-time": "Part time",
   "live-in": "Live-in",
-  "one-time": "One-time",
+  "one-time": "Flexible",
 };
 
+const MAX_SKILLS = 4;
+
+const titleCase = (value: string) => value.toLowerCase().replace(/(^|[\s-])([a-z])/g, (_, sep: string, ch: string) => sep + ch.toUpperCase());
 
 export function ProviderCard({
   provider,
   viewMode = "grid",
 }: {
   provider: Provider;
+  /** "grid" sits in a two-column grid, "list" spans the full row — same card either way. */
   viewMode?: "grid" | "list";
 }) {
   const router = useRouter();
   const { user, isSubscribed } = useAuth();
   const cat = getCategoryById(provider.categoryId);
-  const masked = maskProvider(provider, isSubscribed);
   const [imgFailed, setImgFailed] = useState(false);
   const [imgLoaded, setImgLoaded] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -77,162 +77,30 @@ export function ProviderCard({
     router.push(user ? `/membership?redirect=${encodeURIComponent(redir)}` : `/login?redirect=${encodeURIComponent(redir)}`);
   };
 
-  const fullName = `${provider.firstName} ${provider.lastName}`.trim().replace(/\b\w/g, (c) => c.toUpperCase());
+  const fullName = titleCase(`${provider.firstName} ${provider.lastName}`.trim());
   const catColor = colorForCategory(provider.categoryId);
+  const location = [provider.area, provider.city].filter((v, i, arr) => v && arr.indexOf(v) === i).join(", ");
+  const skills = provider.skills.length > 0 ? provider.skills : cat ? [cat.name] : [];
 
-  if (viewMode === "list") {
-    return (
-      <Link
-        href={`/providers/${provider.id}`}
-        className="card card-hover group flex flex-col sm:flex-row gap-5 overflow-hidden p-5 transition-all"
-      >
-        <div className="relative h-44 sm:h-36 sm:w-36 shrink-0 overflow-hidden rounded-xl bg-[var(--line-light)]">
-          {provider.photo && !imgLoaded && !imgFailed && (
-            <div className="absolute inset-0 shimmer z-0" />
-          )}
-          {provider.photo && !imgFailed ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={provider.photo}
-              alt={fullName}
-              onLoad={() => setImgLoaded(true)}
-              onError={() => setImgFailed(true)}
-              className={`h-full w-full object-cover transition-all duration-500 group-hover:scale-105 ${
-                imgLoaded ? "opacity-100" : "opacity-0"
-              }`}
-            />
-          ) : provider.introVideoUrl ? (
-            <ProviderVideo src={provider.introVideoUrl} size="sm" className="h-full w-full" />
-          ) : (
-            <div
-              className="flex h-full w-full items-center justify-center text-3xl font-bold text-white"
-              style={{ background: catColor.gradient }}
-            >
-              {provider.firstName[0]}{provider.lastName[0]}
-            </div>
-          )}
-
-          {provider.verified && (
-            <span className="absolute top-2 left-2 flex items-center gap-1 rounded-md bg-white/95 px-2 py-0.5 text-[10px] font-bold text-[var(--primary)] shadow-sm backdrop-blur-sm">
-              <Icon name="check-circle" className="h-3 w-3" /> Verified
-            </span>
-          )}
-        </div>
-
-        <div className="flex flex-1 flex-col justify-between">
-          <div>
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <div className="flex items-center gap-2">
-                  <h3 className="font-display text-lg font-bold group-hover:text-[var(--primary)]" style={{ color: "var(--ink)" }}>
-                    {fullName}
-                  </h3>
-                  <span className="inline-flex items-center gap-1 text-xs text-[var(--primary)] font-semibold">
-                    <ServiceGlyph name={cat?.name ?? ""} className="h-3.5 w-3.5" /> {cat?.name}
-                  </span>
-                </div>
-
-                <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-[var(--muted)]">
-                  {typeof provider.rating === "number" && (
-                    <span className="flex items-center gap-1 font-semibold text-[var(--ink)]">
-                      <Icon name="star" className="h-3.5 w-3.5 text-amber-500" />
-                      {provider.rating.toFixed(1)}
-                    </span>
-                  )}
-                  <span>{provider.experienceYears} years exp.</span>
-                  <span className="flex items-center gap-1">
-                    <Icon name="map-pin" className="h-3.5 w-3.5 text-[var(--muted)]" />
-                    {provider.area}, {provider.city}
-                    {provider.distanceKm !== undefined && <span className="font-semibold text-[var(--primary)]"> · {formatDistance(provider.distanceKm)}</span>}
-                  </span>
-                  <span className="capitalize font-medium text-[var(--ink-secondary)]">
-                    {provider.availabilityType}
-                  </span>
-                </div>
-              </div>
-
-              <button
-                type="button"
-                onClick={onToggleSave}
-                aria-label={saved ? "Remove from saved" : "Save professional"}
-                className={`rounded-xl p-2 transition-colors ${
-                  saved
-                    ? "bg-[var(--error-soft)] text-[var(--error)]"
-                    : "bg-[var(--surface-muted)] text-[var(--muted)] hover:text-[var(--error)]"
-                }`}
-              >
-                <Icon name={saved ? "heart-filled" : "heart"} className="h-4 w-4" />
-              </button>
-            </div>
-
-            <p className="mt-2 text-xs line-clamp-2 text-[var(--muted)] leading-relaxed">
-              {provider.about}
-            </p>
-
-            <div className="mt-3 flex flex-wrap gap-1.5">
-              {provider.skills.map((s) => (
-                <span
-                  key={s}
-                  className="rounded-md bg-[var(--surface-muted)] px-2 py-0.5 text-[11px] font-medium text-[var(--ink-secondary)]"
-                >
-                  {s}
-                </span>
-              ))}
-            </div>
-          </div>
-
-          <div className="mt-4 flex items-center justify-between border-t border-[var(--line-light)] pt-3">
-            <div>
-              {isSubscribed ? (
-                <div>
-                  <span className="font-display text-base font-bold" style={{ color: "var(--ink)" }}>
-                    ₹{provider.price.toLocaleString("en-IN")}
-                  </span>
-                  <span className="text-xs text-[var(--muted)]"> {provider.priceUnit}</span>
-                </div>
-              ) : (
-                <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-[var(--locked)]">
-                  <Icon name="lock" className="h-3.5 w-3.5" />
-                  Salary Protected
-                </span>
-              )}
-            </div>
-
-            <div className="flex items-center gap-2">
-              {isSubscribed ? (
-                <span className="btn btn-primary btn-sm text-xs">
-                  View Contact Number
-                </span>
-              ) : (
-                <motion.button
-                  type="button"
-                  onClick={onUnlock}
-                  whileHover={{ scale: 1.04 }}
-                  whileTap={{ scale: 0.96 }}
-                  className="btn btn-primary btn-sm text-xs"
-                >
-                  <Icon name="lock" className="h-3.5 w-3.5" />
-                  Unlock Contact
-                </motion.button>
-              )}
-            </div>
-          </div>
-        </div>
-      </Link>
-    );
-  }
-
-  // Grid Card View (Default) — photo with chips, one-line summary, city, salary and a pill button.
-  const summary = [AVAILABILITY_LABEL[provider.availabilityType], provider.experienceYears ? `${provider.experienceYears} yrs` : "New"].join(" · ");
+  // Only facts the profile actually has are listed — nothing is padded with placeholders.
+  const facts = [
+    { label: "Availability", value: AVAILABILITY_LABEL[provider.availabilityType] },
+    provider.experienceYears > 0 ? { label: "Experience", value: `${provider.experienceYears} ${provider.experienceYears === 1 ? "yr" : "yrs"}` } : null,
+    provider.age > 0 ? { label: "Age", value: String(provider.age) } : null,
+    provider.education ? { label: "Education", value: provider.education } : null,
+  ].filter((f): f is { label: string; value: string } => f !== null);
 
   return (
-    <TiltCard className="h-full" maxTilt={5}>
-      <Link
-        href={`/providers/${provider.id}`}
-        className="group flex h-full w-full flex-col overflow-hidden rounded-3xl border bg-white transition-shadow duration-300 hover:shadow-xl"
-        style={{ borderColor: "var(--line)" }}
-      >
-        <div className="relative aspect-[4/3] w-full overflow-hidden bg-[var(--surface-muted)]">
+    <Link
+      href={`/providers/${provider.id}`}
+      className={`group flex h-full flex-col rounded-3xl border bg-white p-4 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg sm:p-5 ${
+        viewMode === "list" ? "lg:flex-row lg:gap-6" : ""
+      }`}
+      style={{ borderColor: "var(--line)" }}
+    >
+      <div className={`flex gap-4 ${viewMode === "list" ? "lg:w-[46%] lg:shrink-0" : ""}`}>
+        {/* Photo */}
+        <div className="relative h-[150px] w-[118px] shrink-0 overflow-hidden rounded-2xl bg-[var(--surface-muted)] sm:h-[170px] sm:w-[136px]">
           {provider.photo && !imgLoaded && !imgFailed && <div className="shimmer absolute inset-0 z-0" />}
           {provider.photo && !imgFailed ? (
             // eslint-disable-next-line @next/next/no-img-element
@@ -241,84 +109,114 @@ export function ProviderCard({
               alt={fullName}
               onLoad={() => setImgLoaded(true)}
               onError={() => setImgFailed(true)}
-              className={`h-full w-full object-cover transition-all duration-500 group-hover:scale-105 ${imgLoaded ? "opacity-100" : "opacity-0"}`}
+              className={`h-full w-full object-cover object-top transition-all duration-500 group-hover:scale-105 ${imgLoaded ? "opacity-100" : "opacity-0"}`}
             />
-          ) : provider.introVideoUrl ? (
-            <ProviderVideo src={provider.introVideoUrl} className="h-full w-full" />
           ) : (
             <div className="relative flex h-full w-full items-center justify-center" style={{ background: catColor.gradient }}>
-              <span aria-hidden className="absolute -left-8 -top-8 h-36 w-36 rounded-full bg-white/10" />
-              <span aria-hidden className="absolute -bottom-10 -right-6 h-44 w-44 rounded-full bg-white/10" />
-              <ServiceGlyph name={cat?.name ?? ""} className="absolute bottom-3 right-3 h-20 w-20 text-white/15" />
-              <span className="relative flex h-24 w-24 items-center justify-center rounded-full border-4 border-white/70 bg-white/20 text-3xl font-extrabold text-white shadow-xl backdrop-blur">
+              <ServiceGlyph name={cat?.name ?? ""} className="absolute bottom-2 right-2 h-14 w-14 text-white/15" />
+              <span className="relative flex h-16 w-16 items-center justify-center rounded-full border-4 border-white/70 bg-white/20 text-xl font-extrabold text-white shadow-lg">
                 {provider.firstName[0]}{provider.lastName[0]}
               </span>
             </div>
           )}
 
-          <span className="absolute bottom-3 left-3 inline-flex max-w-[calc(100%-1.5rem)] items-center gap-1.5 rounded-full bg-white/95 px-3 py-1 text-[11px] font-bold shadow-sm" style={{ color: "var(--ink-light)" }}>
-            <ServiceGlyph name={cat?.name ?? ""} className="h-3.5 w-3.5 shrink-0" />
-            <span className="truncate">{cat?.name ?? "Professional"}</span>
-          </span>
-          <div className="absolute inset-x-3 top-3 flex items-center justify-between gap-2">
-            {provider.verified ? (
-              <span className="flex items-center gap-1 rounded-full bg-white/95 px-2.5 py-1 text-[11px] font-bold shadow-sm" style={{ color: "var(--success)" }}>
-                <Icon name="check-circle" className="h-3.5 w-3.5" />
-                Verified
-              </span>
-            ) : (
-              <span />
-            )}
+          {provider.introVideoUrl && (
+            <span
+              className="absolute left-2 top-2 flex h-8 w-8 items-center justify-center rounded-full text-white shadow-md"
+              style={{ background: "var(--primary)" }}
+              title="Has a video introduction"
+            >
+              <svg viewBox="0 0 24 24" className="ml-0.5 h-3.5 w-3.5" fill="currentColor" aria-hidden><path d="M8 5v14l11-7z" /></svg>
+            </span>
+          )}
+        </div>
+
+        {/* Identity */}
+        <div className="flex min-w-0 flex-1 flex-col">
+          <div className="flex items-start justify-between gap-2">
+            <h3 className="flex min-w-0 items-center gap-1.5 font-display text-xl font-extrabold leading-tight sm:text-2xl" style={{ color: "var(--ink)" }}>
+              <span className="truncate group-hover:text-[var(--primary)]">{fullName}</span>
+              {provider.verified && <Icon name="check-circle" className="h-5 w-5 shrink-0" style={{ color: "var(--primary)" }} />}
+            </h3>
             <button
               type="button"
               onClick={onToggleSave}
               aria-label={saved ? "Remove from saved" : "Save professional"}
-              className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full shadow-md transition-transform active:scale-90 ${
-                saved ? "bg-white text-[var(--error)]" : "bg-white/95 text-[var(--muted)] hover:text-[var(--error)]"
+              className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full border transition-colors active:scale-90 ${
+                saved ? "text-[var(--error)]" : "text-[var(--muted)] hover:text-[var(--error)]"
               }`}
+              style={{ borderColor: "var(--line)", background: saved ? "var(--error-soft)" : "white" }}
             >
               <Icon name={saved ? "heart-filled" : "heart"} className="h-4 w-4" />
             </button>
           </div>
-        </div>
 
-        <div className="flex flex-1 flex-col p-5">
-          <h3 className="font-display text-xl font-extrabold leading-tight" style={{ color: "var(--ink)" }}>{fullName}</h3>
-          <p className="mt-0.5 text-sm text-[var(--muted)]">{summary}</p>
-          <p className="mt-2 flex items-center gap-1.5 text-sm text-[var(--muted)]">
-            <Icon name="map-pin" className="h-3.5 w-3.5 shrink-0 text-[var(--faint)]" />
-            {provider.area}
-            {provider.distanceKm !== undefined && <span className="font-semibold text-[var(--primary)]"> · {formatDistance(provider.distanceKm)}</span>}
+          <p className="mt-1.5 flex flex-wrap items-center gap-x-1.5 text-[13px] text-[var(--muted)]">
+            <Icon name="map-pin" className="h-3.5 w-3.5 shrink-0" style={{ color: "var(--primary)" }} />
+            <span className="truncate">{location || "India"}</span>
+            {provider.distanceKm !== undefined && <span className="font-semibold text-[var(--primary)]">· {formatDistance(provider.distanceKm)}</span>}
           </p>
 
-          <div className="mt-4 flex items-center justify-between gap-2">
-            <span className="rounded-lg bg-[var(--line-light)] px-3 py-1.5 text-sm font-bold">
-              {isSubscribed ? (
-                <>₹{provider.price.toLocaleString("en-IN")} <span className="text-[11px] font-medium text-[var(--muted)]">{provider.priceUnit}</span></>
-              ) : (
-                <span className="flex items-center gap-1.5 whitespace-nowrap text-xs text-[var(--primary)]">
-                  <Icon name="lock" className="h-3.5 w-3.5" />
-                  Salary protected
-                </span>
-              )}
-            </span>
-            <span className="flex items-center gap-1.5 whitespace-nowrap text-xs font-medium text-[var(--ink-light)]">
-              <span className="h-2 w-2 rounded-full bg-[var(--success)]" />
-              Ready now
-            </span>
-          </div>
+          {cat?.name && (
+            <p className="mt-2 text-[11px] font-bold uppercase tracking-[0.1em]" style={{ color: "var(--primary)" }}>
+              {cat.name}
+            </p>
+          )}
 
+          <div className="mt-auto pt-3">
+            {provider.price > 0 ? (
+              <p className="font-display text-[28px] font-extrabold leading-none" style={{ color: "var(--ink)" }}>
+                ₹{provider.price.toLocaleString("en-IN")}
+                <span className="ml-1.5 text-[13px] font-medium text-[var(--muted)]">/ month</span>
+              </p>
+            ) : (
+              <p className="text-sm font-semibold text-[var(--muted)]">Salary on request</p>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <div className={`flex flex-1 flex-col ${viewMode === "list" ? "lg:border-l lg:pl-6" : ""}`} style={{ borderColor: "var(--line-light)" }}>
+        {/* Facts */}
+        <dl className={`flex flex-wrap gap-x-9 gap-y-3 mt-5 border-t pt-4 ${viewMode === "list" ? "lg:mt-0 lg:border-t-0 lg:pt-0" : ""}`} style={{ borderColor: "var(--line-light)" }}>
+          {facts.slice(0, 3).map((f) => (
+            <div key={f.label}>
+              <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">{f.label}</dt>
+              <dd className="mt-1 text-[15px] font-semibold" style={{ color: "var(--ink)" }}>{f.value}</dd>
+            </div>
+          ))}
+        </dl>
+
+        {/* Skills */}
+        {skills.length > 0 && (
+          <div className="mt-4 flex flex-wrap gap-2">
+            {skills.slice(0, MAX_SKILLS).map((s) => (
+              <span key={s} className="rounded-full border px-4 py-1.5 text-[13px] font-medium" style={{ borderColor: "var(--line)", color: "var(--ink-light)" }}>
+                {s}
+              </span>
+            ))}
+            {skills.length > MAX_SKILLS && (
+              <span className="rounded-full border px-3 py-1 text-xs font-semibold" style={{ borderColor: "var(--line)", color: "var(--primary)" }}>
+                +{skills.length - MAX_SKILLS}
+              </span>
+            )}
+          </div>
+        )}
+
+        {/* Actions */}
+        <div className="mt-auto grid grid-cols-2 gap-3 pt-5">
+          <span className="btn btn-outline !rounded-full !border-2 !py-3 !text-[15px]">View profile</span>
           {isSubscribed ? (
-            <span className="btn btn-primary mt-5 w-full">View contact</span>
+            <span className="btn btn-primary !rounded-full !py-3 !text-[15px]">View contact</span>
           ) : (
-            <motion.button type="button" onClick={onUnlock} whileTap={{ scale: 0.97 }} className="btn btn-primary mt-5 w-full">
+            <motion.button type="button" onClick={onUnlock} whileTap={{ scale: 0.97 }} className="btn btn-primary !rounded-full !py-3 !text-[15px]">
               <Icon name="lock" className="h-3.5 w-3.5" />
               Unlock contact
             </motion.button>
           )}
         </div>
-      </Link>
-    </TiltCard>
+      </div>
+    </Link>
   );
 }
 

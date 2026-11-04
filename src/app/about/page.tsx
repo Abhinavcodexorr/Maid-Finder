@@ -1,10 +1,11 @@
+import { CountUp } from "@/components/ui/count-up";
 import Link from "next/link";
 import { PageHeader } from "@/components/layout/page-header";
 import { Icon } from "@/components/ui/icon";
 
 const STATS = [
   { label: "ID Verified Professionals", value: "100%" },
-  { label: "Service Categories", value: "12+" },
+  { label: "Service Categories", value: "18+" },
   { label: "Commission Charged", value: "0%" },
   { label: "To Browse Profiles", value: "Free" },
 ];
@@ -64,7 +65,7 @@ export default function AboutPage() {
         <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
           {STATS.map((s) => (
             <div key={s.label} className="card card-hover py-5 text-center">
-              <p className="font-display text-2xl font-bold sm:text-3xl" style={{ color: "var(--primary)" }}>{s.value}</p>
+              <p className="font-display text-2xl font-bold sm:text-3xl" style={{ color: "var(--primary)" }}><CountUp value={s.value} /></p>
               <p className="mt-1 text-xs font-medium" style={{ color: "var(--muted)" }}>{s.label}</p>
             </div>
           ))}

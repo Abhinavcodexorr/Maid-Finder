@@ -1,5 +1,6 @@
 "use client";
 
+import { LiveCountdown } from "@/components/ui/live-countdown";
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
@@ -9,7 +10,7 @@ import { toast } from "@/components/ui/toaster";
 import type { Plan } from "@/types/marketplace";
 
 export default function DashboardMembershipPage() {
-  const { user, isSubscribed, subscription, daysRemaining } = useAuth();
+  const { user, isSubscribed, subscription, refresh } = useAuth();
   const [plans, setPlans] = useState<Plan[]>([]);
 
   useEffect(() => {
@@ -82,14 +83,7 @@ export default function DashboardMembershipPage() {
 
           <div className="shrink-0">
             {isSubscribed ? (
-              <div className="rounded-xl border border-[var(--line)] bg-[var(--surface-muted)] px-4 py-3 text-center">
-                <div className="font-display text-2xl font-bold" style={{ color: "var(--success)" }}>
-                  {daysRemaining}
-                </div>
-                <div className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>
-                  Days Remaining
-                </div>
-              </div>
+              <LiveCountdown endDate={subscription?.endDate ?? ""} onExpire={refresh} />
             ) : (
               <Link href="/membership" className="btn btn-primary">
                 <Icon name="zap" className="h-4 w-4" />

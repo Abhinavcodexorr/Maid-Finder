@@ -155,7 +155,7 @@ function SignupContent() {
   const stepLabels = ["Account", "Services", "Location"];
 
   return (
-    <AuthShell maxWidth="max-w-xl">
+    <AuthShell>
       {/* Step indicator */}
       <div>
         <div className="mb-6 flex items-center gap-2">

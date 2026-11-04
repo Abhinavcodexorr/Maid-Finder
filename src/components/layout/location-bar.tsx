@@ -1,13 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import { Icon } from "@/components/ui/icon";
 import { useLocation } from "@/context/LocationContext";
 import { RADIUS_OPTIONS } from "@/lib/geo";
 
-/** Pages where asking for a location would just be noise. */
-const HIDDEN_PREFIXES = ["/login", "/signup", "/register-provider", "/checkout", "/dashboard", "/forgot-password"];
+/** Only pages that list or search professionals get the bar; everywhere else it would be noise. */
+const SHOWN_PREFIXES = ["/providers", "/services", "/city", "/find-my-match"];
 
 /**
  * Sits under the navbar on public pages. Until the visitor picks a place it
@@ -16,19 +16,30 @@ const HIDDEN_PREFIXES = ["/login", "/signup", "/register-provider", "/checkout",
  */
 export function LocationBar() {
   const pathname = usePathname();
-  const { location, radiusKm, ready, promptDismissed, busy, error, detectFromDevice, setFromPincode, setRadiusKm, clear, dismissPrompt } = useLocation();
+  const { location, radiusKm, ready, promptDismissed, busy, error, detectFromDevice, setFromQuery, setRadiusKm, clear, dismissPrompt } = useLocation();
   const [editing, setEditing] = useState(false);
-  const [pincode, setPincode] = useState("");
+  const [place, setPlace] = useState("");
 
-  if (!ready || HIDDEN_PREFIXES.some((prefix) => pathname.startsWith(prefix))) return null;
+  const onListing = pathname === "/" || SHOWN_PREFIXES.some((prefix) => pathname.startsWith(prefix));
 
-  const asking = !location && !promptDismissed;
-  const showForm = asking || editing;
-  if (!location && !showForm) return null;
+  // First visit: raise the browser's own "Allow location access" popup. If it is blocked or
+  // ignored we do not ask again on our own.
+  const asked = useRef(false);
+  useEffect(() => {
+    if (!ready || !onListing || location || promptDismissed || asked.current) return;
+    asked.current = true;
+    detectFromDevice().then((ok) => {
+      if (!ok) dismissPrompt();
+    });
+  }, [ready, onListing, location, promptDismissed, detectFromDevice, dismissPrompt]);
 
-  const submitPincode = async () => {
-    if (await setFromPincode(pincode)) {
-      setPincode("");
+  if (!ready || !onListing) return null;
+
+  const showForm = editing;
+
+  const submitPlace = async () => {
+    if (await setFromQuery(place)) {
+      setPlace("");
       setEditing(false);
     }
   };
@@ -36,6 +47,9 @@ export function LocationBar() {
   const useDevice = async () => {
     if (await detectFromDevice()) setEditing(false);
   };
+
+  // No saved place: the browser's own permission popup (raised above) is the only prompt — nothing is drawn.
+  if (!location && !showForm) return null;
 
   return (
     <div className="border-b" style={{ background: showForm ? "var(--primary-soft)" : "var(--surface)", borderColor: "var(--line)" }}>
@@ -62,18 +76,17 @@ export function LocationBar() {
               className="flex items-center gap-2"
               onSubmit={(e) => {
                 e.preventDefault();
-                submitPincode();
+                submitPlace();
               }}
             >
               <input
-                value={pincode}
-                onChange={(e) => setPincode(e.target.value.replace(/\D/g, "").slice(0, 6))}
-                inputMode="numeric"
-                placeholder="Enter pincode"
-                aria-label="Pincode"
-                className="field !w-28 !py-1.5 text-sm sm:!w-36"
+                value={place}
+                onChange={(e) => setPlace(e.target.value.slice(0, 60))}
+                placeholder="City or pincode"
+                aria-label="City or pincode"
+                className="field !w-36 !py-1.5 text-sm sm:!w-48"
               />
-              <button type="submit" disabled={busy || pincode.length !== 6} className="btn btn-outline btn-sm">
+              <button type="submit" disabled={busy || place.trim().length < 3} className="btn btn-outline btn-sm">
                 Go
               </button>
             </form>

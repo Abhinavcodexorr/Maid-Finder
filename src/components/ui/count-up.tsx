@@ -9,14 +9,17 @@ import { animate, useInView, useReducedMotion } from "framer-motion";
  * and suffix (%, +, ₹ …) are kept as written.
  */
 export function CountUp({ value, duration = 1.6 }: { value: string; duration?: number }) {
-  const match = value.match(/^(\D*)(\d+(?:\.\d+)?)(.*)$/);
+  const match = value.match(/^(\D*?)(\d[\d,]*(?:\.\d+)?)(.*)$/);
   const ref = useRef<HTMLSpanElement>(null);
   const inView = useInView(ref, { once: true, margin: "-40px" });
   const reduceMotion = useReducedMotion();
   const [current, setCurrent] = useState(0);
 
   const hasNumber = match !== null;
-  const target = match ? Number(match[2]) : 0;
+  const target = match ? Number(match[2].replace(/,/g, "")) : 0;
+  // Numbers written with thousands separators ("1,235") keep them while counting.
+  const grouped = match ? match[2].includes(",") : false;
+  const show = (n: number) => (grouped ? n.toLocaleString("en-IN") : String(n));
 
   useEffect(() => {
     if (!inView || !hasNumber || reduceMotion) return;
@@ -34,7 +37,7 @@ export function CountUp({ value, duration = 1.6 }: { value: string; duration?: n
   return (
     <span ref={ref}>
       {prefix}
-      {reduceMotion ? target : current}
+      {show(reduceMotion ? target : current)}
       {suffix}
     </span>
   );

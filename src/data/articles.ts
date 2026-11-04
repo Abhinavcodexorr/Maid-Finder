@@ -73,6 +73,50 @@ export const ARTICLES: Article[] = [
       "For professionals, listing is free. Registering takes a few minutes: verify your mobile number, add your details and upload your documents and a short video.",
     ],
   },
+  {
+    slug: "hire-a-professional-step-by-step",
+    title: "Hire a professional on Help Zone: the step-by-step guide",
+    summary: "From your first search to the first day of work, in six simple steps.",
+    category: "Hiring guide",
+    readMinutes: 5,
+    body: [
+      "Step 1 — Decide what you need. Write down the kind of help (cooking, cleaning, childcare, a driver, a repair), how many hours or days a week, and whether you want someone full-time, part-time or flexible. Knowing this first makes every later step quicker.",
+      "Step 2 — Search and filter. Use Find Professionals to pick a service, then narrow by work schedule, experience, language and location. Browsing is free, and every profile shows experience, skills, languages and the area the person works in.",
+      "Step 3 — Read the profile properly. Open a few profiles and compare them. Look at the experience, the previous work, the intro video and whether the profile is marked as verified. Save the ones you like to your shortlist so you can come back to them.",
+      "Step 4 — Unlock contact details. When you are ready to talk to someone, choose a membership. It unlocks the phone and WhatsApp number of every professional, for the length of the plan, and there is no commission on top.",
+      "Step 5 — Call and agree the terms. Speak to your shortlist, explain the work and timings, and agree salary, working hours, days off and notice period directly. Our guide on agreeing salary and terms lists what to cover.",
+      "Step 6 — Start with a trial. A week or two of working together shows whether the arrangement suits both sides. Confirm the original ID when you meet, and keep the agreed terms written down in a simple message.",
+    ],
+  },
+  {
+    slug: "interview-questions-and-tips",
+    title: "Interview questions and tips before you hire",
+    summary: "What to ask, what to listen for and how to make the first conversation count.",
+    category: "Hiring guide",
+    readMinutes: 4,
+    body: [
+      "A 15-minute call is usually enough to know whether someone is a good fit. Prepare a few questions in advance, keep the tone friendly, and let the person talk — you learn more from how they answer than from the answer itself.",
+      "Start with experience. Ask where they have worked before, for how long, and why they left. A clear, calm answer is a good sign. Ask about a typical day in their last job so you can compare it with what you need.",
+      "Ask scenario questions. What would they do if a child refused to eat, if the gas smelled odd, or if they could not come to work one day? Practical answers show judgement and reliability.",
+      "Be clear about your home. Describe the size of the household, any pets, elders or children, and the tasks you expect. If something is a deal-breaker, such as live-in only or no night shifts, say it early.",
+      "Check the practical details: the area they travel from, how they commute, which languages they speak and when they can start. Then agree a short trial and the pay for it before you hang up.",
+      "Trust your instincts. If the conversation feels evasive or rushed, move on to the next profile — you have a shortlist for exactly this reason.",
+    ],
+  },
+  {
+    slug: "first-week-with-a-new-helper",
+    title: "Your first week with a new helper: a simple checklist",
+    summary: "How to set the new arrangement up well in the first seven days.",
+    category: "Hiring guide",
+    readMinutes: 3,
+    body: [
+      "Day one: walk through the home together. Show where things are kept, which rooms need what, and anything that is off limits or needs special care. A calm walkthrough prevents most early mistakes.",
+      "Share a written routine. A short list of daily and weekly tasks, with timings, is easier to follow than instructions given in passing, and it gives both of you something to refer back to.",
+      "Confirm the practical agreements: working hours, days off, how and when salary is paid, and the notice either side will give. Send them as a message so there is a record.",
+      "Give feedback early and kindly. In the first days, say what is going well and what you would like done differently. Small, quick corrections work far better than waiting for a problem to grow.",
+      "At the end of the week, check in. Ask how it is going from their side, adjust the routine if needed, and decide together whether to continue after the trial.",
+    ],
+  },
 ];
 
 export function getArticle(slug: string): Article | undefined {

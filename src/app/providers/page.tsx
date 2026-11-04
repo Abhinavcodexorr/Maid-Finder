@@ -33,8 +33,7 @@ const EXP_OPTIONS: { id: NonNullable<ProviderFilters["experience"]>; label: stri
 const AVAIL_OPTIONS: { id: AvailabilityType; label: string }[] = [
   { id: "full-time", label: "Full-time (8-10h)" },
   { id: "part-time", label: "Part-time (2-4h)" },
-  { id: "live-in", label: "Live-in (24h)" },
-  { id: "one-time", label: "One-time / Relief" },
+  { id: "one-time", label: "Flexible" },
 ];
 
 const SORT_OPTIONS: { id: NonNullable<ProviderFilters["sort"]>; label: string }[] = [
@@ -591,7 +590,7 @@ const [categories, setCategories] = useState<ReturnType<typeof getCategories>>([
           </select>
         </div>
 
-        <div className="grid gap-8 lg:grid-cols-[280px_1fr]">
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-[280px_minmax(0,1fr)]">
           {/* Desktop Filter Sidebar */}
           <aside className="hidden lg:block">
             <div className="sticky top-24 max-h-[calc(100vh-7rem)] overflow-y-auto rounded-3xl border border-[var(--line)] bg-white p-6 shadow-md">
@@ -674,7 +673,7 @@ const [categories, setCategories] = useState<ReturnType<typeof getCategories>>([
               <div
                 className={
                   viewMode === "grid"
-                    ? "grid gap-5 sm:grid-cols-2 xl:grid-cols-3"
+                    ? "grid grid-cols-1 gap-5 xl:grid-cols-2"
                     : "space-y-4"
                 }
               >
@@ -712,7 +711,7 @@ const [categories, setCategories] = useState<ReturnType<typeof getCategories>>([
                     <h4 className="font-display text-base font-bold mb-4" style={{ color: "var(--ink)" }}>
                       Top-Rated Candidates Available Across India
                     </h4>
-                    <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+                    <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
                       {suggested.map((p) => (
                         <ProviderCard key={p.id} provider={p} viewMode="grid" />
                       ))}
@@ -725,7 +724,7 @@ const [categories, setCategories] = useState<ReturnType<typeof getCategories>>([
                 <ScrollStagger
                   className={
                     viewMode === "grid"
-                      ? "grid gap-5 sm:grid-cols-2 xl:grid-cols-3"
+                      ? "grid grid-cols-1 gap-5 xl:grid-cols-2"
                       : "space-y-4"
                   }
                 >

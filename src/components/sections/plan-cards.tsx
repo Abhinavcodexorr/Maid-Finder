@@ -1,6 +1,7 @@
 "use client";
 
 import { Icon } from "@/components/ui/icon";
+import { CountUp } from "@/components/ui/count-up";
 import { ScrollStagger, ScrollStaggerItem } from "@/components/ui/scroll-reveal";
 import type { Plan } from "@/types/marketplace";
 
@@ -65,7 +66,7 @@ export function PlanCards({
               </p>
               <p className="mt-3 flex items-baseline gap-2">
                 <span className="text-sm font-semibold" style={{ color: popular ? "rgba(255,255,255,0.7)" : "var(--muted)" }}>₹</span>
-                <span className="font-display text-5xl font-extrabold tracking-tight">{plan.price.toLocaleString("en-IN")}</span>
+                <span className="font-display text-5xl font-extrabold tracking-tight"><CountUp value={plan.price.toLocaleString("en-IN")} /></span>
                 {plan.originalPrice ? (
                   <span className="text-sm line-through" style={{ color: popular ? "rgba(255,255,255,0.45)" : "var(--faint)" }}>
                     ₹{plan.originalPrice.toLocaleString("en-IN")}

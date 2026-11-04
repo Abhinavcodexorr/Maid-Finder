@@ -20,6 +20,16 @@ const COLUMNS = [
       { label: "How It Works", href: "/how-it-works" },
       { label: "Membership", href: "/membership" },
       { label: "FAQ", href: "/faqs" },
+      { label: "Offers", href: "/offers" },
+    ],
+  },
+  {
+    title: "Resources",
+    links: [
+      { label: "Find My Match", href: "/find-my-match" },
+      { label: "Hiring Guide", href: "/blog/hire-a-professional-step-by-step" },
+      { label: "Interview Tips", href: "/blog/interview-questions-and-tips" },
+      { label: "Blog", href: "/blog" },
     ],
   },
   {
@@ -50,7 +60,7 @@ export function Footer() {
   return (
     <footer style={{ background: "var(--gradient-dark)" }} className="text-white">
       {/* Main Footer */}
-      <div className="container-page grid gap-10 py-12 sm:grid-cols-2 lg:grid-cols-6">
+      <div className="container-page grid gap-10 py-12 sm:grid-cols-2 lg:grid-cols-7">
         {/* Brand Column */}
         <div className="lg:col-span-1">
           <Logo size={30} wordmarkClassName="text-lg text-white" />
