@@ -97,6 +97,8 @@ function matchesFilters(p: Provider, filters: ProviderFilters): boolean {
   // 5. Availability type
   if (filters.availabilityType && p.availabilityType !== filters.availabilityType) return false;
 
+  if (filters.stay && !(p.stay ?? []).includes(filters.stay)) return false;
+
   // 6. Gender
   if (filters.gender && p.gender !== filters.gender) return false;
 

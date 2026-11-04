@@ -64,6 +64,8 @@ export function ProfessionalsMenu({ active }: { active: boolean }) {
             {schedules.map((x) => (
               <MenuItem key={x.id} href={`/providers?availability=${x.id}`} title={x.label} note={x.note} onClick={close} />
             ))}
+            <MenuItem href="/providers?stay=live-in" title="Live-in" note="Stays at your home" onClick={close} />
+            <MenuItem href="/providers?stay=live-out" title="Live-out" note="Comes in each day" onClick={close} />
           </div>
 
           <div>

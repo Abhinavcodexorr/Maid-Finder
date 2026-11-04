@@ -4,6 +4,7 @@
 
 export type Gender = "male" | "female";
 export type AvailabilityType = "full-time" | "part-time" | "live-in" | "one-time";
+export type StayOption = "live-in" | "live-out";
 export type PriceUnit = "per month" | "per visit" | "per hour";
 
 export interface Category {
@@ -35,6 +36,8 @@ export interface Provider {
   /** Set by the "near me" ranking: straight-line km from the visitor's chosen location. */
   distanceKm?: number;
   availabilityType: AvailabilityType;
+  /** Whether they work at the employer's home, come in daily, or both. Empty when not set. */
+  stay?: StayOption[];
   price: number;
   priceUnit: PriceUnit;
   phone: string;
@@ -65,6 +68,7 @@ export interface ProviderFilters {
   area?: string;
   experience?: "0-1" | "1-3" | "3-5" | "5+";
   availabilityType?: AvailabilityType;
+  stay?: StayOption;
   gender?: Gender;
   minAge?: number;
   maxAge?: number;

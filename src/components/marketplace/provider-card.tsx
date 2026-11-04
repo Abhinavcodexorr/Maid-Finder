@@ -80,6 +80,7 @@ export function ProviderCard({
   const fullName = titleCase(`${provider.firstName} ${provider.lastName}`.trim());
   const catColor = colorForCategory(provider.categoryId);
   const location = [provider.area, provider.city].filter((v, i, arr) => v && arr.indexOf(v) === i).join(", ");
+  const stayLabel = (provider.stay ?? []).map((s) => (s === "live-in" ? "Live-in" : "Live-out")).join(" & ");
   const skills = provider.skills.length > 0 ? provider.skills : cat ? [cat.name] : [];
 
   // Only facts the profile actually has are listed — nothing is padded with placeholders.
@@ -160,6 +161,7 @@ export function ProviderCard({
           {cat?.name && (
             <p className="mt-2 text-[11px] font-bold uppercase tracking-[0.1em]" style={{ color: "var(--primary)" }}>
               {cat.name}
+              {stayLabel && <span style={{ color: "var(--ink-light)" }}> · {stayLabel}</span>}
             </p>
           )}
 

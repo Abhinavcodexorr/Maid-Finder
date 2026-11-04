@@ -11,7 +11,7 @@
 
 import { getCategoryById } from "./categories";
 import { getCustomerToken } from "./live-customer-auth";
-import type { AvailabilityType, Gender, Provider } from "@/types/marketplace";
+import type { AvailabilityType, Gender, Provider, StayOption } from "@/types/marketplace";
 
 /** The customer's token, so the server can tell a member (who may see contact numbers) from a visitor. */
 function memberHeaders(): HeadersInit | undefined {
@@ -46,6 +46,7 @@ export interface ApiProvider {
   age?: number;
   languages?: string[];
   duration?: string;
+  stayPreference?: string[];
   education?: string;
   introVideoUrl?: string;
   lastWorkingExperience?: { jobTitle?: string; workingCity?: string; duration?: string; familySize?: string };
@@ -82,6 +83,17 @@ interface OneResponse {
 
 function categoryName(id: string): string | undefined {
   return getCategoryById(id)?.name;
+}
+
+/** The backend stores "live_in" / "live_out"; some records hold the list as one JSON string. */
+function mapStay(values?: string[]): StayOption[] {
+  const out: StayOption[] = [];
+  for (const v of flattenList(values)) {
+    const key = v.toLowerCase().replace(/[\s-]+/g, "_");
+    if (key === "live_in" && !out.includes("live-in")) out.push("live-in");
+    if (key === "live_out" && !out.includes("live-out")) out.push("live-out");
+  }
+  return out;
 }
 
 function mapAvailabilityType(duration?: string): AvailabilityType {
@@ -134,6 +146,7 @@ export function mapApiProviderToProvider(raw: ApiProvider): Provider {
     longitude: raw.location?.coordinates?.[0],
     latitude: raw.location?.coordinates?.[1],
     availabilityType: mapAvailabilityType(raw.duration),
+    stay: mapStay(raw.stayPreference),
     price: raw.monthlySalary ?? 0,
     priceUnit: "per month",
     phone: raw.phone || raw.mobileNumber || "",

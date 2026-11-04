@@ -131,10 +131,12 @@ export default function ProviderProfilePage({ params }: { params: Promise<{ id: 
 
   // Only facts the API actually returned are shown — empty ones are left out.
   // Nationality is deliberately never displayed.
+  const stayLabel = (provider.stay ?? []).map((s) => (s === "live-in" ? "Live-in" : "Live-out")).join(" & ");
   const facts: Array<{ label: string; value: string }> = [
     provider.experienceYears > 0 ? { label: "Experience", value: `${provider.experienceYears} ${provider.experienceYears === 1 ? "year" : "years"}` } : null,
     location ? { label: "Location", value: location } : null,
     { label: "Availability", value: titleCase(availability) },
+    stayLabel ? { label: "Stay", value: stayLabel } : null,
     provider.age > 0 ? { label: "Age", value: `${provider.age} years` } : null,
     provider.education ? { label: "Education", value: provider.education } : null,
   ].filter((f): f is NonNullable<typeof f> => f !== null);
@@ -144,6 +146,7 @@ export default function ProviderProfilePage({ params }: { params: Promise<{ id: 
     provider.education ? { label: "Education", value: provider.education } : null,
     location ? { label: "Based in", value: location } : null,
     { label: "Availability", value: titleCase(availability) },
+    stayLabel ? { label: "Stay", value: stayLabel } : null,
   ].filter((f): f is NonNullable<typeof f> => f !== null);
 
   const card = "rounded-3xl border bg-white p-6 shadow-sm";
@@ -214,6 +217,11 @@ export default function ProviderProfilePage({ params }: { params: Promise<{ id: 
                 {provider.introVideoUrl && (
                   <span className="inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5" style={{ borderColor: "var(--line)" }}>
                     <Icon name="eye" className="h-3.5 w-3.5" style={{ color: "var(--primary)" }} /> Video introduction
+                  </span>
+                )}
+                {stayLabel && (
+                  <span className="inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5" style={{ borderColor: "var(--line)" }}>
+                    <Icon name="home" className="h-3.5 w-3.5" style={{ color: "var(--primary)" }} /> {stayLabel}
                   </span>
                 )}
                 <span className="inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5" style={{ borderColor: "var(--line)" }}>

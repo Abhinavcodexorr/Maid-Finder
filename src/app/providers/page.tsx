@@ -21,7 +21,7 @@ import { ServiceGlyph } from "@/components/ui/service-glyph";
 import { Icon } from "@/components/ui/icon";
 import { ProviderCardSkeleton } from "@/components/ui/shimmer";
 import { ScrollStagger, ScrollStaggerItem } from "@/components/ui/scroll-reveal";
-import type { AvailabilityType, Gender, Provider, ProviderFilters } from "@/types/marketplace";
+import type { AvailabilityType, Gender, Provider, ProviderFilters, StayOption } from "@/types/marketplace";
 
 
 const EXP_OPTIONS: { id: NonNullable<ProviderFilters["experience"]>; label: string }[] = [
@@ -61,6 +61,7 @@ function FilterPanel({
   area,
   experience,
   availabilityType,
+  stay,
   gender,
   selectedLanguages,
   selectedSkills,
@@ -79,6 +80,7 @@ function FilterPanel({
   area: string;
   experience: ProviderFilters["experience"];
   availabilityType: AvailabilityType | undefined;
+  stay: StayOption | undefined;
   gender: Gender | undefined;
   selectedLanguages: string[];
   selectedSkills: string[];
@@ -201,6 +203,20 @@ function FilterPanel({
               {o.label}
             </option>
           ))}
+        </select>
+      </div>
+
+      {/* Live-in / live-out */}
+      <div>
+        <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.14em] text-[var(--muted)]">Stay</p>
+        <select
+          className="field !rounded-xl text-sm"
+          value={stay ?? ""}
+          onChange={(e) => updateParams({ stay: e.target.value || null })}
+        >
+          <option value="">Live-in or live-out</option>
+          <option value="live-in">Live-in</option>
+          <option value="live-out">Live-out</option>
         </select>
       </div>
 
@@ -377,6 +393,8 @@ const [categories, setCategories] = useState<ReturnType<typeof getCategories>>([
   const area = searchParams.get("area") ?? "";
   const experience = (searchParams.get("experience") as ProviderFilters["experience"]) ?? undefined;
   const availabilityType = (searchParams.get("availability") as AvailabilityType) ?? undefined;
+  const stayParam = searchParams.get("stay");
+  const stay: StayOption | undefined = stayParam === "live-in" || stayParam === "live-out" ? stayParam : undefined;
   const gender = (searchParams.get("gender") as Gender) ?? undefined;
   const selectedLanguages = csv(searchParams.get("languages"));
   const selectedSkills = csv(searchParams.get("skills"));
@@ -405,6 +423,7 @@ const [categories, setCategories] = useState<ReturnType<typeof getCategories>>([
         area: area || undefined,
         experience,
         availabilityType,
+        stay,
         gender,
         languages: selectedLanguages.length > 0 ? selectedLanguages : undefined,
         skills: selectedSkills.length > 0 ? selectedSkills : undefined,
@@ -413,7 +432,7 @@ const [categories, setCategories] = useState<ReturnType<typeof getCategories>>([
         page,
         pageSize: 9,
       }),
-    [nearbyProviders, q, categoryIds, area, experience, availabilityType, gender, selectedLanguages, selectedSkills, verifiedOnly, sort, page]
+    [nearbyProviders, q, categoryIds, area, experience, availabilityType, stay, gender, selectedLanguages, selectedSkills, verifiedOnly, sort, page]
   );
 
   // Suggested candidates in case of 0 results
@@ -449,6 +468,7 @@ const [categories, setCategories] = useState<ReturnType<typeof getCategories>>([
     (area ? 1 : 0) +
     (experience ? 1 : 0) +
     (availabilityType ? 1 : 0) +
+    (stay ? 1 : 0) +
     (gender ? 1 : 0) +
     selectedLanguages.length +
     selectedSkills.length +
@@ -467,6 +487,7 @@ const [categories, setCategories] = useState<ReturnType<typeof getCategories>>([
   if (area) chips.push({ label: area, onClear: () => updateParams({ area: null }) });
   if (experience) chips.push({ label: `${experience} yrs exp`, onClear: () => updateParams({ experience: null }) });
   if (availabilityType) chips.push({ label: availabilityType, onClear: () => updateParams({ availability: null }) });
+  if (stay) chips.push({ label: stay === "live-in" ? "Live-in" : "Live-out", onClear: () => updateParams({ stay: null }) });
   if (gender) chips.push({ label: gender, onClear: () => updateParams({ gender: null }) });
   if (verifiedOnly) chips.push({ label: "Verified Only", onClear: () => updateParams({ verified: null }) });
   selectedSkills.forEach((sk) => {
@@ -482,6 +503,7 @@ const [categories, setCategories] = useState<ReturnType<typeof getCategories>>([
     area,
     experience,
     availabilityType,
+    stay,
     gender,
     selectedLanguages,
     selectedSkills,
