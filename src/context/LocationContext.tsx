@@ -2,6 +2,7 @@
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { DEFAULT_RADIUS_KM, type UserLocation } from "@/lib/geo";
+import type { GeolocatorLocation } from "geolocator";
 
 const LOCATION_KEY = "helpzone_user_location";
 const RADIUS_KEY = "helpzone_user_radius";
@@ -83,24 +84,50 @@ export function LocationProvider({ children }: { children: ReactNode }) {
     return (await response.json().catch(() => ({ success: false }))) as PlaceResponse;
   }, []);
 
+  // Device location comes from the `geolocator` package: it asks the browser first (the Allow popup) and,
+  // if that is blocked or unavailable, falls back to an approximate city from the visitor's IP address.
   const detectFromDevice = useCallback(async () => {
     setError("");
-    if (!navigator.geolocation) {
-      setError("Your browser can't share its location. Enter your pincode instead.");
-      return false;
-    }
     setBusy(true);
     try {
-      const position = await new Promise<GeolocationPosition>((resolve, reject) =>
-        navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 10000, maximumAge: 600000 })
-      );
-      const { latitude, longitude } = position.coords;
-      const place = await lookup(`lat=${latitude}&lng=${longitude}`);
-      save({ lat: latitude, lng: longitude, city: place.city ?? "", state: place.state ?? "", pincode: place.pincode || undefined });
+      const geolocator = (await import("geolocator")).default;
+      geolocator.setGeoIPSource({
+        provider: "ipwho.is",
+        url: "https://ipwho.is/",
+        xhr: true,
+        schema: (r) => ({
+          coords: { latitude: r.latitude, longitude: r.longitude },
+          address: { city: r.city, state: r.region, postalCode: r.postal },
+        }),
+      });
+      const found = await new Promise<GeolocatorLocation | null>((resolve) => {
+        geolocator.locate(
+          { enableHighAccuracy: false, timeout: 8000, maximumAge: 600000, fallbackToIP: true, addressLookup: false },
+          (err, location) => resolve(err ? null : location)
+        );
+      });
+      const lat = found?.coords?.latitude;
+      const lng = found?.coords?.longitude;
+      if (!found || typeof lat !== "number" || typeof lng !== "number" || Number.isNaN(lat) || Number.isNaN(lng)) {
+        setError("We couldn't work out your location. Type a city or pincode instead.");
+        return false;
+      }
+
+      if (found.provider) {
+        // IP result: the package already returned the place name.
+        save({ lat, lng, city: found.address?.city ?? "", state: found.address?.state ?? "", pincode: found.address?.postalCode || undefined });
+      } else {
+        // Device result: use the coordinates straight away, then name the place when the lookup returns.
+        save({ lat, lng, city: "", state: "" });
+        lookup(`lat=${lat}&lng=${lng}`)
+          .then((place) => {
+            if (place.success) save({ lat, lng, city: place.city ?? "", state: place.state ?? "", pincode: place.pincode || undefined });
+          })
+          .catch(() => {});
+      }
       return true;
-    } catch (err) {
-      const denied = (err as GeolocationPositionError)?.code === 1;
-      setError(denied ? "Location access was blocked. Enter your pincode instead." : "Couldn't get your location. Enter your pincode instead.");
+    } catch {
+      setError("We couldn't work out your location. Type a city or pincode instead.");
       return false;
     } finally {
       setBusy(false);

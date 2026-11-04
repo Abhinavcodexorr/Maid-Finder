@@ -11,6 +11,7 @@ import {
   getSkillsForCategory,
   getProvidersFrom,
   fetchLiveProviders,
+  getProvidersSnapshot,
 } from "@/lib/services";
 import { useLocation } from "@/context/LocationContext";
 import { ProviderCard } from "@/components/marketplace/provider-card";
@@ -358,6 +359,12 @@ const [categories, setCategories] = useState<ReturnType<typeof getCategories>>([
   const languages = useMemo(() => getDistinctLanguagesFrom(liveProviders ?? []), [liveProviders]);
   useEffect(() => {
     let cancelled = false;
+    // Show the last list straight away, then swap in the fresh one when it arrives.
+    const snapshot = getProvidersSnapshot();
+    if (snapshot) {
+      setLiveProviders(snapshot);
+      setLoading(false);
+    }
     fetchLiveProviders()
       .then((list) => { if (!cancelled) setLiveProviders(list); })
       .catch(() => { if (!cancelled) setLiveProviders([]); })

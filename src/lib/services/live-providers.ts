@@ -167,6 +167,27 @@ export function mapApiProviderToProvider(raw: ApiProvider): Provider {
 const LIST_TTL_MS = 30_000;
 let listCache: { key: string; at: number; promise: Promise<Provider[]> } | null = null;
 
+// The last public list is kept for the browser session so a page can paint at once and refresh quietly behind it.
+// Only visitors' (no token) lists are stored — a member's list may carry phone numbers and must not be kept.
+const SNAPSHOT_KEY = "helpzone_providers_snapshot";
+
+export function getProvidersSnapshot(): Provider[] | null {
+  if (typeof window === "undefined" || getCustomerToken()) return null;
+  try {
+    const raw = window.sessionStorage.getItem(SNAPSHOT_KEY);
+    return raw ? (JSON.parse(raw) as Provider[]) : null;
+  } catch {
+    return null;
+  }
+}
+
+function saveProvidersSnapshot(list: Provider[]) {
+  if (typeof window === "undefined" || getCustomerToken()) return;
+  try {
+    window.sessionStorage.setItem(SNAPSHOT_KEY, JSON.stringify(list));
+  } catch { /* storage full or blocked — just skip the snapshot */ }
+}
+
 export function fetchLiveProviders(): Promise<Provider[]> {
   const key = typeof window === "undefined" ? "" : getCustomerToken() ?? "";
   if (listCache && listCache.key === key && Date.now() - listCache.at < LIST_TTL_MS) return listCache.promise;
@@ -178,7 +199,9 @@ export function fetchLiveProviders(): Promise<Provider[]> {
     const response = await fetch("/api/providers/list?limit=500", { cache: "no-store", headers: memberHeaders() });
     const res: ListResponse = await response.json();
     if (!res.success) throw new Error("Could not load providers.");
-    return (res.data || []).filter(isPubliclyVisible).map(mapApiProviderToProvider);
+    const list = (res.data || []).filter(isPubliclyVisible).map(mapApiProviderToProvider);
+    saveProvidersSnapshot(list);
+    return list;
   })();
   listCache = { key, at: Date.now(), promise };
   // A failed request must not be served from the cache next time.
