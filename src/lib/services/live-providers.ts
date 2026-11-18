@@ -11,6 +11,7 @@
 
 import { getCategoryById } from "./categories";
 import { getCustomerToken } from "./live-customer-auth";
+import { formatPersonName } from "@/lib/names";
 import type { AvailabilityType, Gender, Provider, StayOption } from "@/types/marketplace";
 
 /** The customer's token, so the server can tell a member (who may see contact numbers) from a visitor. */
@@ -121,7 +122,7 @@ function flattenList(values?: string[]): string[] {
 /** Converts one raw API provider document into the frontend's `Provider` shape. */
 export function mapApiProviderToProvider(raw: ApiProvider): Provider {
   const id = raw.id || raw._id || "";
-  const [firstName, ...rest] = (raw.fullName || "Help Zone Provider").trim().split(/\s+/);
+  const [firstName, ...rest] = formatPersonName(raw.fullName || "Help Zone Provider").split(" ");
   const lastName = rest.join(" ");
   const categoryIds = raw.categoryIds ?? [];
   const rawSkills = flattenList(raw.skills);

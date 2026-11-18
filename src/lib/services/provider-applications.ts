@@ -3,6 +3,7 @@
 import { rememberCatalogNames } from "./categories";
 import { ApiError } from "@/lib/api-client";
 import { writeJson, STORAGE_KEYS } from "@/lib/services/storage";
+import type { CountryCode } from "@/lib/countries";
 
 /*
  * Helper (provider) registration mirrors the mobile app:
@@ -29,6 +30,8 @@ export interface ProviderApplicationProvider {
   aadhaarBackUrl?: string;
   panCardUrl?: string;
   introVideoUrl?: string;
+  country?: string;
+  kycDocuments?: unknown[];
   applicationStatus: "pending" | "approved" | "rejected";
 }
 
@@ -66,13 +69,13 @@ async function postJson<T>(url: string, body: unknown): Promise<T> {
 }
 
 /** Step 1 of registration: text an OTP to the helper's mobile number. */
-export function sendProviderOtp(mobileNumber: string): Promise<OtpSendResult> {
-  return postJson<OtpSendResult>("/api/providers/send-otp", { mobileNumber });
+export function sendProviderOtp(mobileNumber: string, country: CountryCode = "IN"): Promise<OtpSendResult> {
+  return postJson<OtpSendResult>("/api/providers/send-otp", { mobileNumber, country });
 }
 
 /** Verifies the OTP; the backend finds-or-creates the account and returns its session token. */
-export async function verifyProviderOtp(mobileNumber: string, otp: string): Promise<OtpVerifyResult> {
-  const result = await postJson<OtpVerifyResult>("/api/providers/verify-otp", { mobileNumber, otp });
+export async function verifyProviderOtp(mobileNumber: string, otp: string, country: CountryCode = "IN"): Promise<OtpVerifyResult> {
+  const result = await postJson<OtpVerifyResult>("/api/providers/verify-otp", { mobileNumber, otp, country });
   writeJson(STORAGE_KEYS.providerSession, result.token);
   return result;
 }
@@ -80,12 +83,15 @@ export async function verifyProviderOtp(mobileNumber: string, otp: string): Prom
 /** The admin-managed service catalog — used for "What work do you do?" and the home page's service tiles. */
 // The catalog changes rarely and several components read it on every page: share one request.
 const CATALOG_TTL_MS = 5 * 60_000;
-let catalogCache: { at: number; promise: Promise<CatalogService[]> } | null = null;
+const catalogCache = new Map<string, { at: number; promise: Promise<CatalogService[]> }>();
 
-export function fetchCatalogServices(): Promise<CatalogService[]> {
-  if (catalogCache && Date.now() - catalogCache.at < CATALOG_TTL_MS) return catalogCache.promise;
+/** Services for a country (the default country when none is given). */
+export function fetchCatalogServices(country?: CountryCode): Promise<CatalogService[]> {
+  const key = country ?? "";
+  const cached = catalogCache.get(key);
+  if (cached && Date.now() - cached.at < CATALOG_TTL_MS) return cached.promise;
   const promise = (async () => {
-    const response = await fetch("/api/services");
+    const response = await fetch(country ? `/api/services?country=${country}` : "/api/services");
     const data = await response.json().catch(() => null);
     if (!response.ok || !data?.success) {
       throw new ApiError(data?.message || "Couldn't load services", response.status, data);
@@ -94,8 +100,8 @@ export function fetchCatalogServices(): Promise<CatalogService[]> {
     rememberCatalogNames(services);
     return services;
   })();
-  catalogCache = { at: Date.now(), promise };
-  promise.catch(() => { if (catalogCache?.promise === promise) catalogCache = null; });
+  catalogCache.set(key, { at: Date.now(), promise });
+  promise.catch(() => { if (catalogCache.get(key)?.promise === promise) catalogCache.delete(key); });
   return promise;
 }
 
@@ -159,10 +165,14 @@ export interface CompleteProfileInput {
   aadhaarFront?: File;
   aadhaarBack?: File;
   panCard?: File;
-  /** Passport front (alternative secondary ID). Sent as `passportFront` to the backend. */
-  passportFront?: File;
-  /** Other government-issued ID (driving licence, voter ID, etc.). Sent as `otherIdProof`. */
-  otherIdProof?: File;
+  /**
+   * Any other government ID image (passport, driving licence …), one entry per image. Sent as `idDocuments`
+   * with a matching `idProofs` list, which the backend stores in the provider's kycDocuments.
+   */
+  idDocuments?: Array<{ file: File; idType: string }>;
+  /** The face photo taken for ID matching; becomes the profile picture. */
+  photo?: File;
+  country?: CountryCode;
   /** Public URL from uploadMedia() for the intro / video KYC recording. */
   introVideoUrl?: string;
 }
@@ -181,6 +191,8 @@ export async function completeProviderProfile(input: CompleteProfileInput): Prom
     ...(input.city && { city: input.city }),
     ...(input.state && { state: input.state }),
     ...(input.pincode && { pincode: input.pincode }),
+    ...(input.country && { country: input.country }),
+    ...(input.idDocuments?.length && { idProofs: input.idDocuments.map((d) => ({ idType: d.idType })) }),
     ...(input.latitude !== undefined && input.longitude !== undefined && { latitude: input.latitude, longitude: input.longitude }),
   };
   if (Object.keys(generalInfo).length) formData.append("generalInfo", JSON.stringify(generalInfo));
@@ -190,12 +202,13 @@ export async function completeProviderProfile(input: CompleteProfileInput): Prom
     aadhaarFront: input.aadhaarFront,
     aadhaarBack: input.aadhaarBack,
     panCard: input.panCard,
-    passportFront: input.passportFront,
-    otherIdProof: input.otherIdProof,
   };
   for (const [field, file] of Object.entries(documents)) {
     if (file) formData.append(field, await shrinkImage(file));
   }
+  // The backend pairs the nth file with the nth entry of `idProofs`, so keep the order.
+  for (const doc of input.idDocuments ?? []) formData.append("idDocuments", await shrinkImage(doc.file));
+  if (input.photo) formData.append("photo", await shrinkImage(input.photo));
   if (input.introVideoUrl) formData.append("introVideoUrl", input.introVideoUrl);
 
   const response = await fetch("/api/providers/complete-profile", {

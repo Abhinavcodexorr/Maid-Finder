@@ -17,6 +17,7 @@ import { ProviderReviews } from "@/components/marketplace/provider-reviews";
 import { ProviderVideo } from "@/components/ui/provider-video";
 import { ServiceGlyph } from "@/components/ui/service-glyph";
 import { intlPhone } from "@/lib/phone";
+import { formatPersonName } from "@/lib/names";
 
 const titleCase = (value: string) => value.toLowerCase().replace(/(^|[\s-])([a-z])/g, (_, sep: string, ch: string) => sep + ch.toUpperCase());
 
@@ -112,7 +113,7 @@ export default function ProviderProfilePage({ params }: { params: Promise<{ id: 
   };
 
   const whatsappHref = masked.phone ? `https://wa.me/${intlPhone(masked.phone)}` : undefined;
-  const fullName = titleCase(`${provider.firstName} ${provider.lastName}`.trim());
+  const fullName = formatPersonName(`${provider.firstName} ${provider.lastName}`);
   const availability = provider.availabilityType.replace("-", " ");
   const location = [provider.area, provider.city].filter((v, i, arr) => v && arr.indexOf(v) === i).join(", ");
   const services = provider.skills.length > 0 ? provider.skills : category ? [category.name] : [];
@@ -423,7 +424,7 @@ export default function ProviderProfilePage({ params }: { params: Promise<{ id: 
                   <Link key={p.id} href={`/providers/${p.id}`} className="flex items-center gap-4 rounded-3xl border bg-white p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md" style={{ borderColor: "var(--line)" }}>
                     <Avatar initials={`${p.firstName[0] ?? ""}${p.lastName[0] ?? ""}`} imageUrl={p.photo} className="h-14 w-14 shrink-0 text-base" />
                     <div className="min-w-0">
-                      <p className="truncate text-sm font-bold">{titleCase(`${p.firstName} ${p.lastName}`.trim())}</p>
+                      <p className="truncate text-sm font-bold">{formatPersonName(`${p.firstName} ${p.lastName}`)}</p>
                       {cat?.name && <p className="truncate text-xs font-medium" style={{ color: "var(--primary)" }}>{cat.name}</p>}
                       {(p.experienceYears > 0 || typeof p.rating === "number") && (
                         <div className="mt-1 flex items-center gap-2 text-xs" style={{ color: "var(--muted)" }}>

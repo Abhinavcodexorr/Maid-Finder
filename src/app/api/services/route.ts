@@ -1,12 +1,16 @@
 // Same-origin proxy for the live Maid Finder BE's public service catalog —
 // see src/app/api/providers/list/route.ts for why this exists (CORS).
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { API_BASE_URL } from "@/lib/api-client";
 import { cleanBody, fetchUpstream } from "@/lib/api-proxy";
+import { isCountryCode } from "@/lib/countries";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  // Services belong to a country on the backend; without one it serves the default (India).
+  const country = request.nextUrl.searchParams.get("country")?.toUpperCase();
+  const qs = isCountryCode(country) ? `?country=${country}` : "";
   try {
-    const upstream = await fetchUpstream(`${API_BASE_URL}/api/v1/services`, {
+    const upstream = await fetchUpstream(`${API_BASE_URL}/api/v1/services${qs}`, {
       cache: "no-store",
     });
     const data = await upstream.json();

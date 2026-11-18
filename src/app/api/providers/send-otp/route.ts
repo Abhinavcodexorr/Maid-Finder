@@ -3,17 +3,20 @@
 import { NextRequest, NextResponse } from "next/server";
 import { API_BASE_URL } from "@/lib/api-client";
 import { cleanBody } from "@/lib/api-proxy";
+import { COUNTRIES, DEFAULT_COUNTRY, isCountryCode } from "@/lib/countries";
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    if (typeof body.mobileNumber !== "string" || !/^[6-9]\d{9}$/.test(body.mobileNumber.trim())) {
-      return NextResponse.json({ success: false, message: "Enter a valid 10-digit mobile number." }, { status: 400 });
+    const requested: unknown = body.country;
+    const country = COUNTRIES[isCountryCode(requested) ? requested : DEFAULT_COUNTRY];
+    if (typeof body.mobileNumber !== "string" || !country.mobilePattern.test(body.mobileNumber.trim())) {
+      return NextResponse.json({ success: false, message: `Enter a valid ${country.mobileLength}-digit mobile number.` }, { status: 400 });
     }
     const upstream = await fetch(`${API_BASE_URL}/api/v1/providers/send-otp`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ mobileNumber: body.mobileNumber, countryCode: body.countryCode }),
+      body: JSON.stringify({ mobileNumber: body.mobileNumber, countryCode: country.dialCode, country: country.code }),
     });
     const data = await upstream.json();
     // devOtp is a dev-mode convenience the backend includes while SMS delivery

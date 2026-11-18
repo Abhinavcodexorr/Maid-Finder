@@ -15,9 +15,11 @@ import {
 import type { CatalogService } from "@/lib/services";
 import { Icon } from "@/components/ui/icon";
 import { Logo } from "@/components/ui/logo";
+import { FacePhotoCapture } from "@/components/ui/face-photo-capture";
 import { VideoRecorder } from "@/components/ui/video-recorder";
 import { toast } from "@/components/ui/toaster";
 import type { ProviderApplicationProvider } from "@/lib/services";
+import { COUNTRIES, COUNTRY_LIST, DEFAULT_COUNTRY, isCountryCode, normalizeMobile, type CountryCode, type IdDocument } from "@/lib/countries";
 
 /* ================================================================
    CONSTANTS
@@ -26,19 +28,16 @@ const OTP_LENGTH = 6;
 const OTP_RESEND_SECONDS = 60;
 /** Longest video KYC recording, in seconds — short enough to upload through the site's request-size limit. */
 const VIDEO_MAX_SECONDS = 60;
-const MOBILE_PATTERN = /^[6-9][0-9]{9}$/;
+const STEP_COUNT = 4;
 
 type Phase = "mobile" | "otp" | "steps";
-type Step = 1 | 2 | 3;
-/** Which secondary ID document the provider has chosen to upload. */
-type SecondaryId = "aadhaar" | "pan" | "passport" | "other";
+type Step = 1 | 2 | 3 | 4;
 
 const detailsSchema = z.object({
   firstName: z.string().trim().min(1, "Enter your first name"),
   lastName: z.string().trim().min(1, "Enter your last name"),
-  categoryId: z.string().min(1, "Select the work you do"),
   state: z.string().min(1, "Select your state"),
-  city: z.string().min(1, "Select your city"),
+  city: z.string().trim().min(1, "Select your city"),
   area: z.string().trim().optional(),
   pincode: z.string().optional(),
 });
@@ -54,8 +53,10 @@ function nextStepFor(provider: ProviderApplicationProvider): Step | null {
   if (provider.applicationStatus === "rejected") return 1;
   const detailsDone = Boolean((provider.firstName || provider.fullName) && provider.categoryIds?.length && provider.city && provider.state);
   if (!detailsDone) return 1;
-  if ((!provider.aadhaarFrontUrl || !provider.aadhaarBackUrl) && !provider.panCardUrl) return 2;
-  if (!provider.introVideoUrl) return 3;
+  const idDone = Boolean((provider.aadhaarFrontUrl && provider.aadhaarBackUrl) || provider.panCardUrl || provider.kycDocuments?.length);
+  if (!idDone) return 2;
+  if (!provider.imageUrl) return 3;
+  if (!provider.introVideoUrl) return 4;
   return null;
 }
 
@@ -80,11 +81,11 @@ function StepHeader({ step, onBack }: { step: Step; onBack: () => void }) {
       <button type="button" onClick={onBack} aria-label="Go back" className="-ml-1 rounded-full p-1.5 hover:bg-[var(--line-light)]">
         <Icon name="arrow-left" className="h-5 w-5" />
       </button>
-      <div className="flex flex-1 items-center justify-center" role="progressbar" aria-valuemin={1} aria-valuemax={3} aria-valuenow={step}>
-        {[1, 2, 3].map((s) => (
+      <div className="flex flex-1 items-center justify-center" role="progressbar" aria-valuemin={1} aria-valuemax={STEP_COUNT} aria-valuenow={step}>
+        {Array.from({ length: STEP_COUNT }, (_, i) => i + 1).map((s) => (
           <div key={s} className="flex items-center">
             <span className="h-3.5 w-3.5 rounded-full" style={{ background: step >= s ? "var(--primary)" : "var(--line)" }} />
-            {s < 3 && <span className="h-0.5 w-12 sm:w-16" style={{ background: step > s ? "var(--primary)" : "var(--line)" }} />}
+            {s < STEP_COUNT && <span className="h-0.5 w-10 sm:w-14" style={{ background: step > s ? "var(--primary)" : "var(--line)" }} />}
           </div>
         ))}
       </div>
@@ -141,8 +142,10 @@ function UploadTile({
           <span className="text-sm font-semibold leading-tight">{file ? file.name : label}</span>
         </>
       )}
-      {preview && (
-        <span className="absolute bottom-2 left-2 rounded-md bg-black/60 px-2 py-0.5 text-[11px] font-semibold text-white">{label}</span>
+      {file && (
+        <span className="absolute inset-x-0 bottom-0 flex items-center justify-center gap-1.5 bg-black/55 py-2 text-xs font-semibold text-white">
+          <Icon name="check-circle" className="h-4 w-4" /> Tap to replace
+        </span>
       )}
       <input
         id={id}
@@ -198,6 +201,59 @@ function OtpInput({ value, onChange, onComplete }: { value: string; onChange: (v
   );
 }
 
+/** Multi-select for "What work do you do?" — shows the chosen services as a comma list, like the app. */
+function ServiceMultiSelect({
+  services,
+  selected,
+  onChange,
+  loading,
+  error,
+}: {
+  services: CatalogService[];
+  selected: string[];
+  onChange: (keys: string[]) => void;
+  loading: boolean;
+  error?: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const names = services.filter((s) => selected.includes(s.key)).map((s) => s.name);
+  const toggle = (key: string) => onChange(selected.includes(key) ? selected.filter((k) => k !== key) : [...selected, key]);
+
+  return (
+    <div className="relative" onBlur={(e) => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setOpen(false); }}>
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        className={`field flex w-full items-center justify-between text-left ${error ? "field-error" : ""}`}
+      >
+        <span className="truncate" style={{ color: names.length ? "var(--ink)" : "var(--faint)" }}>
+          {names.length ? names.join(", ") : loading ? "Loading services…" : "Select"}
+        </span>
+        <Icon name="chevron-down" className={`h-4 w-4 shrink-0 transition-transform ${open ? "rotate-180" : ""}`} />
+      </button>
+      {open && (
+        <ul role="listbox" aria-multiselectable className="absolute z-20 mt-1 max-h-64 w-full overflow-y-auto rounded-2xl border bg-white p-1.5 shadow-xl" style={{ borderColor: "var(--line)" }}>
+          {services.map((svc) => {
+            const checked = selected.includes(svc.key);
+            return (
+              <li key={svc.key} role="option" aria-selected={checked}>
+                <label className="flex cursor-pointer items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium hover:bg-[var(--primary-soft)]">
+                  <input type="checkbox" checked={checked} onChange={() => toggle(svc.key)} className="h-4 w-4 accent-[var(--primary)]" />
+                  {svc.name}
+                </label>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </div>
+  );
+}
+
+const slug = (value: string) => value.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "");
+
 /* ================================================================
    PAGE
    ================================================================ */
@@ -210,6 +266,10 @@ export default function RegisterProviderPage() {
   const [busy, setBusy] = useState(false);
   const [token, setToken] = useState("");
 
+  // The country drives the phone format, region lists, services and which government IDs are accepted.
+  const [country, setCountry] = useState<CountryCode>(DEFAULT_COUNTRY);
+  const config = COUNTRIES[country];
+
   // Mobile + OTP
   const [mobile, setMobile] = useState("");
   const [otp, setOtp] = useState("");
@@ -219,26 +279,24 @@ export default function RegisterProviderPage() {
   // Step 1: details
   const [services, setServices] = useState<CatalogService[]>([]);
   const [servicesStatus, setServicesStatus] = useState<"loading" | "ready" | "error">("loading");
+  const [categoryIds, setCategoryIds] = useState<string[]>([]);
+  const [categoryError, setCategoryError] = useState("");
   const [states, setStates] = useState<string[]>([]);
   const [cities, setCities] = useState<string[]>([]);
   const [citiesLoading, setCitiesLoading] = useState(false);
 
-  // Step 2: documents
-  const [aadhaarFront, setAadhaarFront] = useState<File | null>(null);
-  const [aadhaarBack, setAadhaarBack] = useState<File | null>(null);
-
-  /**
-   * Secondary ID type chosen by the provider.
-   * "pan"       → PAN card front upload
-   * "passport"  → Passport front upload
-   * "other"     → Any other govt-issued ID (voter ID, driving licence, etc.)
-   * "none"      → Provider skips secondary ID
-   */
-  const [secondaryIdType, setSecondaryIdType] = useState<SecondaryId | null>(null);
-  const [secondaryIdFile, setSecondaryIdFile] = useState<File | null>(null);
+  // Step 2: government ID
+  const [idKey, setIdKey] = useState("");
+  /** One file per side of the chosen document, keyed by the side's name. */
+  const [idFiles, setIdFiles] = useState<Record<string, File | null>>({});
   const [docsError, setDocsError] = useState("");
+  const idDoc: IdDocument | undefined = config.ids.find((d) => d.key === idKey);
 
-  // Step 3: video KYC
+  // Step 3: face photo
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [photoError, setPhotoError] = useState("");
+
+  // Step 4: video KYC
   const [videoFile, setVideoFile] = useState<File | null>(null);
   const [videoStage, setVideoStage] = useState("");
 
@@ -251,7 +309,7 @@ export default function RegisterProviderPage() {
     formState: { errors },
   } = useForm<DetailsValues>({
     resolver: zodResolver(detailsSchema),
-    defaultValues: { firstName: "", lastName: "", categoryId: "", state: "", city: "", area: "", pincode: "" },
+    defaultValues: { firstName: "", lastName: "", state: "", city: "", area: "", pincode: "" },
   });
   const selectedState = watch("state");
 
@@ -268,16 +326,27 @@ export default function RegisterProviderPage() {
       .catch(() => setServicesStatus("error"));
   };
 
+  // The services list is the same for every country: whatever the services listing returns.
   useEffect(() => {
     loadServices();
-    fetch("/api/geo/states")
-      .then((res) => res.json())
-      .then((data) => { if (data?.success) setStates(data.data); })
-      .catch(() => {});
   }, []);
 
+  // The region list follows the chosen country.
   useEffect(() => {
-    if (!selectedState) return;
+    let cancelled = false;
+    if (config.states) {
+      setStates(config.states);
+    } else {
+      fetch("/api/geo/states")
+        .then((res) => res.json())
+        .then((data) => { if (!cancelled && data?.success) setStates(data.data); })
+        .catch(() => {});
+    }
+    return () => { cancelled = true; };
+  }, [country, config.states]);
+
+  useEffect(() => {
+    if (!selectedState || config.states) return;
     let cancelled = false;
     // Marks the fetch as in-flight — not state derivable from render.
     setCitiesLoading(true);
@@ -287,7 +356,7 @@ export default function RegisterProviderPage() {
       .catch(() => { if (!cancelled) setCities([]); })
       .finally(() => { if (!cancelled) setCitiesLoading(false); });
     return () => { cancelled = true; };
-  }, [selectedState]);
+  }, [selectedState, config.states]);
 
   // A prefilled city can only be selected once its options have rendered.
   useEffect(() => {
@@ -301,13 +370,24 @@ export default function RegisterProviderPage() {
     return () => clearTimeout(timer);
   }, [resendIn]);
 
+  const onCountryChange = (next: CountryCode) => {
+    if (next === country) return;
+    setCountry(next);
+    setStates([]);
+    setCities([]);
+    setValue("state", "");
+    setValue("city", "");
+    setIdKey("");
+    setIdFiles({});
+  };
+
   /* ---------- Mobile + OTP ---------- */
   const onSendOtp = async () => {
-    if (!MOBILE_PATTERN.test(mobile)) return setOtpError("Enter a valid 10-digit mobile number.");
+    if (!config.mobilePattern.test(mobile)) return setOtpError(`Enter a valid ${config.mobileLength}-digit mobile number.`);
     setOtpError("");
     setBusy(true);
     try {
-      await sendProviderOtp(mobile);
+      await sendProviderOtp(mobile, country);
       setOtp("");
       setResendIn(OTP_RESEND_SECONDS);
       setPhase("otp");
@@ -323,15 +403,18 @@ export default function RegisterProviderPage() {
     setOtpError("");
     setBusy(true);
     try {
-      const { token: sessionToken, provider } = await verifyProviderOtp(mobile, otp);
+      const { token: sessionToken, provider } = await verifyProviderOtp(mobile, otp, country);
       setToken(sessionToken);
+      // A returning provider keeps the country their account was created in.
+      const savedCountry = provider.country?.toUpperCase();
+      if (isCountryCode(savedCountry) && savedCountry !== country) setCountry(savedCountry);
       // A returning provider who already saved some details starts with them filled in.
       const [fallbackFirst, ...fallbackRest] = (provider.fullName ?? "").split(" ").filter(Boolean);
       const savedFirst = provider.firstName || fallbackFirst;
       const savedLast = provider.lastName || fallbackRest.join(" ");
       if (savedFirst) setValue("firstName", savedFirst);
       if (savedLast) setValue("lastName", savedLast);
-      if (provider.categoryIds?.[0]) setValue("categoryId", provider.categoryIds[0]);
+      if (provider.categoryIds?.length) setCategoryIds(provider.categoryIds);
       if (provider.state) setValue("state", provider.state);
       if (provider.city) setValue("city", provider.city);
       if (provider.area) setValue("area", provider.area);
@@ -357,13 +440,14 @@ export default function RegisterProviderPage() {
   };
 
   /* ---------- Steps ---------- */
-  // Best-effort: the provider's work area (pincode, else city + state) is turned
+  // Best-effort: the provider's work area (postcode, else city + state) is turned
   // into coordinates so families can search by distance. Failing to find them
   // must never block registration — the profile then just has no map position.
   const findCoordinates = async (values: DetailsValues): Promise<{ latitude: number; longitude: number } | null> => {
-    const query = values.pincode && /^\d{6}$/.test(values.pincode) ? `pincode=${values.pincode}` : `q=${encodeURIComponent(`${values.city}, ${values.state}`)}`;
+    const hasPostal = values.pincode && new RegExp(`^\\d{${config.postalLength}}$`).test(values.pincode);
+    const query = hasPostal ? `pincode=${values.pincode}` : `q=${encodeURIComponent(`${values.city}, ${values.state}`)}`;
     try {
-      const place = await (await fetch(`/api/geo/locate?${query}`)).json();
+      const place = await (await fetch(`/api/geo/locate?${query}&country=${country}`)).json();
       return place?.success ? { latitude: place.lat, longitude: place.lng } : null;
     } catch {
       return null;
@@ -371,14 +455,20 @@ export default function RegisterProviderPage() {
   };
 
   const onDetails = async (values: DetailsValues) => {
+    if (categoryIds.length === 0) return setCategoryError("Select the work you do");
+    if (values.pincode && !new RegExp(`^\\d{${config.postalLength}}$`).test(values.pincode)) {
+      return toast({ title: `Enter a ${config.postalLength}-digit ${config.postalLabel.toLowerCase()} or leave it empty`, variant: "error" });
+    }
+    setCategoryError("");
     setBusy(true);
     try {
       const coordinates = await findCoordinates(values);
       await completeProviderProfile({
         token,
+        country,
         firstName: values.firstName,
         lastName: values.lastName,
-        categoryIds: [values.categoryId],
+        categoryIds,
         state: values.state,
         city: values.city,
         area: values.area || values.city,
@@ -394,23 +484,40 @@ export default function RegisterProviderPage() {
   };
 
   const onDocuments = async () => {
-    if (!secondaryIdType) return setDocsError("Select which document you want to upload.");
-    if (secondaryIdType === "aadhaar" && (!aadhaarFront || !aadhaarBack)) return setDocsError("Upload both the front and back of your Aadhaar Card.");
-    if (secondaryIdType !== "aadhaar" && !secondaryIdFile) return setDocsError("Upload a clear photo of your document.");
+    if (!idDoc) return setDocsError("Select which government ID you want to upload.");
+    const missing = idDoc.sides.find((side) => !idFiles[side]);
+    if (missing) return setDocsError(idDoc.sides.length > 1 ? `Upload the ${missing.toLowerCase()} of your ${idDoc.label}.` : `Upload your ${idDoc.label}.`);
     setDocsError("");
     setBusy(true);
     try {
-      await completeProviderProfile({
-        token,
-        aadhaarFront: secondaryIdType === "aadhaar" ? (aadhaarFront ?? undefined) : undefined,
-        aadhaarBack: secondaryIdType === "aadhaar" ? (aadhaarBack ?? undefined) : undefined,
-        panCard: secondaryIdType === "pan" ? (secondaryIdFile ?? undefined) : undefined,
-        passportFront: secondaryIdType === "passport" ? (secondaryIdFile ?? undefined) : undefined,
-        otherIdProof: secondaryIdType === "other" ? (secondaryIdFile ?? undefined) : undefined,
-      });
+      const file = (side: string) => idFiles[side] ?? undefined;
+      if (idDoc.legacy === "aadhaar") {
+        await completeProviderProfile({ token, aadhaarFront: file("Front"), aadhaarBack: file("Back") });
+      } else if (idDoc.legacy === "pan") {
+        await completeProviderProfile({ token, panCard: file("Front") });
+      } else {
+        await completeProviderProfile({
+          token,
+          idDocuments: idDoc.sides.map((side) => ({ file: idFiles[side] as File, idType: `${idDoc.key}_${slug(side)}` })),
+        });
+      }
       setStep(3);
     } catch (err) {
-      toast({ title: "Couldn't upload your documents", description: errorMessage(err), variant: "error" });
+      toast({ title: "Couldn't upload your ID", description: errorMessage(err), variant: "error" });
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const onPhoto = async () => {
+    if (!photoFile) return setPhotoError("Take a photo of your face to continue.");
+    setPhotoError("");
+    setBusy(true);
+    try {
+      await completeProviderProfile({ token, photo: photoFile });
+      setStep(4);
+    } catch (err) {
+      toast({ title: "Couldn't upload your photo", description: errorMessage(err), variant: "error" });
     } finally {
       setBusy(false);
     }
@@ -484,6 +591,17 @@ export default function RegisterProviderPage() {
     );
   }
 
+  const checklist = (items: string[]) => (
+    <ul className="mt-5 space-y-3">
+      {items.map((item) => (
+        <li key={item} className="flex items-start gap-3 text-[15px]" style={{ color: "var(--ink-light)" }}>
+          <Icon name="check-circle" className="mt-0.5 h-5 w-5 shrink-0" style={{ color: "var(--success)" }} />
+          {item}
+        </li>
+      ))}
+    </ul>
+  );
+
   return (
     <section className="mx-auto max-w-md px-4 py-10 sm:px-6">
       <div className="card p-6 sm:p-8">
@@ -500,23 +618,31 @@ export default function RegisterProviderPage() {
             </p>
 
             <label className="mb-1.5 mt-8 block text-sm font-semibold" htmlFor="mobile">Mobile number</label>
-            <div className="flex items-center rounded-xl border bg-white pl-4 focus-within:border-[var(--primary)] focus-within:ring-2 focus-within:ring-[var(--primary-soft)]" style={{ borderColor: "var(--line)" }}>
-              <span className="pr-3 text-sm font-semibold">+91</span>
+            <div className="flex items-center rounded-xl border bg-white focus-within:border-[var(--primary)] focus-within:ring-2 focus-within:ring-[var(--primary-soft)]" style={{ borderColor: "var(--line)" }}>
+              <select
+                aria-label="Country"
+                value={country}
+                onChange={(e) => { onCountryChange(e.target.value as CountryCode); setMobile(""); setOtpError(""); }}
+                className="cursor-pointer rounded-l-xl border-0 bg-transparent py-3.5 pl-3 pr-1 text-sm font-semibold outline-none focus:ring-0"
+              >
+                {COUNTRY_LIST.map((c) => (
+                  <option key={c.code} value={c.code}>{c.flag} {c.dialCode}</option>
+                ))}
+              </select>
               <input
                 id="mobile"
-                placeholder="98765 XXXXX"
+                placeholder={config.mobilePlaceholder}
                 inputMode="numeric"
                 autoComplete="tel-national"
-                maxLength={10}
                 value={mobile}
-                onChange={(e) => setMobile(e.target.value.replace(/\D/g, "").slice(0, 10))}
+                onChange={(e) => setMobile(normalizeMobile(country, e.target.value))}
                 onKeyDown={(e) => e.key === "Enter" && onSendOtp()}
                 className="min-w-0 flex-1 border-0 bg-transparent py-3.5 pr-4 text-sm outline-none focus:ring-0"
               />
             </div>
             <FieldError message={otpError} />
 
-            <button type="button" onClick={onSendOtp} disabled={busy || !MOBILE_PATTERN.test(mobile)} className="btn btn-primary btn-lg mt-5 w-full">
+            <button type="button" onClick={onSendOtp} disabled={busy || !config.mobilePattern.test(mobile)} className="btn btn-primary btn-lg mt-5 w-full">
               {busy ? "Sending…" : (<>Continue <Icon name="arrow-right" className="h-4 w-4" /></>)}
             </button>
             <p className="mt-3 text-center text-xs" style={{ color: "var(--muted)" }}>A verification code will be sent to your mobile number.</p>
@@ -533,7 +659,7 @@ export default function RegisterProviderPage() {
           <>
             <h1 className="font-display text-h1">Enter verification code</h1>
             <p className="mt-3 flex items-center gap-3 text-sm" style={{ color: "var(--muted)" }}>
-              Sent to +91 {mobile.slice(0, 5)} {mobile.slice(5)}
+              Sent to {config.dialCode} {mobile}
               <button type="button" onClick={onChangeNumber} className="font-semibold" style={{ color: "var(--primary)" }}>Change</button>
             </p>
 
@@ -579,14 +705,15 @@ export default function RegisterProviderPage() {
                     <FieldError message={errors.lastName?.message} />
                   </div>
                   <div>
-                    <label className="mb-1.5 block text-sm font-semibold" htmlFor="categoryId">What work do you do? <span style={{ color: "var(--error)" }}>*</span></label>
-                    <select id="categoryId" className={`field ${errors.categoryId ? "field-error" : ""}`} {...register("categoryId")}>
-                      <option value="">{servicesStatus === "loading" ? "Loading services…" : "Select"}</option>
-                      {services.map((svc) => (
-                        <option key={svc.key} value={svc.key}>{svc.name}</option>
-                      ))}
-                    </select>
-                    <FieldError message={errors.categoryId?.message} />
+                    <p className="mb-1.5 block text-sm font-semibold">What work do you do? <span style={{ color: "var(--error)" }}>*</span></p>
+                    <ServiceMultiSelect
+                      services={services}
+                      selected={categoryIds}
+                      onChange={(keys) => { setCategoryIds(keys); setCategoryError(""); }}
+                      loading={servicesStatus === "loading"}
+                      error={categoryError}
+                    />
+                    <FieldError message={categoryError} />
                     {servicesStatus === "error" && (
                       <p className="mt-1 text-xs" style={{ color: "var(--error)" }}>
                         Couldn&apos;t load services.{" "}
@@ -595,7 +722,15 @@ export default function RegisterProviderPage() {
                     )}
                   </div>
                   <div>
-                    <label className="mb-1.5 block text-sm font-semibold" htmlFor="state">State <span style={{ color: "var(--error)" }}>*</span></label>
+                    <label className="mb-1.5 block text-sm font-semibold" htmlFor="country">Country <span style={{ color: "var(--error)" }}>*</span></label>
+                    <select id="country" className="field" value={country} onChange={(e) => onCountryChange(e.target.value as CountryCode)}>
+                      {COUNTRY_LIST.map((c) => (
+                        <option key={c.code} value={c.code}>{c.flag} {c.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="mb-1.5 block text-sm font-semibold" htmlFor="state">{config.regionLabel} <span style={{ color: "var(--error)" }}>*</span></label>
                     <select
                       id="state"
                       className={`field ${errors.state ? "field-error" : ""}`}
@@ -610,12 +745,16 @@ export default function RegisterProviderPage() {
                   </div>
                   <div>
                     <label className="mb-1.5 block text-sm font-semibold" htmlFor="city">City <span style={{ color: "var(--error)" }}>*</span></label>
-                    <select id="city" disabled={!selectedState || citiesLoading} className={`field ${errors.city ? "field-error" : ""}`} {...register("city")}>
-                      <option value="">{citiesLoading ? "Loading cities…" : "Select"}</option>
-                      {cities.map((c) => (
-                        <option key={c} value={c}>{c}</option>
-                      ))}
-                    </select>
+                    {config.states ? (
+                      <input id="city" className={`field ${errors.city ? "field-error" : ""}`} {...register("city")} />
+                    ) : (
+                      <select id="city" disabled={!selectedState || citiesLoading} className={`field ${errors.city ? "field-error" : ""}`} {...register("city")}>
+                        <option value="">{citiesLoading ? "Loading cities…" : "Select"}</option>
+                        {cities.map((c) => (
+                          <option key={c} value={c}>{c}</option>
+                        ))}
+                      </select>
+                    )}
                     <FieldError message={errors.city?.message} />
                   </div>
                   <div>
@@ -623,8 +762,8 @@ export default function RegisterProviderPage() {
                     <input id="area" className="field" {...register("area")} />
                   </div>
                   <div>
-                    <label className="mb-1.5 block text-sm font-semibold" htmlFor="pincode">Pincode</label>
-                    <input id="pincode" inputMode="numeric" maxLength={6} className="field" {...register("pincode")} />
+                    <label className="mb-1.5 block text-sm font-semibold" htmlFor="pincode">{config.postalLabel}</label>
+                    <input id="pincode" inputMode="numeric" maxLength={config.postalLength} className="field" {...register("pincode")} />
                   </div>
                 </div>
 
@@ -636,59 +775,47 @@ export default function RegisterProviderPage() {
               </form>
             )}
 
-            {/* ===== Step 2: Upload your documents ===== */}
+            {/* ===== Step 2: Government ID ===== */}
             {step === 2 && (
               <>
-                <h1 className="font-display text-h1">Upload your documents</h1>
-                <p className="mt-2 text-sm" style={{ color: "var(--muted)" }}>Please upload clear and valid documents.</p>
+                <h1 className="font-display text-h1">Upload your government ID</h1>
+                <p className="mt-2 text-sm" style={{ color: "var(--muted)" }}>Your photo and video are matched against it to confirm it is you.</p>
+                {checklist([
+                  "Use the original ID, not a photocopy or a screenshot",
+                  "All four corners visible, with no glare or blur",
+                  "Your photo, name and ID number are easy to read",
+                ])}
 
-                {/* 1. Pick the document, 2. its upload opens */}
-                <p className="mb-3 mt-6 text-sm font-semibold">
-                  Which document do you want to upload? <span style={{ color: "var(--error)" }}>*</span>
-                </p>
-                <div className="mb-5 flex flex-wrap gap-2">
-                  {(
-                    [
-                      { value: "aadhaar", label: "Aadhaar Card" },
-                      { value: "pan", label: "PAN Card" },
-                      { value: "passport", label: "Passport" },
-                      { value: "other", label: "Other ID" },
-                    ] as { value: SecondaryId; label: string }[]
-                  ).map((opt) => (
-                    <button
-                      key={opt.value}
-                      type="button"
-                      disabled={busy}
-                      onClick={() => { setSecondaryIdType(opt.value); setSecondaryIdFile(null); setDocsError(""); }}
-                      className="rounded-full border px-4 py-1.5 text-sm font-semibold transition-colors"
-                      style={
-                        secondaryIdType === opt.value
-                          ? { background: "var(--primary)", color: "white", borderColor: "var(--primary)" }
-                          : { background: "var(--surface)", color: "var(--ink)", borderColor: "var(--line)" }
-                      }
-                    >
-                      {opt.label}
-                    </button>
+                <label className="mb-1.5 mt-6 block text-sm font-semibold" htmlFor="idType">Government ID <span style={{ color: "var(--error)" }}>*</span></label>
+                <select
+                  id="idType"
+                  className="field"
+                  value={idKey}
+                  disabled={busy}
+                  onChange={(e) => { setIdKey(e.target.value); setIdFiles({}); setDocsError(""); }}
+                >
+                  <option value="">Select</option>
+                  {config.ids.map((d) => (
+                    <option key={d.key} value={d.key}>{d.label}</option>
                   ))}
-                </div>
+                </select>
 
-                {/* Aadhaar needs both sides */}
-                {secondaryIdType === "aadhaar" && (
-                  <div className="grid grid-cols-2 gap-3">
-                    <UploadTile id="aadhaarFront" label="Upload Aadhaar Front" file={aadhaarFront} disabled={busy} onChange={setAadhaarFront} />
-                    <UploadTile id="aadhaarBack" label="Upload Aadhaar Back" file={aadhaarBack} disabled={busy} onChange={setAadhaarBack} />
-                  </div>
-                )}
-
-                {/* Every other document is a single image */}
-                {secondaryIdType && secondaryIdType !== "aadhaar" && (
-                  <UploadTile
-                    id="secondaryIdFile"
-                    label={secondaryIdType === "pan" ? "Upload PAN Card" : secondaryIdType === "passport" ? "Upload Passport" : "Upload ID Proof"}
-                    file={secondaryIdFile}
-                    disabled={busy}
-                    onChange={setSecondaryIdFile}
-                  />
+                {idDoc && (
+                  <>
+                    <p className="mb-2 mt-5 text-sm font-bold">{idDoc.label} <span style={{ color: "var(--error)" }}>*</span></p>
+                    <div className={`grid gap-3 ${idDoc.sides.length > 1 ? "grid-cols-2" : "grid-cols-1"}`}>
+                      {idDoc.sides.map((side) => (
+                        <UploadTile
+                          key={`${idDoc.key}-${side}`}
+                          id={`id-${idDoc.key}-${slug(side)}`}
+                          label={idDoc.sides.length > 1 ? `Upload ${side}` : `Upload ${idDoc.label}`}
+                          file={idFiles[side] ?? null}
+                          disabled={busy}
+                          onChange={(f) => setIdFiles((prev) => ({ ...prev, [side]: f }))}
+                        />
+                      ))}
+                    </div>
+                  </>
                 )}
 
                 <FieldError message={docsError} />
@@ -701,8 +828,32 @@ export default function RegisterProviderPage() {
               </>
             )}
 
-            {/* ===== Step 3: Video KYC ===== */}
+            {/* ===== Step 3: Face photo ===== */}
             {step === 3 && (
+              <>
+                <h1 className="font-display text-h1">Take a photo of your face</h1>
+                <p className="mt-2 text-sm" style={{ color: "var(--muted)" }}>We match it with the photo on your government ID.</p>
+                {checklist([
+                  "Face the camera in good light",
+                  "Remove glasses, mask or cap",
+                  "Only you in the photo, with your whole face in the frame",
+                ])}
+
+                <div className="mt-8">
+                  <FacePhotoCapture file={photoFile} onChange={(f) => { setPhotoFile(f); setPhotoError(""); }} disabled={busy} />
+                </div>
+                <FieldError message={photoError} />
+
+                <div className="sticky bottom-0 -mx-6 mt-6 bg-white px-6 pb-1 pt-3 sm:-mx-8 sm:px-8">
+                  <button type="button" onClick={onPhoto} disabled={busy} className="btn btn-primary btn-lg w-full">
+                    {busy ? "Uploading…" : "Continue"}
+                  </button>
+                </div>
+              </>
+            )}
+
+            {/* ===== Step 4: Video KYC ===== */}
+            {step === 4 && (
               <>
                 <h1 className="font-display text-h1">Complete Video KYC</h1>
                 <p className="mt-2 text-sm" style={{ color: "var(--muted)" }}>
@@ -713,10 +864,10 @@ export default function RegisterProviderPage() {
                   <video src={videoPreview} controls playsInline className="mt-6 aspect-video w-full rounded-2xl bg-black object-cover" />
                 ) : (
                   <div className="mt-6 flex flex-col items-center">
-                    <p className="mb-3 text-xs font-bold uppercase tracking-[0.14em]" style={{ color: "var(--muted)" }}>Example video — watch before you record</p>
+                    <p className="mb-3 text-xs font-bold uppercase tracking-[0.14em]" style={{ color: "var(--muted)" }}>Watch a sample video</p>
                     <SampleVideo />
                     <p className="mt-3 max-w-xs text-center text-xs leading-relaxed" style={{ color: "var(--muted)" }}>
-                      Introduce yourself clearly: your name, the work you do and your experience.
+                      Say your name, where you are from, the services you provide, your experience and what you are best at.
                     </p>
                   </div>
                 )}

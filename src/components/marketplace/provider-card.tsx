@@ -11,6 +11,7 @@ import { Icon } from "@/components/ui/icon";
 import { toast } from "@/components/ui/toaster";
 import { formatDistance } from "@/lib/geo";
 import { colorForCategory } from "@/lib/category-colors";
+import { formatPersonName } from "@/lib/names";
 import type { Provider } from "@/types/marketplace";
 
 const AVAILABILITY_LABEL: Record<Provider["availabilityType"], string> = {
@@ -22,7 +23,6 @@ const AVAILABILITY_LABEL: Record<Provider["availabilityType"], string> = {
 
 const MAX_SKILLS = 4;
 
-const titleCase = (value: string) => value.toLowerCase().replace(/(^|[\s-])([a-z])/g, (_, sep: string, ch: string) => sep + ch.toUpperCase());
 
 export function ProviderCard({
   provider,
@@ -77,7 +77,7 @@ export function ProviderCard({
     router.push(user ? `/membership?redirect=${encodeURIComponent(redir)}` : `/login?redirect=${encodeURIComponent(redir)}`);
   };
 
-  const fullName = titleCase(`${provider.firstName} ${provider.lastName}`.trim());
+  const fullName = formatPersonName(`${provider.firstName} ${provider.lastName}`);
   const catColor = colorForCategory(provider.categoryId);
   const location = [provider.area, provider.city].filter((v, i, arr) => v && arr.indexOf(v) === i).join(", ");
   const stayLabel = (provider.stay ?? []).map((s) => (s === "live-in" ? "Live-in" : "Live-out")).join(" & ");

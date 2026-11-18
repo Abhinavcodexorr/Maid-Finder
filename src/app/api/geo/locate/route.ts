@@ -33,16 +33,18 @@ export async function GET(request: NextRequest) {
   const pincode = params.get("pincode");
   const query = params.get("q");
   const lat = params.get("lat");
+  // Restricts forward searches to one country; India unless the caller says otherwise.
+  const countryCode = params.get("country")?.toLowerCase() === "au" ? "au" : "in";
   const lng = params.get("lng");
 
   try {
     let url: string;
     if (lat && lng) {
       url = `${NOMINATIM}/reverse?format=jsonv2&addressdetails=1&zoom=12&lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lng)}`;
-    } else if (pincode && /^\d{6}$/.test(pincode)) {
-      url = `${NOMINATIM}/search?format=jsonv2&addressdetails=1&limit=1&countrycodes=in&postalcode=${pincode}`;
+    } else if (pincode && /^\d{4,6}$/.test(pincode)) {
+      url = `${NOMINATIM}/search?format=jsonv2&addressdetails=1&limit=1&countrycodes=${countryCode}&postalcode=${pincode}`;
     } else if (query) {
-      url = `${NOMINATIM}/search?format=jsonv2&addressdetails=1&limit=1&countrycodes=in&q=${encodeURIComponent(query)}`;
+      url = `${NOMINATIM}/search?format=jsonv2&addressdetails=1&limit=1&countrycodes=${countryCode}&q=${encodeURIComponent(query)}`;
     } else {
       return NextResponse.json({ success: false, message: "Send a pincode, q, or lat and lng." }, { status: 400 });
     }
